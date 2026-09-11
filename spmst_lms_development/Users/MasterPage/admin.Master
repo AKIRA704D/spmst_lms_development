@@ -1,0 +1,863 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.master.cs" Inherits="spmst_lms_development.masterpages.admin" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LMSA</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <style>
+        /* ==========================================================================
+           ISOLATED MASTER SIDEBAR AND VIEWPORT GRID MANAGEMENT 
+           ========================================================================== */
+        :root {
+            --sidebar-width: 270px;
+            --sidebar-bg: #1e293b; /* Slate 800 */
+            --sidebar-hover: #334155; /* Slate 700 */
+            --sidebar-active: #0ea5e9; /* Sky Blue accent highlight */
+            --top-navbar-height: 65px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #f8fafc; /* Cool grey background for workspace content */
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Master Grid Container Layout */
+        .lms-wrapper {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Mobile Utility Header Top Nav (Sticky Fix) */
+        .mobile-top-nav {
+            display: none; /* Hidden by default on Desktop layout structures */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--top-navbar-height);
+            background-color: #0f172a; /* Deep dark slate */
+            color: #ffffff;
+            z-index: 1040;
+            padding: 0 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* ==========================================================================
+           SIDEBAR CORE ARCHITECTURE
+           ========================================================================== */
+        .lms-sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1050;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            box-shadow: 4px 0 15px rgba(15, 23, 42, 0.08);
+        }
+
+        /* Fixed Brand Top Header */
+        .sidebar-brand-header {
+            height: 75px;
+            padding: 15px 20px;
+            background-color: #0f172a; /* Darker accent breakout */
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .brand-logo {
+            height: 35px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+            transition: transform 0.3s ease;
+        }
+
+        .brand-text-wrapper {
+            line-height: 1.2;
+        }
+
+        .brand-title {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+
+        .brand-subtitle {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        /* Independently Scrollable Center Navigation Links Layout */
+        .sidebar-menu-scroller {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+            /* Custom Clean Scrollbar for Menu Scroller Container */
+            .sidebar-menu-scroller::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .sidebar-menu-scroller::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            .sidebar-menu-scroller::-webkit-scrollbar-thumb {
+                background: #475569;
+                border-radius: 10px;
+            }
+
+        .menu-category-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #D4AF37;
+            padding: 10px 24px 5px 24px;
+            font-weight: 700;
+        }
+
+        /* Core Sidebar Nav Links */
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 11px 24px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 0.92rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+            margin-bottom: 2px;
+        }
+
+            .nav-menu-item i {
+                width: 24px;
+                font-size: 1.1rem;
+                margin-right: 12px;
+                color: #94a3b8;
+                transition: color 0.2s ease;
+            }
+
+            .nav-menu-item:hover {
+                background-color: var(--sidebar-hover);
+                color: #ffffff;
+            }
+
+                .nav-menu-item:hover i {
+                    color: #ffffff;
+                }
+
+            /* Active Page Class State */
+            .nav-menu-item.active {
+                background-color: #1e293b;
+                color: var(--sidebar-active);
+                border-left-color: var(--sidebar-active);
+                font-weight: 600;
+                background: linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0%, rgba(30, 41, 59, 0) 100%);
+            }
+
+                .nav-menu-item.active i {
+                    color: var(--sidebar-active);
+                }
+
+        /* Fixed Structural Sidebar Footer */
+        .sidebar-user-footer {
+            background-color: #0f172a;
+            padding: 15px 18px;
+            border-top: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .user-profile-avatar-initials {
+            width: 42px;
+            height: 42px;
+            background-color: #38bdf8; /* Sky Blue accent circle container background */
+            color: #0f172a; /* High-contrast deep slate text color */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .user-meta-info {
+            flex-grow: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .user-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        .user-email {
+            font-size: 0.72rem;
+            color: #94a3b8; /* Muted Slate text */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        .user-role {
+            font-size: 0.72rem;
+            color: #0ea5e9; /* Light blue accent marker */
+            font-weight: 600;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-sidebar-logout {
+            color: #94a3b8;
+            background: none;
+            border: none;
+            padding: 5px;
+            font-size: 1.1rem;
+            transition: color 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+            .btn-sidebar-logout:hover {
+                color: #ef4444;
+            }
+
+        /* ==========================================================================
+           MAIN CONTENT WORKSPACE CANVAS CONTAINER
+           ========================================================================== */
+        .main-workspace-canvas {
+            flex: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Sticky Desktop Header Framework */
+        .desktop-header {
+            height: var(--top-navbar-height);
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            flex-shrink: 0;
+            z-index: 1020;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .desktop-role-badge {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #16a34a;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-action-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-datetime-block {
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        .header-date-string {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .header-semester-string {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .btn-notification-bell {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.25rem;
+            padding: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .btn-notification-bell:hover {
+                color: #0f172a;
+            }
+
+        .mobile-logo-img {
+            height: 32px;
+            width: auto;
+        }
+
+        /* NEW: Custom styling attributes for the updated mobile layout items */
+        .mobile-action-cluster {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .mobile-datetime-block {
+            text-align: right;
+            line-height: 1.2;
+        }
+
+        .mobile-date-string {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .mobile-semester-string {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+
+        .mobile-bell-btn {
+            color: #94a3b8;
+            font-size: 1.15rem;
+            background: none;
+            border: none;
+            position: relative;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .mobile-bell-btn:hover, .mobile-bell-btn:focus {
+                color: #ffffff;
+            }
+
+        .mobile-avatar-initials {
+            width: 32px;
+            height: 32px;
+            background-color: #38bdf8;
+            color: #0f172a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .notification-count-badge {
+            font-size: 0.65rem;
+            padding: 4px 6px;
+        }
+
+        .notification-dropdown-menu {
+            width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.88rem;
+            z-index: 1200;
+        }
+
+        .notification-item-link {
+            white-space: normal !important;
+        }
+
+        .notification-timestamp {
+            font-size: 0.72rem;
+        }
+
+        .header-avatar-initials {
+            width: 36px;
+            height: 36px;
+            background-color: #e0f2fe;
+            color: #0369a1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .btn-header-logout {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.15rem;
+            padding: 6px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+            .btn-header-logout:hover {
+                color: #ef4444;
+            }
+
+        /* Scrollable layout logic under the header */
+        .workspace-scrollable-content {
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Dimming Overlay Backdrop Layer for Mobile View Drawer Mode toggling */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1035;
+        }
+
+        /* ==========================================================================
+           RESPONSIVE VIEWPORT MEDIA BREAKPOINT ADAPTATION RULES
+           ========================================================================== */
+        @media (max-width: 991.98px) {
+            .mobile-top-nav {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .desktop-header {
+                display: none; /* Hide desktop specific header block on mobile devices */
+            }
+
+            /* Shift the sidebar cleanly off-screen */
+            .lms-sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                height: 100vh;
+                transform: translateX(-100%);
+            }
+
+            /* Main Workspace canvas absorbs full viewport height with mobile header offsets */
+            .main-workspace-canvas {
+                height: calc(100vh - var(--top-navbar-height));
+                margin-top: var(--top-navbar-height);
+                width: 100%;
+            }
+
+            .workspace-scrollable-content {
+                padding: 20px 15px;
+            }
+
+            /* Toggle Drawer State when Active */
+            .lms-sidebar.drawer-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-backdrop.show-backdrop {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+
+        <div class="lms-wrapper">
+
+            <header class="mobile-top-nav">
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-dark border-secondary px-2 py-1" onclick="toggleSidebarDrawer()">
+                        <i class="fa-solid fa-bars fs-5"></i>
+                    </button>
+                    <img src='<%= ResolveUrl("~/Assests/img/lmsa_logo.png") %>' alt="LMSA Logo" class="mobile-logo-img" />
+                </div>
+
+                <% 
+                    // Inline database notification logic lookup for the mobile layout pipeline
+                    string currentSessionUserId = spmst_lms_development.sessionHelper.UserID;
+                    string masterConnString = System.Configuration.ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+                    var dbNotifications = spmst_lms_development.NotificationHelper.GetUnreadNotificationsForUser(currentSessionUserId, masterConnString);
+                %>
+
+                <div class="mobile-action-cluster">
+                    <div class="mobile-datetime-block">
+                        <div class="mobile-date-string" id="mobileCurrentDate">-- -- ----</div>
+                        <div class="mobile-semester-string" id="mobileAcademicTerm">Loading...</div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button type="button" class="mobile-bell-btn" data-bs-toggle="dropdown" aria-expanded="false"
+                            title="System Alerts & Notifications">
+                            <i class="fa-regular fa-bell"></i>
+                            <% if (dbNotifications != null && dbNotifications.Count > 0)
+                                { %>
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count-badge">
+                                <%= dbNotifications.Count %>
+                            </span>
+                            <% } %>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0 notification-dropdown-menu">
+                            <li class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark">Notifications</span>
+                                <span class="badge bg-secondary-subtle text-secondary"><%= dbNotifications?.Count ?? 0 %>
+                                    New</span>
+                            </li>
+                            <% 
+                                if (dbNotifications != null && dbNotifications.Count > 0)
+                                {
+                                    foreach (var item in dbNotifications)
+                                    {
+                            %>
+                            <li>
+                                <a class="dropdown-item p-3 border-bottom d-flex flex-column gap-1 notification-item-link"
+                                    href="#">
+                                    <div class="d-flex justify-content-between align-items-start gap-2">
+                                        <strong class="text-dark"><%= HttpUtility.HtmlEncode(item.Title) %></strong>
+                                        <small class="text-muted text-nowrap notification-timestamp"><%= item.CreatedAt.ToString("g") %></small>
+                                    </div>
+                                    <p class="text-muted m-0 small text-wrap text-break"><%= HttpUtility.HtmlEncode(item.Message) %>
+                                    </p>
+                                </a>
+                            </li>
+                            <% 
+                                    }
+                                }
+                                else
+                                {
+                            %>
+                            <li class="p-4 text-center text-muted">
+                                <i class="fa-solid fa-bell-slash fs-4 d-block mb-2 text-opacity-25"></i>
+                                No unread system notifications
+                            </li>
+                            <% } %>
+                        </ul>
+                    </div>
+
+                    <div class="mobile-avatar-initials" title="Current Active Profile Initials">
+                        <%= spmst_lms_development.sessionHelper.GetInitials() %>
+                    </div>
+                </div>
+            </header>
+
+            <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebarDrawer()">
+            </div>
+
+            <nav id="lmsSidebar" class="lms-sidebar">
+
+                <div class="sidebar-brand-header">
+                    <img src='<%= ResolveUrl("~/Assests/img/lmsa_logo.png") %>' alt="LMSA Logo" class="brand-logo me-2" />
+                    <div class="brand-text-wrapper">
+                        <div class="brand-title">SPAMAST</div>
+                        <div class="brand-subtitle">Library Management System</div>
+                    </div>
+                </div>
+
+                <div class="sidebar-menu-scroller">
+
+                    <div class="menu-category-label">Core Operations</div>
+                    <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/Users/Admin/Dashboard/adminDashC.aspx"
+                        CssClass="nav-menu-item">
+                    <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="lnkCirculation" runat="server" NavigateUrl="~/Users/Admin/Transactions/Book_Borrow.aspx"
+                        CssClass="nav-menu-item">
+                    <i class="fa-solid fa-handshake"></i><span>Circulation / Loans</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink4" runat="server" NavigateUrl="~/Users/Admin/Catalog.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-book"></i><span>Catalog</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink5" runat="server" NavigateUrl="~/Users/Admin/Reserves.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-calendar-days"></i><span>Reserves</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink6" runat="server" NavigateUrl="~/Users/Admin/Reservations.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-calendar-days"></i><span>Reservations</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink7" runat="server" NavigateUrl="~/Users/Admin/Penalties.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-calendar-days"></i><span>Penaties</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink8" runat="server" NavigateUrl="~/Users/Admin/AttendanceMonitor.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-calendar-days"></i><span>Attendance Monitor</span>
+                    </asp:HyperLink>
+
+                    <div class="menu-category-label">Management</div>
+                    <asp:HyperLink ID="lnkInventory" runat="server" NavigateUrl="~/Users/Admin/bookInventory.aspx"
+                        CssClass="nav-menu-item">
+                    <i class="fa-solid fa-book"></i><span>Book Inventory</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="lnkAccounts" runat="server" NavigateUrl="~/Users/Admin/userAcc.aspx"
+                        CssClass="nav-menu-item">
+                    <i class="fa-solid fa-tags"></i><span>Accounts</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Users/Admin/Profile.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-person"></i><span>Profile</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink2" runat="server" NavigateUrl="~/Users/Admin/Notifications.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-bell"></i><span>Notifications</span>
+                    </asp:HyperLink>
+
+                    <div class="menu-category-label">System Registry</div>
+                    <asp:HyperLink ID="HyperLink3" runat="server" NavigateUrl="~/Users/Admin/FeedbackRequest.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-comment-dots"></i><span>Feedback & Request</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="lnkReports" runat="server" NavigateUrl="~/Users/Admin/Reports/adminReports.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-users-gear"></i><span>Reports</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="lnkSystemLogs" runat="server" NavigateUrl="~/Users/Admin/SystemLogs.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-sliders"></i><span>System Logs</span>
+                    </asp:HyperLink>
+
+                </div>
+
+                <div class="sidebar-user-footer">
+                    <div class="user-profile-avatar-initials">
+                        <%= spmst_lms_development.sessionHelper.GetInitials() %>
+                    </div>
+
+                    <div class="user-meta-info">
+                        <p class="user-name"><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.FullName) %>
+                        </p>
+                        <p class="user-email"><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.Email) %>
+                        </p>
+                        <p class="user-role"><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %>
+                        </p>
+                    </div>
+
+                    <button type="button" class="btn-sidebar-logout" onclick="triggerClientLogout()"
+                        title="Terminate Current Session">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
+
+            </nav>
+
+            <main class="main-workspace-canvas">
+
+                <header class="desktop-header">
+                    <div>
+                        <div class="desktop-role-badge">
+                            <i class="fa-solid fa-building-user"></i>
+                            <span>
+                                <% 
+                                    string currentRole = spmst_lms_development.sessionHelper.GetRoleDisplayName() ?? "";
+                                    if (currentRole.Equals("admin", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                %>
+                                    Head Librarian
+                                <% }
+                                    else if (currentRole.Equals("staff C", StringComparison.OrdinalIgnoreCase))
+                                    { %>
+                                Circulation Area
+                                <% }
+                                    else if (currentRole.Equals("staff M", StringComparison.OrdinalIgnoreCase))
+                                    { %>
+                                Management Area
+                                <% }
+                                else
+                                { %>
+                                <%= HttpUtility.HtmlEncode(currentRole) %>
+                                <% } %>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="header-action-group">
+                        <div class="header-datetime-block">
+                            <div class="header-date-string" id="headerCurrentDate">-- -- ----</div>
+                            <div class="header-semester-string" id="headerAcademicTerm">Loading Term...</div>
+                        </div>
+
+                        <div class="dropdown">
+                            <button type="button" class="btn-notification-bell" data-bs-toggle="dropdown" aria-expanded="false"
+                                title="System Alerts & Notifications">
+                                <i class="fa-regular fa-bell"></i>
+                                <% if (dbNotifications != null && dbNotifications.Count > 0)
+                                    { %>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count-badge">
+                                    <%= dbNotifications.Count %>
+                                </span>
+                                <% } %>
+                            </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0 notification-dropdown-menu">
+                                <li class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold text-dark">Notifications</span>
+                                    <span class="badge bg-secondary-subtle text-secondary"><%= dbNotifications?.Count ?? 0 %>
+                                        New</span>
+                                </li>
+                                <% 
+                                    if (dbNotifications != null && dbNotifications.Count > 0)
+                                    {
+                                        foreach (var item in dbNotifications)
+                                        {
+                                %>
+                                <li>
+                                    <a class="dropdown-item p-3 border-bottom d-flex flex-column gap-1 notification-item-link"
+                                        href="#">
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                            <strong class="text-dark"><%= HttpUtility.HtmlEncode(item.Title) %></strong>
+                                            <small class="text-muted text-nowrap notification-timestamp"><%= item.CreatedAt.ToString("g") %></small>
+                                        </div>
+                                        <p class="text-muted m-0 small text-wrap text-break"><%= HttpUtility.HtmlEncode(item.Message) %>
+                                        </p>
+                                    </a>
+                                </li>
+                                <% 
+                                        }
+                                    }
+                                    else
+                                    {
+                                %>
+                                <li class="p-4 text-center text-muted">
+                                    <i class="fa-solid fa-bell-slash fs-4 d-block mb-2 text-opacity-25"></i>
+                                    No unread system notifications
+                                </li>
+                                <% } %>
+                            </ul>
+                        </div>
+
+                        <div class="header-avatar-initials" title="Current Profile Record Identity Instance">
+                            <%= spmst_lms_development.sessionHelper.GetInitials() %>
+                        </div>
+
+                        <button type="button" class="btn-header-logout" onclick="triggerClientLogout()" title="Terminate Workplace Session Framework Connection">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <div class="workspace-scrollable-content">
+                    <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+                </div>
+            </main>
+
+        </div>
+
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function toggleSidebarDrawer() {
+            const sidebar = document.getElementById('lmsSidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            if (sidebar && backdrop) {
+                sidebar.classList.toggle('drawer-open');
+                backdrop.classList.toggle('show-backdrop');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentPath = window.location.pathname.toLowerCase();
+            const navLinks = document.querySelectorAll('.nav-menu-item');
+
+            navLinks.forEach(link => {
+                const linkHref = link.getAttribute('href').toLowerCase();
+                if (currentPath.indexOf(linkHref) !== -1 && linkHref !== "") {
+                    navLinks.forEach(item => item.classList.remove('active'));
+                    link.classList.add('active');
+                }
+            });
+
+            // Set Desktop and Mobile Date elements uniformly
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            const formattedDateString = new Date().toLocaleDateString('en-US', dateOptions);
+
+            const desktopDate = document.getElementById('headerCurrentDate');
+            if (desktopDate) desktopDate.textContent = formattedDateString;
+
+            const mobileDate = document.getElementById('mobileCurrentDate');
+            if (mobileDate) mobileDate.textContent = formattedDateString;
+
+            // Compute and uniform Academic Term for both Desktop and Mobile elements
+            const currentMonth = new Date().getMonth();
+            let semesterString = "1st Semester";
+
+            if (currentMonth <= 5 && currentMonth >= 4) {
+                semesterString = "2nd Semester";
+            } else if (currentMonth >= 9 || currentMonth <= 3) {
+                semesterString = "1st Semester";
+            } else if (currentMonth >= 6 && currentMonth <= 8) {
+                semesterString = "Summer Term";
+            }
+
+            const desktopTerm = document.getElementById('headerAcademicTerm');
+            if (desktopTerm) desktopTerm.textContent = semesterString;
+
+            const mobileTerm = document.getElementById('mobileCurrentDate');
+            const mobileTermReal = document.getElementById('mobileAcademicTerm');
+            if (mobileTermReal) mobileTermReal.textContent = semesterString;
+        });
+
+        function triggerClientLogout() {
+            window.location.href = '<%= ResolveUrl("~/Login/login.aspx") %>';
+        }
+    </script>
+</body>
+</html>
