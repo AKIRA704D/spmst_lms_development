@@ -8,7 +8,7 @@ using System.Web.Script.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace spmst_lms_development.Users.Admin
+namespace spmst_lms_development.Users.Admin.Dashboard
 {
     public partial class adminDashC : System.Web.UI.Page
     {
@@ -26,7 +26,7 @@ namespace spmst_lms_development.Users.Admin
                 LoadTopBorrowedData();
 
                 // Load the default analytics tab(Low Circulation)
-                analyticsFrame.Attributes["src"] = "Analytics_LowCirc.aspx";
+                analyticsFrame.Attributes["src"] = "Analytics/Analytics_LowCirc.aspx";
             }
         }
 

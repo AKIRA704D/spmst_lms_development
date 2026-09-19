@@ -1,9 +1,8 @@
-﻿using spmst_lms_development;
-using System;
+﻿using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace spmst_lms_development.masterpages
+namespace spmst_lms_development.Users.MasterPage
 {
     public partial class admin : System.Web.UI.MasterPage
     {

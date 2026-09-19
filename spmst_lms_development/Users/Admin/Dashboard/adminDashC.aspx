@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Admin Dashboard" Language="C#" MasterPageFile="~/Users/MasterPage/Admin.Master" AutoEventWireup="true" CodeBehind="adminDashC.aspx.cs" Inherits="spmst_lms_development.Users.Admin.adminDashC" %>
+﻿<%@ Page Title="Admin Dashboard" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="adminDashC.aspx.cs" Inherits="spmst_lms_development.Users.Admin.Dashboard.adminDashC" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -432,16 +432,16 @@
                     <h4 class="mb-4">Descriptive and Diagnostic Analytics</h4>
                     <ul class="nav nav-pills mb-3" id="analyticsTabs">
                         <li class="nav-item">
-                            <a href="#" class="nav-link" data-url="Analytics_Trending.aspx" onclick="loadAnalytics(this); return false;">Trending Books</a>
+                            <a href="#" class="nav-link" data-url="Analytics/Analytics_Trending.aspx" onclick="loadAnalytics(this); return false;">Trending Books</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link active" data-url="Analytics_LowCirc.aspx" onclick="loadAnalytics(this); return false;">Low Circulation</a>
+                            <a href="#" class="nav-link active" data-url="Analytics/Analytics_LowCirc.aspx" onclick="loadAnalytics(this); return false;">Low Circulation</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link" data-url="Analytics_PeakHours.aspx" onclick="loadAnalytics(this); return false;">Peak Hours</a>
+                            <a href="#" class="nav-link" data-url="Analytics/Analytics_PeakHours.aspx" onclick="loadAnalytics(this); return false;">Peak Hours</a>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link" data-url="Analytics_OverduePatterns.aspx" onclick="loadAnalytics(this); return false;">Overdue Patterns</a>
+                            <a href="#" class="nav-link" data-url="Analytics/Analytics_OverduePatterns.aspx" onclick="loadAnalytics(this); return false;">Overdue Patterns</a>
                         </li>
                     </ul>
 

@@ -6,7 +6,7 @@ namespace spmst_lms_development.Login
 {
     public partial class termsServices : System.Web.UI.Page
     {
-        private readonly string PdfPath = "~/Assests/Terms/terms.pdf";
+        private readonly string PdfPath = "~/Assets/Terms/terms.pdf";
 
         protected void Page_Load(object sender, EventArgs e)
         {

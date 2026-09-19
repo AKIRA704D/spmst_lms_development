@@ -1,0 +1,83 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin1.Master.cs" Inherits="spmst_lms_development.Users.MasterPage.admin" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LMSA</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href='<%= ResolveUrl("~/masterpages/components/AdminLayout.css") %>' />
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+
+        <div class="lms-wrapper">
+
+            <!-- Dimming overlay behind the sidebar when it's opened as a mobile drawer.
+                 Clicking it closes the drawer again. -->
+            <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="AdminLayout.toggleSidebar()"></div>
+
+            <!-- ==================================================================
+                 SIDEBAR — 3 stacked slots, each owned by its own standalone
+                 (no-master) .aspx page and embedded via <iframe>:
+                   1) top slot    -> logo.aspx     (brand / logo / version)
+                   2) middle slot -> tabs.aspx      (navigation / tab switching)
+                   3) bottom slot -> logout.aspx    (avatar / name / role / logout)
+                 Each component keeps its own markup + code-behind completely
+                 separate from this file — edit one without touching the rest.
+                 ================================================================== -->
+            <nav id="lmsSidebar" class="lms-sidebar">
+
+                <div class="sidebar-slot sidebar-slot-top">
+                    <iframe class="component-frame" title="Brand"
+                        src='<%= ResolveUrl("~/Users/MasterPage/Components/logo.aspx") %>'></iframe>
+                </div>
+
+                <div class="sidebar-slot sidebar-slot-middle">
+                    <iframe class="component-frame" title="Navigation"
+                        src='<%= ResolveUrl("~/Users/MasterPage/Components/tabs.aspx") %>'></iframe>
+                </div>
+
+                <div class="sidebar-slot sidebar-slot-bottom">
+                    <iframe class="component-frame" title="Account"
+                        src='<%= ResolveUrl("~/Users/MasterPage/Components/logout.aspx") %>'></iframe>
+                </div>
+
+            </nav>
+
+            <!-- ==================================================================
+                 MAIN WORKSPACE — header component (headergroup.aspx) + whatever
+                 content the current content page puts into MainContent.
+                 ================================================================== -->
+            <main class="main-workspace-canvas">
+
+                <div class="workspace-header-bar">
+                    <!-- Hamburger is only visible at mobile widths (see AdminLayout.css) -->
+                    <button type="button" id="btnSidebarToggle" class="btn-hamburger"
+                        onclick="AdminLayout.toggleSidebar()" title="Open navigation menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <iframe class="component-frame" title="Header"
+                        src='<%= ResolveUrl("~/Users/MasterPage/Components/headergroup.aspx") %>'></iframe>
+                </div>
+
+                <div class="workspace-scrollable-content">
+                    <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+                </div>
+
+            </main>
+
+        </div>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src='<%= ResolveUrl("~/Users/MasterPage/Components/AdminLayout.js") %>'></script>
+</body>
+</html>

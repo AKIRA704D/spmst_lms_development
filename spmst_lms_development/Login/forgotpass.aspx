@@ -17,7 +17,7 @@
             min-height: 100vh;
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('../Assests/img/lmsa_bg.jpg') no-repeat center center fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('../Assets/Img/lmsa_bg.jpg') no-repeat center center fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
@@ -275,7 +275,7 @@
 
        <header class="sticky-header">
             <div class="header-brand d-flex align-items-center">
-                <img src="../Assests/img/lmsa_logo.png" alt="LMSA Logo" class="header-logo me-2" />
+                <Img src="../Assets/Img/lmsa_logo.png" alt="LMSA Logo" class="header-logo me-2" />
                 <div>
                     <strong>SPAMAST LIBRARY</strong>
                     <span>LMSA v2.0 Platform</span>

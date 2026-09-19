@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.master.cs" Inherits="spmst_lms_development.masterpages.admin" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.master.cs" Inherits="spmst_lms_development.Users.MasterPage.admin" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -341,7 +341,7 @@
                 color: #0f172a;
             }
 
-        .mobile-logo-img {
+        .mobile-logo-Img {
             height: 32px;
             width: auto;
         }
@@ -524,7 +524,7 @@
                     <button type="button" class="btn btn-dark border-secondary px-2 py-1" onclick="toggleSidebarDrawer()">
                         <i class="fa-solid fa-bars fs-5"></i>
                     </button>
-                    <img src='<%= ResolveUrl("~/Assests/img/lmsa_logo.png") %>' alt="LMSA Logo" class="mobile-logo-img" />
+                    <Img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA Logo" class="mobile-logo-Img" />
                 </div>
 
                 <% 
@@ -601,7 +601,7 @@
             <nav id="lmsSidebar" class="lms-sidebar">
 
                 <div class="sidebar-brand-header">
-                    <img src='<%= ResolveUrl("~/Assests/img/lmsa_logo.png") %>' alt="LMSA Logo" class="brand-logo me-2" />
+                    <Img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA Logo" class="brand-logo me-2" />
                     <div class="brand-text-wrapper">
                         <div class="brand-title">SPAMAST</div>
                         <div class="brand-subtitle">Library Management System</div>
@@ -615,59 +615,67 @@
                         CssClass="nav-menu-item">
                     <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="lnkCirculation" runat="server" NavigateUrl="~/Users/Admin/Transactions/Book_Borrow.aspx"
+                    <asp:HyperLink ID="lnkCirculation" runat="server" NavigateUrl="~/Users/Staff/Transactions/Book_Borrow.aspx"
                         CssClass="nav-menu-item">
                     <i class="fa-solid fa-handshake"></i><span>Circulation / Loans</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink4" runat="server" NavigateUrl="~/Users/Admin/Catalog.aspx"
+                    <asp:HyperLink ID="HyperLink4" runat="server" NavigateUrl="~/Users/Admin/Catalog/BrowseCatalog.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-book"></i><span>Catalog</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink5" runat="server" NavigateUrl="~/Users/Admin/Reserves.aspx"
+                    <asp:HyperLink ID="HyperLink5" runat="server" NavigateUrl="~/Users/Patron/Reservations/ToPickUp.aspx"
                         CssClass="nav-menu-item">
-                        <i class="fa-solid fa-calendar-days"></i><span>Reserves</span>
+                        <i class="fa-solid fa-calendar-days"></i><span>To Pick Up</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink6" runat="server" NavigateUrl="~/Users/Admin/Reservations.aspx"
+                    <asp:HyperLink ID="HyperLink6" runat="server" NavigateUrl="~/Users/Staff/Reservation/Reservations.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-calendar-days"></i><span>Reservations</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink7" runat="server" NavigateUrl="~/Users/Admin/Penalties.aspx"
+                    <asp:HyperLink ID="HyperLink7" runat="server" NavigateUrl="~/Users/Staff/Penalties/Penalties.aspx"
                         CssClass="nav-menu-item">
-                        <i class="fa-solid fa-calendar-days"></i><span>Penaties</span>
+                        <i class="fa-solid fa-calendar-days"></i><span>Penalties</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink8" runat="server" NavigateUrl="~/Users/Admin/AttendanceMonitor.aspx"
+                    <asp:HyperLink ID="HyperLink8" runat="server" NavigateUrl="~/Users/Staff/Attendance/AttendanceMonitor.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-calendar-days"></i><span>Attendance Monitor</span>
                     </asp:HyperLink>
 
                     <div class="menu-category-label">Management</div>
-                    <asp:HyperLink ID="lnkInventory" runat="server" NavigateUrl="~/Users/Admin/bookInventory.aspx"
+                    <asp:HyperLink ID="lnkInventory" runat="server" NavigateUrl="~/Users/Staff/Inventory/bookInventory.aspx"
                         CssClass="nav-menu-item">
                     <i class="fa-solid fa-book"></i><span>Book Inventory</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="lnkAccounts" runat="server" NavigateUrl="~/Users/Admin/userAcc.aspx"
+                    <asp:HyperLink ID="lnkAccounts" runat="server" NavigateUrl="~/Users/Staff/Accounts/userAcc.aspx"
                         CssClass="nav-menu-item">
                     <i class="fa-solid fa-tags"></i><span>Accounts</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Users/Admin/Profile.aspx"
+                    <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Users/Patron/Profile/Profile.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-person"></i><span>Profile</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="HyperLink2" runat="server" NavigateUrl="~/Users/Admin/Notifications.aspx"
+                    <asp:HyperLink ID="HyperLink2" runat="server" NavigateUrl="~/Users/Patron/Notifications/Notifications.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-bell"></i><span>Notifications</span>
                     </asp:HyperLink>
 
                     <div class="menu-category-label">System Registry</div>
-                    <asp:HyperLink ID="HyperLink3" runat="server" NavigateUrl="~/Users/Admin/FeedbackRequest.aspx"
+                    <asp:HyperLink ID="HyperLink3" runat="server" NavigateUrl="~/Users/Patron/FeedReq/FeedbackRequest.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-comment-dots"></i><span>Feedback & Request</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="HyperLink9" runat="server" NavigateUrl="~/Users/Patron/FeedReq/Feedback.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-comment-dots"></i><span>Feedbackt</span>
                     </asp:HyperLink>
                     <asp:HyperLink ID="lnkReports" runat="server" NavigateUrl="~/Users/Admin/Reports/adminReports.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-users-gear"></i><span>Reports</span>
                     </asp:HyperLink>
-                    <asp:HyperLink ID="lnkSystemLogs" runat="server" NavigateUrl="~/Users/Admin/SystemLogs.aspx"
+                    <asp:HyperLink ID="HyperLink10" runat="server" NavigateUrl="~/Users/Admin/Reports/generateReports.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-users-gear"></i><span>Generate Reports</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="lnkSystemLogs" runat="server" NavigateUrl="~/Users/Admin/Logs/SystemLogs.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-sliders"></i><span>System Logs</span>
                     </asp:HyperLink>

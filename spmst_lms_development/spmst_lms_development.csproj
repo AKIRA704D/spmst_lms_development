@@ -48,11 +48,23 @@
     <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
       <HintPath>..\packages\BouncyCastle.Cryptography.2.7.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
+    <Reference Include="ClosedXML, Version=0.105.1.0, Culture=neutral, PublicKeyToken=fd1eb21b62ae805b, processorArchitecture=MSIL">
+      <HintPath>..\packages\ClosedXML.0.105.1\lib\netstandard2.0\ClosedXML.dll</HintPath>
+    </Reference>
+    <Reference Include="ClosedXML.Parser, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1d5f7376574c51ec, processorArchitecture=MSIL">
+      <HintPath>..\packages\ClosedXML.Parser.2.0.0\lib\netstandard2.0\ClosedXML.Parser.dll</HintPath>
+    </Reference>
+    <Reference Include="CsvHelper, Version=33.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.33.1.0\lib\net47\CsvHelper.dll</HintPath>
+    </Reference>
     <Reference Include="DocumentFormat.OpenXml, Version=3.5.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.3.5.1\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
     </Reference>
     <Reference Include="DocumentFormat.OpenXml.Framework, Version=3.5.1.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.Framework.3.5.1\lib\net46\DocumentFormat.OpenXml.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="ExcelNumberFormat, Version=1.1.0.0, Culture=neutral, PublicKeyToken=23c6f5d73be07eca, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelNumberFormat.1.1.0\lib\net20\ExcelNumberFormat.dll</HintPath>
     </Reference>
     <Reference Include="Google.Protobuf, Version=3.36.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.36.1\lib\netstandard2.0\Google.Protobuf.dll</HintPath>
@@ -66,12 +78,24 @@
     <Reference Include="K4os.Hash.xxHash, Version=1.0.8.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
       <HintPath>..\packages\K4os.Hash.xxHash.1.0.8\lib\net462\K4os.Hash.xxHash.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.HashCode, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.HashCode.6.0.0\lib\net462\Microsoft.Bcl.HashCode.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\lib\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="MySql.Data, Version=26.7.0.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.26.7.0\lib\net462\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="RBush, Version=4.0.0.0, Culture=neutral, PublicKeyToken=c77e27b81f4d0187, processorArchitecture=MSIL">
+      <HintPath>..\packages\RBush.Signed.4.0.0\lib\net47\RBush.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Fonts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
+      <HintPath>..\packages\SixLabors.Fonts.1.0.0\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
@@ -119,29 +143,66 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assests\Img\lib_logo.png" />
-    <Content Include="Assests\Img\lib_logo_wbg.png" />
-    <Content Include="Assests\Img\lmsa_bg.jpg" />
-    <Content Include="Assests\Img\lmsa_logo.png" />
-    <Content Include="Assests\Img\spmst_logo.jpg" />
-    <Content Include="Assests\Img\spmst_logo_wbg.png" />
+    <Content Include="Assets\Profile\default-cover.png" />
+    <Content Include="Assets\Covers\default-cover.jpg" />
+    <Content Include="Assets\Img\lib_logo.png" />
+    <Content Include="Assets\Img\lib_logo_wbg.png" />
+    <Content Include="Assets\Img\lmsa_bg.jpg" />
+    <Content Include="Assets\Img\lmsa_logo.png" />
+    <Content Include="Assets\Img\spmst_logo.jpg" />
+    <Content Include="Assets\Img\spmst_logo_wbg.png" />
     <Content Include="Login\forgotpass.aspx" />
     <Content Include="Login\login.aspx" />
     <Content Include="Login\termsServices.aspx" />
     <Content Include="Login\verifyAcc.aspx" />
+    <Content Include="Users\Admin\Catalog\BrowseCatalog.aspx" />
+    <Content Include="Users\Admin\Catalog\Reserved_Book.aspx" />
+    <Content Include="Users\Admin\Catalog\View_BookDetails.aspx" />
+    <Content Include="Users\Admin\Dashboard\adminDashAa.aspx" />
     <Content Include="Users\Admin\Dashboard\adminDashC.aspx" />
+    <Content Include="Users\Admin\Dashboard\adminDashPp.aspx" />
+    <Content Include="Users\Admin\Dashboard\Analytics\Analytics_LowCirc.aspx" />
+    <Content Include="Users\Admin\Dashboard\Analytics\Analytics_OverduePatterns.aspx" />
+    <Content Include="Users\Admin\Dashboard\Analytics\Analytics_PeakHours.aspx" />
+    <Content Include="Users\Admin\Dashboard\Analytics\Analytics_Trending.aspx" />
+    <Content Include="Users\Admin\Logs\SystemLogs.aspx" />
     <Content Include="Users\Admin\Reports\adminReports.aspx" />
-    <Content Include="Users\Admin\Transactions\Book_Borrow.aspx" />
-    <Content Include="Users\Admin\Transactions\Book_Renew.aspx" />
-    <Content Include="Users\Admin\Transactions\Book_Return.aspx" />
+    <Content Include="Users\Admin\Reports\generateReports.aspx" />
+    <Content Include="Users\Admin\Reports\PrintReports.aspx" />
+    <Content Include="Users\Patron\FeedReq\Feedback.aspx" />
+    <Content Include="Users\Patron\FeedReq\FeedbackRequest.aspx" />
+    <Content Include="Users\Patron\History\History.aspx" />
+    <Content Include="Users\Patron\Notifications\Notifications.aspx" />
+    <Content Include="Users\Staff\Accounts\userAcc.aspx" />
+    <Content Include="Users\Staff\Accounts\userFilter.aspx" />
+    <Content Include="Users\Staff\Accounts\userNew.aspx" />
+    <Content Include="Users\Staff\Accounts\userUpdate.aspx" />
+    <Content Include="Users\Staff\Accounts\userView.aspx" />
+    <Content Include="Users\Staff\Inventory\bookFilter.aspx" />
+    <Content Include="Users\Staff\Inventory\bookImport.aspx" />
+    <Content Include="Users\Staff\Inventory\bookInventory.aspx" />
+    <Content Include="Users\Staff\Inventory\bookNew.aspx" />
+    <Content Include="Users\Staff\Inventory\bookUD.aspx" />
+    <Content Include="Users\Staff\Inventory\bookUS.aspx" />
+    <Content Include="Users\Staff\Penalties\Penalties.aspx" />
+    <Content Include="Users\Patron\Profile\Profile.aspx" />
+    <Content Include="Users\Staff\Reservation\Reservations.aspx" />
+    <Content Include="Users\Patron\Reservations\ToPickUp.aspx" />
+    <Content Include="Users\Staff\Transactions\Book_Borrow.aspx" />
+    <Content Include="Users\Staff\Transactions\Book_Renew.aspx" />
+    <Content Include="Users\Staff\Transactions\Book_Return.aspx" />
+    <Content Include="Users\Staff\Attendance\AttendanceMonitor.aspx" />
+    <Content Include="Users\Staff\Attendance\Kiosk\Kiosk.aspx" />
+    <Content Include="Users\Staff\Attendance\Kiosk\SelfServiceKiosk.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assests\Helper\AlertHelper.cs" />
-    <Compile Include="Assests\Helper\EmailHelper.cs" />
-    <Compile Include="Assests\Helper\InputHelper.cs" />
-    <Compile Include="Assests\Helper\NotificationHelper.cs" />
-    <Compile Include="Assests\Helper\sessionHelper.cs" />
+    <Compile Include="Assets\Helper\AlertHelper.cs" />
+    <Compile Include="Assets\Helper\EmailHelper.cs" />
+    <Compile Include="Assets\Helper\InputHelper.cs" />
+    <Compile Include="Assets\Helper\logs_Audit.cs" />
+    <Compile Include="Assets\Helper\NotificationHelper.cs" />
+    <Compile Include="Assets\Helper\sessionHelper.cs" />
     <Compile Include="Login\forgotpass.aspx.cs">
       <DependentUpon>forgotpass.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -171,12 +232,82 @@
       <DependentUpon>verifyAcc.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Users\Admin\Catalog\BrowseCatalog.aspx.cs">
+      <DependentUpon>BrowseCatalog.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Catalog\BrowseCatalog.aspx.designer.cs">
+      <DependentUpon>BrowseCatalog.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Catalog\Reserved_Book.aspx.cs">
+      <DependentUpon>Reserved_Book.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Catalog\Reserved_Book.aspx.designer.cs">
+      <DependentUpon>Reserved_Book.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Catalog\View_BookDetails.aspx.cs">
+      <DependentUpon>View_BookDetails.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Catalog\View_BookDetails.aspx.designer.cs">
+      <DependentUpon>View_BookDetails.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\adminDashAa.aspx.cs">
+      <DependentUpon>adminDashAa.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\adminDashAa.aspx.designer.cs">
+      <DependentUpon>adminDashAa.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Users\Admin\Dashboard\adminDashC.aspx.cs">
       <DependentUpon>adminDashC.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Users\Admin\Dashboard\adminDashC.aspx.designer.cs">
       <DependentUpon>adminDashC.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\adminDashPp.aspx.cs">
+      <DependentUpon>adminDashPp.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\adminDashPp.aspx.designer.cs">
+      <DependentUpon>adminDashPp.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_LowCirc.aspx.cs">
+      <DependentUpon>Analytics_LowCirc.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_LowCirc.aspx.designer.cs">
+      <DependentUpon>Analytics_LowCirc.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_OverduePatterns.aspx.cs">
+      <DependentUpon>Analytics_OverduePatterns.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_OverduePatterns.aspx.designer.cs">
+      <DependentUpon>Analytics_OverduePatterns.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_PeakHours.aspx.cs">
+      <DependentUpon>Analytics_PeakHours.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_PeakHours.aspx.designer.cs">
+      <DependentUpon>Analytics_PeakHours.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_Trending.aspx.cs">
+      <DependentUpon>Analytics_Trending.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\Analytics\Analytics_Trending.aspx.designer.cs">
+      <DependentUpon>Analytics_Trending.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Logs\SystemLogs.aspx.cs">
+      <DependentUpon>SystemLogs.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Logs\SystemLogs.aspx.designer.cs">
+      <DependentUpon>SystemLogs.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Admin\Reports\adminReports.aspx.cs">
       <DependentUpon>adminReports.aspx</DependentUpon>
@@ -185,26 +316,20 @@
     <Compile Include="Users\Admin\Reports\adminReports.aspx.designer.cs">
       <DependentUpon>adminReports.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Users\Admin\Transactions\Book_Borrow.aspx.cs">
-      <DependentUpon>Book_Borrow.aspx</DependentUpon>
+    <Compile Include="Users\Admin\Reports\generateReports.aspx.cs">
+      <DependentUpon>generateReports.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Users\Admin\Transactions\Book_Borrow.aspx.designer.cs">
-      <DependentUpon>Book_Borrow.aspx</DependentUpon>
+    <Compile Include="Users\Admin\Reports\generateReports.aspx.designer.cs">
+      <DependentUpon>generateReports.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Users\Admin\Transactions\Book_Renew.aspx.cs">
-      <DependentUpon>Book_Renew.aspx</DependentUpon>
+    <Compile Include="Users\Admin\Reports\GetReports.ashx.cs" />
+    <Compile Include="Users\Admin\Reports\PrintReports.aspx.cs">
+      <DependentUpon>PrintReports.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Users\Admin\Transactions\Book_Renew.aspx.designer.cs">
-      <DependentUpon>Book_Renew.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Users\Admin\Transactions\Book_Return.aspx.cs">
-      <DependentUpon>Book_Return.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Users\Admin\Transactions\Book_Return.aspx.designer.cs">
-      <DependentUpon>Book_Return.aspx</DependentUpon>
+    <Compile Include="Users\Admin\Reports\PrintReports.aspx.designer.cs">
+      <DependentUpon>PrintReports.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\MasterPage\admin.Master.cs">
       <DependentUpon>admin.Master</DependentUpon>
@@ -213,9 +338,184 @@
     <Compile Include="Users\MasterPage\admin.Master.designer.cs">
       <DependentUpon>admin.Master</DependentUpon>
     </Compile>
+    <Compile Include="Users\Patron\FeedReq\Feedback.aspx.cs">
+      <DependentUpon>Feedback.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\FeedReq\Feedback.aspx.designer.cs">
+      <DependentUpon>Feedback.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Patron\FeedReq\FeedbackRequest.aspx.cs">
+      <DependentUpon>FeedbackRequest.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\FeedReq\FeedbackRequest.aspx.designer.cs">
+      <DependentUpon>FeedbackRequest.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Patron\History\History.aspx.cs">
+      <DependentUpon>History.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\History\History.aspx.designer.cs">
+      <DependentUpon>History.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Patron\Notifications\Notifications.aspx.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\Notifications\Notifications.aspx.designer.cs">
+      <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userAcc.aspx.cs">
+      <DependentUpon>userAcc.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userAcc.aspx.designer.cs">
+      <DependentUpon>userAcc.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userFilter.aspx.cs">
+      <DependentUpon>userFilter.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userFilter.aspx.designer.cs">
+      <DependentUpon>userFilter.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userNew.aspx.cs">
+      <DependentUpon>userNew.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userNew.aspx.designer.cs">
+      <DependentUpon>userNew.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userUpdate.aspx.cs">
+      <DependentUpon>userUpdate.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userUpdate.aspx.designer.cs">
+      <DependentUpon>userUpdate.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userView.aspx.cs">
+      <DependentUpon>userView.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Accounts\userView.aspx.designer.cs">
+      <DependentUpon>userView.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookFilter.aspx.cs">
+      <DependentUpon>bookFilter.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookFilter.aspx.designer.cs">
+      <DependentUpon>bookFilter.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookImport.aspx.cs">
+      <DependentUpon>bookImport.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookImport.aspx.designer.cs">
+      <DependentUpon>bookImport.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookInventory.aspx.cs">
+      <DependentUpon>bookInventory.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookInventory.aspx.designer.cs">
+      <DependentUpon>bookInventory.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookNew.aspx.cs">
+      <DependentUpon>bookNew.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookNew.aspx.designer.cs">
+      <DependentUpon>bookNew.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookUD.aspx.cs">
+      <DependentUpon>bookUD.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookUD.aspx.designer.cs">
+      <DependentUpon>bookUD.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookUS.aspx.cs">
+      <DependentUpon>bookUS.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Inventory\bookUS.aspx.designer.cs">
+      <DependentUpon>bookUS.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Penalties\Penalties.aspx.cs">
+      <DependentUpon>Penalties.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Penalties\Penalties.aspx.designer.cs">
+      <DependentUpon>Penalties.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Patron\Profile\Profile.aspx.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\Profile\Profile.aspx.designer.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Reservation\Reservations.aspx.cs">
+      <DependentUpon>Reservations.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Reservation\Reservations.aspx.designer.cs">
+      <DependentUpon>Reservations.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Patron\Reservations\ToPickUp.aspx.cs">
+      <DependentUpon>ToPickUp.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\Reservations\ToPickUp.aspx.designer.cs">
+      <DependentUpon>ToPickUp.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Transactions\Book_Borrow.aspx.cs">
+      <DependentUpon>Book_Borrow.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Transactions\Book_Borrow.aspx.designer.cs">
+      <DependentUpon>Book_Borrow.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Transactions\Book_Renew.aspx.cs">
+      <DependentUpon>Book_Renew.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Transactions\Book_Renew.aspx.designer.cs">
+      <DependentUpon>Book_Renew.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Transactions\Book_Return.aspx.cs">
+      <DependentUpon>Book_Return.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Transactions\Book_Return.aspx.designer.cs">
+      <DependentUpon>Book_Return.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Attendance\AttendanceMonitor.aspx.cs">
+      <DependentUpon>AttendanceMonitor.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Attendance\AttendanceMonitor.aspx.designer.cs">
+      <DependentUpon>AttendanceMonitor.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Attendance\Kiosk\Kiosk.aspx.cs">
+      <DependentUpon>Kiosk.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Attendance\Kiosk\Kiosk.aspx.designer.cs">
+      <DependentUpon>Kiosk.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Attendance\Kiosk\SelfServiceKiosk.aspx.cs">
+      <DependentUpon>SelfServiceKiosk.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Attendance\Kiosk\SelfServiceKiosk.aspx.designer.cs">
+      <DependentUpon>SelfServiceKiosk.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assests\Terms\terms.pdf" />
+    <Content Include="Assets\Terms\terms.pdf" />
     <None Include="packages.config" />
     <Content Include="Users\MasterPage\admin.Master" />
     <None Include="Web.Debug.config">
@@ -227,8 +527,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="LandingPage\" />
-    <Folder Include="Users\Patron\" />
-    <Folder Include="Users\Staff\" />
+    <Folder Include="Users\Staff\Inventory\import\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

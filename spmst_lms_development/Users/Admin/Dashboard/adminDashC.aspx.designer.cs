@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace spmst_lms_development.Users.Admin
+namespace spmst_lms_development.Users.Admin.Dashboard
 {
 
 
