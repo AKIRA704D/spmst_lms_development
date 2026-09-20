@@ -54,10 +54,10 @@
         .pr-copy-status.damage, .pr-copy-status.lost { background: #FEE2E2; color: #991B1B; }
         .pr-signature-block { display: flex; gap: 40px; flex-wrap: wrap; margin-top: 40px; padding-top: 10px; }
         .pr-signature-col { flex: 1 1 220px; min-width: 200px; text-align: center; }
-        .pr-signature-space { height: 50px; }
+        .pr-signature-fill { height: 50px; display: flex; align-items: flex-end; justify-content: center; font-size: 13px; font-weight: 600; color: #1a1a1a; padding-bottom: 4px; word-break: break-word; }
         .pr-signature-line { border-top: 1.5px solid #1a1a1a; margin-bottom: 6px; }
         .pr-signature-label { font-size: 12px; font-weight: 700; color: #1a1a1a; }
-        .pr-signature-name { font-size: 11px; color: #6B7280; margin-top: 2px; }
+        table.pr-table td.narrow, table.pr-table th.narrow { width: 1%; white-space: nowrap; text-align: center; }
 
         @media print {
             body { background: #fff; }
@@ -112,12 +112,15 @@
 
             function buildExcelTable(columns, rows) {
                 var colDefs = columns.map(function (c) {
-                    if (typeof c === 'string') return { label: c, numeric: false, wrap: false, allowHtml: false };
+                    if (typeof c === 'string') return { label: c, numeric: false, wrap: false, narrow: false, allowHtml: false };
                     return c;
                 });
 
                 var head = '<tr>' + colDefs.map(function (c) {
-                    return '<th' + (c.numeric ? ' class="num"' : '') + '>' + escapeHtml(c.label) + '</th>';
+                    var classes = [];
+                    if (c.numeric) classes.push('num');
+                    if (c.narrow) classes.push('narrow');
+                    return '<th' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + escapeHtml(c.label) + '</th>';
                 }).join('') + '</tr>';
 
                 var body;
@@ -127,6 +130,7 @@
                             var classes = [];
                             if (colDefs[ci] && colDefs[ci].numeric) classes.push('num');
                             if (colDefs[ci] && colDefs[ci].wrap) classes.push('wrap');
+                            if (colDefs[ci] && colDefs[ci].narrow) classes.push('narrow');
                             var cellContent = (colDefs[ci] && colDefs[ci].allowHtml) ? cellHtml : escapeHtml(cellHtml);
                             return '<td' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + cellContent + '</td>';
                         }).join('') + '</tr>';
@@ -139,9 +143,10 @@
 
             function renderTable(data) {
                 var colDefs = data.columns.map(function (c) {
+                    if (c === 'Cover') return { label: c, numeric: false, wrap: false, narrow: true, allowHtml: true };
                     var isNumeric = /count|checkouts|amount|collected|copies|borrowed|days overdue/i.test(c);
                     var isShort = /^(status|type|year|pub\. year|gender|role|campus|call number|isbn|issn)$/i.test(c);
-                    return { label: c, numeric: isNumeric, wrap: !isNumeric && !isShort, allowHtml: (c === 'Cover') };
+                    return { label: c, numeric: isNumeric, wrap: !isNumeric && !isShort, narrow: false, allowHtml: false };
                 });
                 var rows = data.rows.map(function (r) { return r.map(function (c) { return c; }); });
                 return buildExcelTable(colDefs, rows);
@@ -174,7 +179,7 @@
 
             function renderResourcesBorrowedTable(resources) {
                 var columns = [
-                    { label: 'Cover', allowHtml: true },
+                    { label: 'Cover', allowHtml: true, narrow: true },
                     { label: 'Title', wrap: true },
                     { label: 'Author', wrap: true },
                     { label: 'Genre' },
@@ -306,16 +311,14 @@
             function renderSignatureBlock(adminName) {
                 return '<div class="pr-signature-block">' +
                     '<div class="pr-signature-col">' +
-                    '<div class="pr-signature-space"></div>' +
+                    '<div class="pr-signature-fill">' + escapeHtml(adminName || '') + '</div>' +
                     '<div class="pr-signature-line"></div>' +
                     '<div class="pr-signature-label">Made by</div>' +
-                    '<div class="pr-signature-name">' + escapeHtml(adminName || '') + '</div>' +
                     '</div>' +
                     '<div class="pr-signature-col">' +
-                    '<div class="pr-signature-space"></div>' +
+                    '<div class="pr-signature-fill">&nbsp;</div>' +
                     '<div class="pr-signature-line"></div>' +
                     '<div class="pr-signature-label">Approved by</div>' +
-                    '<div class="pr-signature-name">&nbsp;</div>' +
                     '</div>' +
                     '</div>';
             }

@@ -20,6 +20,12 @@ namespace spmst_lms_development.Users.Admin.Reports
         private const string DefaultAvatarDataUri =
             "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IiNFNkU5RkYiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjI0IiByPSIxMiIgZmlsbD0iIzhDOTNENiIvPjxwYXRoIGQ9Ik0xMCA1NmMyLTE0IDEyLTIwIDIyLTIwczIwIDYgMjIgMjAiIGZpbGw9IiM4QzkzRDYiLz48L3N2Zz4=";
 
+        // Project asset convention (confirmed against Assets/Covers and Assets/Profile in the
+        // solution): resources without a cover, and borrowers without a profile photo, fall back
+        // to these shared placeholder files rather than the inline SVG silhouette.
+        private const string DefaultCoverAssetPath = "Assets/Covers/default-cover.jpg";
+        private const string DefaultProfileAssetPath = "Assets/Profile/default-cover.png";
+
         // Reusable derived table that unifies students/faculty/staff into one borrower identity.
         // NOTE: assumes users.user_id == students.student_id == faculty.faculty_id == staff.staff_id
         // (the FK convention flagged for manual verification in project notes).
@@ -27,17 +33,17 @@ namespace spmst_lms_development.Users.Admin.Reports
             (
                 SELECT student_id AS uid,
                        CONCAT_WS(' ', first_name, middle_name, last_name, extension_name) AS full_name,
-                       gender, mobile_number AS contact, institute AS org_unit, course, section
+                       gender, mobile_number AS contact, institute AS org_unit, course, section, profile_path
                 FROM students
                 UNION ALL
                 SELECT faculty_id,
                        CONCAT_WS(' ', first_name, middle_name, last_name, extension_name),
-                       gender, mobile_number, institute, NULL, NULL
+                       gender, mobile_number, institute, NULL, NULL, profile_path
                 FROM faculty
                 UNION ALL
                 SELECT staff_id,
                        CONCAT_WS(' ', first_name, middle_name, last_name, extension_name),
-                       gender, mobile_number, office_department, NULL, NULL
+                       gender, mobile_number, office_department, NULL, NULL, profile_path
                 FROM staff
             )";
 
@@ -181,34 +187,63 @@ namespace spmst_lms_development.Users.Admin.Reports
                 Label = "Resource List (All)",
                 Category = "Catalog",
                 ChartType = "none",
-                Columns = new[] { "Cover", "Type", "Title", "Author", "Call Number", "Pub. Year" },
-                Sql = @"SELECT cover_path AS Cover, COALESCE(NULLIF(item_type, ''), 'Unspecified') AS Type,
-                               title AS Title, author AS Author, call_number AS CallNumber, pub_year AS PubYear
-                        FROM library_resources
-                        ORDER BY title ASC;"
+                Columns = new[] { "Cover", "Type", "Title", "Author", "Publisher", "ISBN", "ISSN", "Total Copies", "Call Number", "Pub. Year" },
+                Sql = @"SELECT COALESCE(NULLIF(lr.cover_path, ''), 'Assets/Covers/default-cover.jpg') AS Cover,
+                               COALESCE(NULLIF(lr.item_type, ''), 'Unspecified') AS Type,
+                               lr.title AS Title, lr.author AS Author, COALESCE(NULLIF(lr.publisher, ''), '-') AS Publisher,
+                               COALESCE(NULLIF(lr.isbn, ''), '-') AS ISBN, COALESCE(NULLIF(lr.issn, ''), '-') AS ISSN,
+                               COALESCE(cc.TotalCopies, 0) AS TotalCopies, lr.call_number AS CallNumber, lr.pub_year AS PubYear
+                        FROM library_resources lr
+                        LEFT JOIN (SELECT resource_id, COUNT(*) AS TotalCopies FROM item_copies GROUP BY resource_id) cc
+                               ON cc.resource_id = lr.resource_id
+                        ORDER BY lr.title ASC;"
             },
             new ReportQuery {
                 Key = "resource_list_book",
                 Label = "Resource List (Books)",
                 Category = "Catalog",
                 ChartType = "none",
-                Columns = new[] { "Cover", "Type", "Title", "Author", "Call Number", "Pub. Year" },
-                Sql = @"SELECT cover_path AS Cover, item_type AS Type, title AS Title, author AS Author,
-                               call_number AS CallNumber, pub_year AS PubYear
-                        FROM library_resources
-                        WHERE LOWER(item_type) LIKE '%book%'
-                        ORDER BY title ASC;"
+                Columns = new[] { "Cover", "Type", "Title", "Author", "Publisher", "ISBN", "ISSN", "Total Copies", "Call Number", "Pub. Year" },
+                Sql = @"SELECT COALESCE(NULLIF(lr.cover_path, ''), 'Assets/Covers/default-cover.jpg') AS Cover,
+                               lr.item_type AS Type, lr.title AS Title, lr.author AS Author,
+                               COALESCE(NULLIF(lr.publisher, ''), '-') AS Publisher, COALESCE(NULLIF(lr.isbn, ''), '-') AS ISBN,
+                               COALESCE(NULLIF(lr.issn, ''), '-') AS ISSN, COALESCE(cc.TotalCopies, 0) AS TotalCopies,
+                               lr.call_number AS CallNumber, lr.pub_year AS PubYear
+                        FROM library_resources lr
+                        LEFT JOIN (SELECT resource_id, COUNT(*) AS TotalCopies FROM item_copies GROUP BY resource_id) cc
+                               ON cc.resource_id = lr.resource_id
+                        WHERE LOWER(lr.item_type) LIKE '%book%'
+                        ORDER BY lr.title ASC;"
             },
             new ReportQuery {
                 Key = "resource_list_periodical",
                 Label = "Resource List (Periodicals)",
                 Category = "Catalog",
                 ChartType = "none",
-                Columns = new[] { "Cover", "Type", "Title", "Author", "Call Number", "Pub. Year" },
-                Sql = @"SELECT cover_path AS Cover, item_type AS Type, title AS Title, author AS Author,
-                               call_number AS CallNumber, pub_year AS PubYear
+                Columns = new[] { "Cover", "Type", "Title", "Author", "Publisher", "ISBN", "ISSN", "Total Copies", "Call Number", "Pub. Year" },
+                Sql = @"SELECT COALESCE(NULLIF(lr.cover_path, ''), 'Assets/Covers/default-cover.jpg') AS Cover,
+                               lr.item_type AS Type, lr.title AS Title, lr.author AS Author,
+                               COALESCE(NULLIF(lr.publisher, ''), '-') AS Publisher, COALESCE(NULLIF(lr.isbn, ''), '-') AS ISBN,
+                               COALESCE(NULLIF(lr.issn, ''), '-') AS ISSN, COALESCE(cc.TotalCopies, 0) AS TotalCopies,
+                               lr.call_number AS CallNumber, lr.pub_year AS PubYear
+                        FROM library_resources lr
+                        LEFT JOIN (SELECT resource_id, COUNT(*) AS TotalCopies FROM item_copies GROUP BY resource_id) cc
+                               ON cc.resource_id = lr.resource_id
+                        WHERE LOWER(lr.item_type) LIKE '%periodical%'
+                        ORDER BY lr.title ASC;"
+            },
+            new ReportQuery {
+                Key = "resource_publication_details",
+                Label = "Resource Publication Details (Card List)",
+                Category = "Catalog",
+                ChartType = "none",
+                Columns = new[] { "Title", "Author", "Publisher", "Place of Publication", "Edition", "Pub. Year", "Series", "ISBN", "ISSN", "Call Number" },
+                Sql = @"SELECT title AS Title, author AS Author, COALESCE(NULLIF(publisher, ''), '-') AS Publisher,
+                               COALESCE(NULLIF(place_of_publication, ''), '-') AS PlaceOfPublication,
+                               COALESCE(NULLIF(edition, ''), '-') AS Edition, pub_year AS PubYear,
+                               COALESCE(NULLIF(series, ''), '-') AS Series, COALESCE(NULLIF(isbn, ''), '-') AS ISBN,
+                               COALESCE(NULLIF(issn, ''), '-') AS ISSN, call_number AS CallNumber
                         FROM library_resources
-                        WHERE LOWER(item_type) LIKE '%periodical%'
                         ORDER BY title ASC;"
             }
         };
@@ -240,6 +275,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                     case "borrower_detail": WriteBorrowerDetail(context, context.Request["id"], context.Request["statuses"], context.Request["dateFrom"], context.Request["dateTo"]); break;
                     case "resources": WriteResourcesList(context); break;
                     case "resource_detail": WriteResourceDetail(context, context.Request["id"]); break;
+                    case "resource_copies": WriteResourceCopies(context, context.Request["id"]); break;
                     default:
                         context.Response.StatusCode = 400;
                         context.Response.Write("{\"error\":\"Unknown action.\"}");
@@ -254,7 +290,7 @@ namespace spmst_lms_development.Users.Admin.Reports
         }
 
         // NOTE: admin.master reads ConfigurationManager.ConnectionStrings["LmsDb"].
-        // Prior project memory referenced the key "LmsDb" instead - please confirm
+        // Prior project memory referenced the key "LmsDbConnectionString" instead - please confirm
         // which key is actually present in Web.config and adjust if needed.
         private static MySqlConnection GetConnection()
         {
@@ -335,6 +371,15 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
+        // Resolves a stored image path (cover_path / profile_path), falling back to the shared
+        // project placeholder asset when the DB value is empty, so list/detail views always show
+        // something instead of a blank cell.
+        private static string ResolveImageUrl(HttpContext context, string rawPath, string defaultAssetPath)
+        {
+            string path = string.IsNullOrWhiteSpace(rawPath) ? defaultAssetPath : rawPath;
+            return ResolveAppUrl(context, path);
+        }
+
         private void WriteCatalog(HttpContext context)
         {
             var sb = new StringBuilder();
@@ -378,12 +423,12 @@ namespace spmst_lms_development.Users.Admin.Reports
                                 object val = reader.GetValue(c);
                                 string cellValue = FormatCell(val);
 
-                                // For resource list queries, convert Cover (image path) into an HTML <Img> tag
+                                // For resource list queries, convert Cover (image path) into an HTML <img> tag
                                 if (key.StartsWith("resource_list") && c == 0 && !string.IsNullOrEmpty(cellValue) && cellValue != "-")
                                 {
                                     string resolvedUrl = ResolveAppUrl(context, cellValue);
                                     if (!string.IsNullOrEmpty(resolvedUrl))
-                                        cellValue = "<Img src=\"" + JsonEscape(resolvedUrl) + "\" style=\"width:40px;height:40px;object-fit:cover;border:1px solid #D9D9D9;\" />";
+                                        cellValue = "<img src=\"" + JsonEscape(resolvedUrl) + "\" style=\"width:40px;height:40px;object-fit:cover;border:1px solid #D9D9D9;\" />";
                                     else
                                         cellValue = "-";
                                 }
@@ -521,7 +566,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                             {
                                 found = true;
                                 string coverPath = GetSafeString(reader, "cover_path");
-                                string coverUrl = string.IsNullOrWhiteSpace(coverPath) ? "" : ResolveAppUrl(context, coverPath);
+                                string coverUrl = ResolveImageUrl(context, coverPath, DefaultCoverAssetPath);
                                 string isbn = GetSafeString(reader, "isbn");
                                 string issn = GetSafeString(reader, "issn");
                                 string isbnIssn = !string.IsNullOrWhiteSpace(isbn) ? isbn : (!string.IsNullOrWhiteSpace(issn) ? issn : null);
@@ -551,23 +596,17 @@ namespace spmst_lms_development.Users.Admin.Reports
                         return;
                     }
 
-                    // ---- Copy counts ----
-                    int totalCopies = 0, copiesAvailable = 0, timesBorrowed = 0;
-                    using (var cmd = new MySqlCommand(
-                        "SELECT COUNT(*) AS Total, SUM(CASE WHEN is_available = 1 THEN 1 ELSE 0 END) AS Avail FROM item_copies WHERE resource_id = @id;",
-                        conn))
-                    {
-                        cmd.Parameters.AddWithValue("@id", resourceId);
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                totalCopies = GetSafeInt(reader, "Total") ?? 0;
-                                copiesAvailable = GetSafeInt(reader, "Avail") ?? 0;
-                            }
-                        }
-                    }
+                    // ---- Copies (single source of truth: counts derived from the same list
+                    //      that populates the Item Copies table, so they can never disagree) ----
+                    var copies = GetCopiesForResource(conn, resourceId);
+                    int totalCopies = copies.Count;
+                    int copiesAvailable = 0;
+                    foreach (var c in copies) if (c.Status == "Available") copiesAvailable++;
 
+                    var copiesJson = new List<string>();
+                    foreach (var c in copies) copiesJson.Add(CopyRowToJson(c));
+
+                    int timesBorrowed = 0;
                     using (var cmd = new MySqlCommand(
                         @"SELECT COUNT(*) AS Cnt FROM transactions t
                           INNER JOIN item_copies ic ON ic.accession_number = t.accession_number
@@ -582,6 +621,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                     string tail = ",\"totalCopies\":" + totalCopies +
                                   ",\"copiesAvailable\":" + copiesAvailable +
                                   ",\"timesBorrowed\":" + timesBorrowed +
+                                  ",\"copies\":[" + string.Join(",", copiesJson) + "]" +
                                   ",\"generatedAt\":\"" + JsonEscape(DateTime.Now.ToString("MMM dd, yyyy h:mm tt")) + "\"";
                     json = json.Substring(0, json.Length - 1) + tail + "}";
                     context.Response.Write(json);
@@ -591,6 +631,99 @@ namespace spmst_lms_development.Users.Admin.Reports
             {
                 context.Response.StatusCode = 500;
                 context.Response.Write("{\"error\":\"Resource detail error: " + JsonEscape(ex.Message) + "\"}");
+            }
+        }
+
+        // ============================================================
+        //  Item-copy data model + fetch - SINGLE SOURCE OF TRUTH.
+        //  Both the "Item Copies" table and the totalCopies/copiesAvailable
+        //  counts are now derived from the same in-memory list, so they can
+        //  never disagree with each other (previously two separate queries
+        //  computed the counts and the list independently).
+        // ============================================================
+        private class CopyRow
+        {
+            public string AccessionNumber;
+            public string VolumeNo;
+            public string IssueNo;
+            public string Campus;
+            public string Location;
+            public string Status;
+        }
+
+        private List<CopyRow> GetCopiesForResource(MySqlConnection conn, int resourceId)
+        {
+            var list = new List<CopyRow>();
+            const string sql = @"
+                SELECT accession_number, volume_no, issue_no, campus, specific_location, status_condition, is_available
+                FROM item_copies
+                WHERE resource_id = @id
+                ORDER BY accession_number ASC;";
+
+            using (var cmd = new MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@id", resourceId);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string statusCondition = GetSafeString(reader, "status_condition") ?? "Good";
+                        bool isAvailable = (GetSafeInt(reader, "is_available") ?? 1) == 1;
+                        string status;
+                        if (string.Equals(statusCondition, "Damage", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(statusCondition, "Lost", StringComparison.OrdinalIgnoreCase))
+                            status = statusCondition;
+                        else if (string.Equals(statusCondition, "Reserved", StringComparison.OrdinalIgnoreCase))
+                            status = "Reserved";
+                        else
+                            status = isAvailable ? "Available" : "Borrowed";
+
+                        list.Add(new CopyRow
+                        {
+                            AccessionNumber = NullToDash(reader["accession_number"]),
+                            VolumeNo = NullToDash(reader["volume_no"]),
+                            IssueNo = NullToDash(reader["issue_no"]),
+                            Campus = NullToDash(reader["campus"]),
+                            Location = NullToDash(reader["specific_location"]),
+                            Status = status
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+
+        private static string CopyRowToJson(CopyRow c)
+        {
+            return "{\"accessionNumber\":\"" + JsonEscape(c.AccessionNumber) + "\"," +
+                   "\"volumeNo\":\"" + JsonEscape(c.VolumeNo) + "\"," +
+                   "\"issueNo\":\"" + JsonEscape(c.IssueNo) + "\"," +
+                   "\"campus\":\"" + JsonEscape(c.Campus) + "\"," +
+                   "\"location\":\"" + JsonEscape(c.Location) + "\"," +
+                   "\"status\":\"" + JsonEscape(c.Status) + "\"}";
+        }
+
+        // ============================================================
+        //  WriteResourceCopies - live item-copy list for the sidebar
+        //  "Select a Resource" quick-preview (search-and-inspect flow).
+        // ============================================================
+        private void WriteResourceCopies(HttpContext context, string idRaw)
+        {
+            int resourceId;
+            if (!int.TryParse(idRaw, out resourceId))
+            {
+                context.Response.StatusCode = 400;
+                context.Response.Write("{\"error\":\"Invalid resource id.\"}");
+                return;
+            }
+
+            using (var conn = GetConnection())
+            {
+                conn.Open();
+                var copies = GetCopiesForResource(conn, resourceId);
+                var jsonRows = new List<string>();
+                foreach (var c in copies) jsonRows.Add(CopyRowToJson(c));
+                context.Response.Write("[" + string.Join(",", jsonRows) + "]");
             }
         }
 
@@ -666,7 +799,8 @@ namespace spmst_lms_development.Users.Admin.Reports
 
                     // ---- PROFILE QUERY ----
                     string profileSql = @"
-                        SELECT u.user_id, u.email, bn.full_name, bn.gender, bn.contact, bn.org_unit, bn.course, bn.section, u.created_at
+                        SELECT u.user_id, u.email, bn.full_name, bn.gender, bn.contact, bn.org_unit, bn.course, bn.section,
+                               bn.profile_path, u.created_at
                         FROM users u
                         LEFT JOIN " + BorrowerNameJoin + @" bn ON bn.uid = u.user_id
                         WHERE u.user_id = @uid;";
@@ -688,6 +822,10 @@ namespace spmst_lms_development.Users.Admin.Reports
                                 if (!string.IsNullOrWhiteSpace(course) || !string.IsNullOrWhiteSpace(section))
                                     courseSection = (course ?? "-") + (string.IsNullOrWhiteSpace(section) ? "" : " / " + section);
 
+                                string profilePath = GetSafeString(reader, "profile_path");
+                                string photoUrl = ResolveImageUrl(context, profilePath, DefaultProfileAssetPath);
+                                if (string.IsNullOrWhiteSpace(photoUrl)) photoUrl = DefaultAvatarDataUri;
+
                                 sb.Append("{");
                                 sb.Append("\"type\":\"borrower\",");
                                 sb.Append("\"borrowerId\":\"").Append(JsonEscape(userId)).Append("\",");
@@ -698,7 +836,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                                 sb.Append("\"email\":\"").Append(JsonEscape(NullToDash(reader["email"]))).Append("\",");
                                 sb.Append("\"institute\":\"").Append(JsonEscape(NullToDash(reader["org_unit"]))).Append("\",");
                                 sb.Append("\"courseSection\":\"").Append(JsonEscape(courseSection)).Append("\",");
-                                sb.Append("\"photoUrl\":\"").Append(JsonEscape(DefaultAvatarDataUri)).Append("\",");
+                                sb.Append("\"photoUrl\":\"").Append(JsonEscape(photoUrl)).Append("\",");
                                 sb.Append("\"recordedOn\":\"").Append(JsonEscape(Convert.ToDateTime(reader["created_at"]).ToString("MMM dd, yyyy"))).Append("\",");
                                 sb.Append("\"filterStatuses\":[").Append(string.Join(",", statuses.ConvertAll(s => "\"" + s + "\""))).Append("],");
                                 sb.Append("\"filterDateFrom\":\"").Append(dateFrom.ToString("MMM dd, yyyy")).Append("\",");
@@ -809,7 +947,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                             while (reader.Read())
                             {
                                 string coverPath = GetSafeString(reader, "CoverPath");
-                                string coverUrl = string.IsNullOrWhiteSpace(coverPath) ? "" : ResolveAppUrl(context, coverPath);
+                                string coverUrl = ResolveImageUrl(context, coverPath, DefaultCoverAssetPath);
 
                                 resourceRows.Add("{\"title\":\"" + JsonEscape(GetSafeString(reader, "Title") ?? "Untitled") + "\"," +
                                                   "\"author\":\"" + JsonEscape(NullToDash(reader["Author"])) + "\"," +

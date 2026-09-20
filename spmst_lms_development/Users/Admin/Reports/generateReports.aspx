@@ -487,6 +487,12 @@
             word-break: break-word;
             overflow-wrap: break-word;
         }
+        table.gr-table td.narrow,
+        table.gr-table th.narrow {
+            width: 1%;
+            white-space: nowrap;
+            text-align: center;
+        }
         table.gr-table td.num {
             text-align: right;
             font-variant-numeric: tabular-nums;
@@ -658,8 +664,16 @@
             min-width: 200px;
             text-align: center;
         }
-        .gr-signature-space {
+        .gr-signature-fill {
             height: 46px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-800);
+            padding-bottom: 4px;
+            word-break: break-word;
         }
         .gr-signature-line {
             border-top: 1.5px solid var(--gray-800);
@@ -669,11 +683,6 @@
             font-size: 12px;
             font-weight: 700;
             color: var(--gray-800);
-        }
-        .gr-signature-name {
-            font-size: 11px;
-            color: var(--gray-500);
-            margin-top: 2px;
         }
 
         /* ===== Resource Profile ===== */
@@ -1206,7 +1215,7 @@
                 min-width: 350px;
             }
         }
-        </style>
+    </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
@@ -1302,7 +1311,7 @@
                     </div>
                     <div style="position:relative; margin-bottom:8px;">
                         <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--gray-400);"></i>
-                        <input type="text" id="inpResourceSearch" class="gr-input" style="margin-bottom:0; padding-left:28px;" placeholder="Search by title or author…" />
+                        <input type="text" id="inpResourceSearch" class="gr-input" style="margin-bottom:0; padding-left:28px;" placeholder="Search by title or author..." />
                     </div>
                     <select id="selResource" class="gr-input" style="margin-bottom:6px;">
                         <option value="">Loading resources…</option>
@@ -1780,12 +1789,15 @@
 
             function buildExcelTable(columns, rows) {
                 var colDefs = columns.map(function (c) {
-                    if (typeof c === 'string') return { label: c, numeric: false, wrap: false, allowHtml: false };
+                    if (typeof c === 'string') return { label: c, numeric: false, wrap: false, narrow: false, allowHtml: false };
                     return c;
                 });
 
                 var head = '<tr>' + colDefs.map(function (c) {
-                    return '<th' + (c.numeric ? ' class="num"' : '') + '>' + escapeHtml(c.label) + '</th>';
+                    var classes = [];
+                    if (c.numeric) classes.push('num');
+                    if (c.narrow) classes.push('narrow');
+                    return '<th' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + escapeHtml(c.label) + '</th>';
                 }).join('') + '</tr>';
 
                 var body;
@@ -1795,6 +1807,7 @@
                             var classes = [];
                             if (colDefs[ci] && colDefs[ci].numeric) classes.push('num');
                             if (colDefs[ci] && colDefs[ci].wrap) classes.push('wrap');
+                            if (colDefs[ci] && colDefs[ci].narrow) classes.push('narrow');
                             var cellContent = (colDefs[ci] && colDefs[ci].allowHtml) ? cellHtml : escapeHtml(cellHtml);
                             return '<td' + (classes.length ? ' class="' + classes.join(' ') + '"' : '') + '>' + cellContent + '</td>';
                         }).join('') + '</tr>';
@@ -1807,9 +1820,10 @@
 
             function renderTable(data) {
                 var colDefs = data.columns.map(function (c) {
+                    if (c === 'Cover') return { label: c, numeric: false, wrap: false, narrow: true, allowHtml: true };
                     var isNumeric = /count|checkouts|amount|collected|copies|borrowed|days overdue/i.test(c);
                     var isShort = /^(status|type|year|pub\. year|gender|role|campus|call number|isbn|issn)$/i.test(c);
-                    return { label: c, numeric: isNumeric, wrap: !isNumeric && !isShort, allowHtml: (c === 'Cover') };
+                    return { label: c, numeric: isNumeric, wrap: !isNumeric && !isShort, narrow: false, allowHtml: false };
                 });
                 var rows = data.rows.map(function (r) { return r.map(function (c) { return c; }); });
                 return buildExcelTable(colDefs, rows);
@@ -1817,7 +1831,7 @@
 
             function renderResourcesBorrowedTable(resources) {
                 var columns = [
-                    { label: 'Cover', allowHtml: true },
+                    { label: 'Cover', allowHtml: true, narrow: true },
                     { label: 'Title', wrap: true, allowHtml: true },
                     { label: 'Author', wrap: true },
                     { label: 'Genre' },
@@ -1980,16 +1994,14 @@
             function renderSignatureBlock() {
                 return '<div class="gr-signature-block">' +
                     '<div class="gr-signature-col">' +
-                    '<div class="gr-signature-space"></div>' +
+                    '<div class="gr-signature-fill">' + escapeHtml(adminName || '') + '</div>' +
                     '<div class="gr-signature-line"></div>' +
                     '<div class="gr-signature-label">Made by</div>' +
-                    '<div class="gr-signature-name">' + escapeHtml(adminName || '') + '</div>' +
                     '</div>' +
                     '<div class="gr-signature-col">' +
-                    '<div class="gr-signature-space"></div>' +
+                    '<div class="gr-signature-fill">&nbsp;</div>' +
                     '<div class="gr-signature-line"></div>' +
                     '<div class="gr-signature-label">Approved by</div>' +
-                    '<div class="gr-signature-name">&nbsp;</div>' +
                     '</div>' +
                     '</div>';
             }
