@@ -345,7 +345,7 @@
                     <span>LMSA v2.0 Platform</span>
                 </div>
             </div>
-            <a href="landingPage.aspx" class="btn-back">
+            <a href="../LandingPage/Home.aspx" class="btn-back">
                 <i class="fa-solid fa-arrow-left"></i><span>Back</span>
             </a>
         </header>

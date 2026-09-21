@@ -1,0 +1,494 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="LandingPage.master.cs" Inherits="spmst_lms_development.LandingPage.LandingPageMaster" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMSA | SPAMAST Library</title>
+    <meta name="description" content="SPAMAST Library Management System with Analytics — search the catalog, see top resources and borrower activity, and learn about library services." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <style>
+        /* ==========================================================================
+           LMSA PUBLIC LANDING — DESIGN TOKENS
+           ========================================================================== */
+        :root {
+            --lmsa-navy: #0f172a;
+            --lmsa-navy-2: #1e293b;
+            --lmsa-navy-hover: #334155;
+            --lmsa-gold: #D4AF37;
+            --lmsa-gold-dark: #b8942c;
+            --lmsa-blue: #0ea5e9;
+            --lmsa-blue-dark: #0284c7;
+            --lmsa-bg: #f8fafc;
+            --lmsa-border: #e2e8f0;
+            --lmsa-text: #1e293b;
+            --lmsa-text-muted: #64748b;
+            --lmsa-radius: 14px;
+            --lmsa-radius-sm: 8px;
+            --lmsa-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+            --lmsa-shadow-lg: 0 12px 34px rgba(15, 23, 42, 0.12);
+            --topbar-h: 38px;
+            --nav-h: 72px;
+        }
+
+        * { box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; scroll-padding-top: calc(var(--topbar-h) + var(--nav-h) + 12px); }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--lmsa-text);
+            background-color: #ffffff;
+        }
+
+        a { text-decoration: none; }
+
+        img { max-width: 100%; }
+
+        .container-lmsa {
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ==========================================================================
+           TOP UTILITY BAR
+           ========================================================================== */
+        .lmsa-topbar {
+            height: var(--topbar-h);
+            background-color: var(--lmsa-navy);
+            color: #cbd5e1;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .lmsa-topbar .container-lmsa {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .lmsa-topbar-contact { display: flex; align-items: center; gap: 18px; }
+        .lmsa-topbar-contact span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+        .lmsa-topbar-contact i { color: var(--lmsa-gold); font-size: 0.75rem; }
+
+        .lmsa-topbar-links { display: flex; align-items: center; gap: 16px; }
+        .lmsa-topbar-links a { color: #cbd5e1; transition: color .15s ease; }
+        .lmsa-topbar-links a:hover { color: #ffffff; }
+
+        @media (max-width: 767.98px) {
+            .lmsa-topbar-contact span:nth-child(2) { display: none; }
+        }
+
+        /* ==========================================================================
+           MAIN NAVIGATION
+           ========================================================================== */
+        .lmsa-nav {
+            height: var(--nav-h);
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--lmsa-border);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            box-shadow: 0 1px 0 rgba(15,23,42,0.02);
+        }
+
+        .lmsa-nav .container-lmsa {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .lmsa-brand { display: flex; align-items: center; gap: 12px; }
+        .lmsa-brand img { height: 42px; width: auto; object-fit: contain; }
+        .lmsa-brand-text { line-height: 1.15; }
+        .lmsa-brand-title { font-weight: 800; font-size: 1.02rem; color: var(--lmsa-navy); letter-spacing: .2px; }
+        .lmsa-brand-sub { font-size: 0.7rem; color: var(--lmsa-text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .6px; }
+
+        .lmsa-menu { display: flex; align-items: center; gap: 4px; }
+        .lmsa-menu-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            color: var(--lmsa-navy-2);
+            font-weight: 600;
+            font-size: 0.92rem;
+            transition: all .15s ease;
+        }
+        .lmsa-menu-link i { color: var(--lmsa-text-muted); font-size: 0.85rem; }
+        .lmsa-menu-link:hover { background-color: #f1f5f9; color: var(--lmsa-navy); }
+        .lmsa-menu-link.active { background-color: rgba(14,165,233,0.1); color: var(--lmsa-blue-dark); }
+        .lmsa-menu-link.active i { color: var(--lmsa-blue-dark); }
+
+        .btn-lmsa-login {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--lmsa-navy) 0%, var(--lmsa-navy-2) 100%);
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 11px 22px;
+            border-radius: 999px;
+            border: none;
+            box-shadow: var(--lmsa-shadow);
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+        .btn-lmsa-login:hover { transform: translateY(-1px); box-shadow: var(--lmsa-shadow-lg); color: #fff !important; }
+        .btn-lmsa-login i { color: var(--lmsa-gold); }
+
+        .lmsa-burger {
+            display: none;
+            background: none;
+            border: 1px solid var(--lmsa-border);
+            border-radius: var(--lmsa-radius-sm);
+            width: 42px;
+            height: 42px;
+            align-items: center;
+            justify-content: center;
+            color: var(--lmsa-navy);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .lmsa-menu, .lmsa-nav .btn-lmsa-login { display: none; }
+            .lmsa-burger { display: flex; }
+        }
+
+        .offcanvas-lmsa { width: 300px; }
+        .offcanvas-lmsa .offcanvas-header { background-color: var(--lmsa-navy); color: #fff; }
+        .offcanvas-lmsa .lmsa-menu-link { color: var(--lmsa-navy-2); width: 100%; border-radius: var(--lmsa-radius-sm); }
+        .offcanvas-lmsa .lmsa-menu { flex-direction: column; align-items: stretch; gap: 6px; }
+        .offcanvas-lmsa .btn-lmsa-login { justify-content: center; margin-top: 12px; }
+
+        /* ==========================================================================
+           SHARED SECTION / CARD PRIMITIVES
+           ========================================================================== */
+        .lmsa-section { padding: 64px 0; }
+        .lmsa-section.bg-soft { background-color: var(--lmsa-bg); }
+        .lmsa-section-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        .lmsa-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--lmsa-blue-dark);
+            font-weight: 700;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .lmsa-eyebrow i { color: var(--lmsa-gold); }
+        .lmsa-section-title { font-size: 1.7rem; font-weight: 800; color: var(--lmsa-navy); margin: 0; }
+        .lmsa-section-sub { color: var(--lmsa-text-muted); font-size: 0.95rem; margin-top: 4px; max-width: 640px; }
+
+        .lmsa-card {
+            background: #fff;
+            border: 1px solid var(--lmsa-border);
+            border-radius: var(--lmsa-radius);
+            box-shadow: var(--lmsa-shadow);
+            transition: transform .18s ease, box-shadow .18s ease;
+        }
+        .lmsa-card:hover { transform: translateY(-3px); box-shadow: var(--lmsa-shadow-lg); }
+
+        .lmsa-scroller {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 14px;
+            scroll-snap-type: x proximity;
+        }
+        .lmsa-scroller::-webkit-scrollbar { height: 7px; }
+        .lmsa-scroller::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .lmsa-scroller::-webkit-scrollbar-track { background: transparent; }
+
+        .lmsa-skeleton {
+            background: linear-gradient(90deg, #eef1f5 25%, #f7f8fa 37%, #eef1f5 63%);
+            background-size: 400% 100%;
+            animation: lmsa-shimmer 1.4s ease infinite;
+            border-radius: var(--lmsa-radius-sm);
+        }
+        @keyframes lmsa-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+        .lmsa-empty {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--lmsa-text-muted);
+            width: 100%;
+        }
+        .lmsa-empty i { font-size: 1.8rem; color: #cbd5e1; margin-bottom: 10px; display: block; }
+
+        .lmsa-rank-badge {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.8rem;
+            background-color: #eef2f7; color: var(--lmsa-navy-2);
+            flex-shrink: 0;
+        }
+        .lmsa-rank-badge.gold { background: linear-gradient(135deg,#f5d576,#d4af37); color: #4a3a0a; }
+        .lmsa-rank-badge.silver { background: linear-gradient(135deg,#e7ecf1,#b9c3cf); color: #33404d; }
+        .lmsa-rank-badge.bronze { background: linear-gradient(135deg,#e3ab7c,#b97b46); color: #402907; }
+
+        .lmsa-btn-outline {
+            display: inline-flex; align-items: center; gap: 8px;
+            border: 1.5px solid var(--lmsa-navy);
+            color: var(--lmsa-navy);
+            font-weight: 700; font-size: 0.86rem;
+            padding: 9px 18px; border-radius: 999px;
+            background: transparent; transition: all .15s ease;
+        }
+        .lmsa-btn-outline:hover { background-color: var(--lmsa-navy); color: #fff; }
+
+        .lmsa-btn-gold {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(135deg, var(--lmsa-gold) 0%, var(--lmsa-gold-dark) 100%);
+            color: var(--lmsa-navy) !important; font-weight: 700; font-size: 0.92rem;
+            padding: 12px 24px; border-radius: 999px; border: none;
+            box-shadow: 0 8px 20px rgba(212,175,55,0.35);
+            transition: transform .15s ease;
+        }
+        .lmsa-btn-gold:hover { transform: translateY(-2px); color: var(--lmsa-navy) !important; }
+
+        .lmsa-select {
+            border: 1.5px solid var(--lmsa-border);
+            border-radius: 999px;
+            padding: 9px 16px;
+            font-weight: 600;
+            font-size: 0.86rem;
+            color: var(--lmsa-navy-2);
+            background-color: #fff;
+        }
+        .lmsa-select:focus { outline: none; border-color: var(--lmsa-blue); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
+
+        .lmsa-badge-soft {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 700;
+            background-color: #eef2f7; color: var(--lmsa-navy-2);
+        }
+        .lmsa-badge-available { background-color: #f0fdf4; color: #16a34a; }
+        .lmsa-badge-unavailable { background-color: #fef2f2; color: #dc2626; }
+
+        /* Back to top */
+        .lmsa-to-top {
+            position: fixed; right: 22px; bottom: 22px;
+            width: 46px; height: 46px; border-radius: 50%;
+            background-color: var(--lmsa-navy); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: var(--lmsa-shadow-lg);
+            opacity: 0; visibility: hidden; transform: translateY(10px);
+            transition: all .25s ease; z-index: 1040; border: none;
+        }
+        .lmsa-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+
+        /* ==========================================================================
+           FOOTER
+           ========================================================================== */
+        .lmsa-footer { background-color: var(--lmsa-navy); color: #cbd5e1; padding: 56px 0 0; }
+        .lmsa-footer h6 { color: #fff; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 16px; }
+        .lmsa-footer a { color: #94a3b8; display: block; padding: 5px 0; font-size: 0.88rem; transition: color .15s ease; }
+        .lmsa-footer a:hover { color: var(--lmsa-gold); }
+        .lmsa-footer p { color: #94a3b8; font-size: 0.88rem; line-height: 1.7; }
+        .lmsa-footer-bottom { border-top: 1px solid #1e293b; margin-top: 40px; padding: 18px 0; font-size: 0.8rem; color: #64748b; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+        .lmsa-footer-social { display: flex; gap: 10px; }
+        .lmsa-footer-social a { width: 36px; height: 36px; border-radius: 50%; background-color: #1e293b; display: flex; align-items: center; justify-content: center; padding: 0; }
+        .lmsa-footer-social a:hover { background-color: var(--lmsa-gold); color: var(--lmsa-navy); }
+
+        @media (max-width: 575.98px) {
+            .lmsa-section { padding: 44px 0; }
+            .lmsa-section-title { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ScriptManager ID="ScriptManager1" runat="server" EnablePartialRendering="false"></asp:ScriptManager>
+
+        <!-- Top utility bar -->
+        <div class="lmsa-topbar">
+            <div class="container-lmsa">
+                <div class="lmsa-topbar-contact">
+                    <span><i class="fa-solid fa-phone"></i> (082) 272-3725</span>
+                    <span><i class="fa-solid fa-envelope"></i> library@spamast.edu.ph</span>
+                    <span><i class="fa-solid fa-location-dot"></i> Malita, Davao Occidental</span>
+                </div>
+                <div class="lmsa-topbar-links">
+                    <a href="<%= ResolveUrl("~/LandingPage/AboutContact.aspx") %>">Help Desk</a>
+                    <a href="<%= ResolveUrl("~/Login/login.aspx") %>">Staff Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main sticky navigation -->
+        <nav class="lmsa-nav">
+            <div class="container-lmsa">
+                <a class="lmsa-brand" href="<%= ResolveUrl("~/LandingPage/Home.aspx") %>">
+                    <img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA Logo" onerror="this.style.display='none'" />
+                    <div class="lmsa-brand-text">
+                        <div class="lmsa-brand-title">SPAMAST Library</div>
+                        <div class="lmsa-brand-sub">LMSA | Malita, Davao Occidental</div>
+                    </div>
+                </a>
+
+                <div class="lmsa-menu" id="lmsaMenuDesktop">
+                    <a class="lmsa-menu-link" data-nav="home" href="<%= ResolveUrl("~/LandingPage/Home.aspx") %>"><i class="fa-solid fa-house"></i> Home</a>
+                    <a class="lmsa-menu-link" data-nav="services" href="<%= ResolveUrl("~/LandingPage/Services.aspx") %>"><i class="fa-solid fa-hand-holding-heart"></i> Services</a>
+                    <a class="lmsa-menu-link" data-nav="about" href="<%= ResolveUrl("~/LandingPage/AboutContact.aspx") %>"><i class="fa-solid fa-circle-info"></i> About &amp; Contact</a>
+                </div>
+
+                <a class="btn-lmsa-login d-none d-lg-inline-flex" href="<%= ResolveUrl("~/Login/login.aspx") %>">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </a>
+
+                <button type="button" class="lmsa-burger" data-bs-toggle="offcanvas" data-bs-target="#lmsaOffcanvas">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Mobile offcanvas menu -->
+        <div class="offcanvas offcanvas-end offcanvas-lmsa" tabindex="-1" id="lmsaOffcanvas">
+            <div class="offcanvas-header">
+                <span class="fw-bold"><i class="fa-solid fa-book me-2"></i>Menu</span>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+            </div>
+            <div class="offcanvas-body">
+                <div class="lmsa-menu">
+                    <a class="lmsa-menu-link" data-nav="home" href="<%= ResolveUrl("~/LandingPage/Home.aspx") %>"><i class="fa-solid fa-house"></i> Home</a>
+                    <a class="lmsa-menu-link" data-nav="services" href="<%= ResolveUrl("~/LandingPage/Services.aspx") %>"><i class="fa-solid fa-hand-holding-heart"></i> Services</a>
+                    <a class="lmsa-menu-link" data-nav="about" href="<%= ResolveUrl("~/LandingPage/AboutContact.aspx") %>"><i class="fa-solid fa-circle-info"></i> About &amp; Contact</a>
+                    <a class="btn-lmsa-login" href="<%= ResolveUrl("~/Login/login.aspx") %>"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page content -->
+        <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+
+        <!-- Footer -->
+        <footer class="lmsa-footer">
+            <div class="container-lmsa">
+                <div class="row gy-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA" style="height:38px" onerror="this.style.display='none'" />
+                            <span class="fw-bold text-white fs-5">LMSA</span>
+                        </div>
+                        <p>The Library Management System with Analytics is the digital home of the SPAMAST Library - search the catalog, track borrowing activity, and discover top resources across every institute.</p>
+                        <div class="lmsa-footer-social">
+                            <a href="#" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="#" title="Email"><i class="fa-solid fa-envelope"></i></a>
+                            <a href="#" title="Website"><i class="fa-solid fa-globe"></i></a>
+                        </div>
+                    </div>
+                    <div class="col-lg-2 col-md-6 col-6">
+                        <h6>Explore</h6>
+                        <a href="<%= ResolveUrl("~/LandingPage/Home.aspx") %>">Home</a>
+                        <a href="<%= ResolveUrl("~/LandingPage/Home.aspx") %>#catalog">Browse Catalog</a>
+                        <a href="<%= ResolveUrl("~/LandingPage/Services.aspx") %>">Library Services</a>
+                        <a href="<%= ResolveUrl("~/LandingPage/AboutContact.aspx") %>">About &amp; Contact</a>
+                        <a href="<%= ResolveUrl("~/LandingPage/Terms.aspx") %>">Terms &amp; Conditions</a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 col-6">
+                        <h6>Library Hours</h6>
+                        <p class="mb-1">Mon - Fri: 8:00 AM - 5:00 PM</p>
+                        <p class="mb-1">Saturday: 8:00 AM - 12:00 PM</p>
+                        <p class="mb-0">Sunday &amp; Holidays: Closed</p>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <h6>Contact</h6>
+                        <p class="mb-1"><i class="fa-solid fa-location-dot me-2"></i>Poblacion, Malita, Davao Occidental</p>
+                        <p class="mb-1"><i class="fa-solid fa-phone me-2"></i>(082) 272-3725</p>
+                        <p class="mb-0"><i class="fa-solid fa-envelope me-2"></i>library@spamast.edu.ph</p>
+                    </div>
+                </div>
+                <div class="lmsa-footer-bottom">
+                    <span>&copy; <span id="lmsaYear"></span> SPAMAST Library | Library Management System with Analytics</span>
+                    <span>Developed for SPAMAST | Malita, Davao Occidental</span>
+                </div>
+            </div>
+        </footer>
+
+        <button type="button" class="lmsa-to-top" id="lmsaToTop" title="Back to top">
+            <i class="fa-solid fa-arrow-up"></i>
+        </button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('lmsaYear').textContent = new Date().getFullYear();
+
+        // Highlight active nav link based on current page
+        (function () {
+            var path = window.location.pathname.toLowerCase();
+            var key = 'home';
+            if (path.indexOf('services') !== -1) key = 'services';
+            else if (path.indexOf('aboutcontact') !== -1) key = 'about';
+            document.querySelectorAll('[data-nav]').forEach(function (el) {
+                if (el.getAttribute('data-nav') === key) el.classList.add('active');
+            });
+        })();
+
+        // Back to top button
+        (function () {
+            var btn = document.getElementById('lmsaToTop');
+            window.addEventListener('scroll', function () {
+                if (window.scrollY > 420) btn.classList.add('show'); else btn.classList.remove('show');
+            });
+            btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+        })();
+
+        // Shared JSON helper for LandingData.ashx calls, used by content pages
+        function lmsaApi(action, params) {
+            params = params || {};
+            var qs = Object.keys(params).map(function (k) {
+                return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+            }).join('&');
+            var url = '<%= ResolveUrl("~/LandingPage/LandingData.ashx") %>?action=' + encodeURIComponent(action) + (qs ? '&' + qs : '');
+            return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                .then(function (res) { return res.json(); });
+        }
+
+        var appRoot = '<%= ResolveUrl("~/") %>';
+        function assetUrl(relativePath) {
+            if (!relativePath) return '';
+            return appRoot + relativePath.replace(/^\/+/, '');
+        }
+
+        function lmsaEscape(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+    </script>
+
+    <asp:ContentPlaceHolder ID="scripts" runat="server"></asp:ContentPlaceHolder>
+</body>
+</html>

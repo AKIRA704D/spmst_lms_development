@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.master.cs" Inherits="spmst_lms_development.Users.MasterPage.admin" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.Master.cs" Inherits="spmst_lms_development.Users.MasterPage.admin" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -656,6 +656,10 @@
                     <asp:HyperLink ID="HyperLink2" runat="server" NavigateUrl="~/Users/Patron/Notifications/Notifications.aspx"
                         CssClass="nav-menu-item">
                         <i class="fa-solid fa-bell"></i><span>Notifications</span>
+                    </asp:HyperLink>
+                    <asp:HyperLink ID="lnkLibrarySettings" runat="server" NavigateUrl="~/Users/Admin/Settings/LibrarySettings.aspx"
+                        CssClass="nav-menu-item">
+                        <i class="fa-solid fa-gear"></i><span>Library Settings</span>
                     </asp:HyperLink>
 
                     <div class="menu-category-label">System Registry</div>

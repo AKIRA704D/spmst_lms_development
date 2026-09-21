@@ -21,7 +21,7 @@ namespace spmst_lms_development
             switch (code)
             {
                 case "staff-a":
-                    return "Chief Administrator";
+                    return "admin";
                 case "staff-c":
                     return "Circulation Librarian";
                 case "staff-m":

@@ -151,6 +151,12 @@
     <Content Include="Assets\Img\lmsa_logo.png" />
     <Content Include="Assets\Img\spmst_logo.jpg" />
     <Content Include="Assets\Img\spmst_logo_wbg.png" />
+    <Content Include="LandingPage\AboutContact.aspx" />
+    <Content Include="LandingPage\Home.aspx" />
+    <Content Include="Users\Admin\Settings\LibrarySettings.aspx" />
+    <Content Include="LandingPage\library_settings_migration.sql" />
+    <Content Include="LandingPage\Services.aspx" />
+    <Content Include="LandingPage\Terms.aspx" />
     <Content Include="Login\forgotpass.aspx" />
     <Content Include="Login\login.aspx" />
     <Content Include="Login\termsServices.aspx" />
@@ -169,6 +175,7 @@
     <Content Include="Users\Admin\Reports\adminReports.aspx" />
     <Content Include="Users\Admin\Reports\generateReports.aspx" />
     <Content Include="Users\Admin\Reports\PrintReports.aspx" />
+    <Content Include="Users\MasterPage\admin.Master" />
     <Content Include="Users\Patron\FeedReq\Feedback.aspx" />
     <Content Include="Users\Patron\FeedReq\FeedbackRequest.aspx" />
     <Content Include="Users\Patron\History\History.aspx" />
@@ -203,6 +210,54 @@
     <Compile Include="Assets\Helper\logs_Audit.cs" />
     <Compile Include="Assets\Helper\NotificationHelper.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />
+    <Compile Include="LandingPage\AboutContact.aspx.cs">
+      <DependentUpon>AboutContact.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LandingPage\AboutContact.aspx.designer.cs">
+      <DependentUpon>AboutContact.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LandingPage\Home.aspx.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LandingPage\Home.aspx.designer.cs">
+      <DependentUpon>Home.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LandingPage\LandingData.ashx.cs">
+      <DependentUpon>LandingData.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="LandingPage\LandingPage.master.cs">
+      <DependentUpon>LandingPage.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LandingPage\LandingPage.master.designer.cs">
+      <DependentUpon>LandingPage.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibrarySettings.aspx.cs">
+      <DependentUpon>LibrarySettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibrarySettings.aspx.designer.cs">
+      <DependentUpon>LibrarySettings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibrarySettingsData.ashx.cs">
+      <DependentUpon>LibrarySettingsData.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="LandingPage\Services.aspx.cs">
+      <DependentUpon>Services.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LandingPage\Services.aspx.designer.cs">
+      <DependentUpon>Services.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LandingPage\Terms.aspx.cs">
+      <DependentUpon>Terms.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LandingPage\Terms.aspx.designer.cs">
+      <DependentUpon>Terms.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Login\forgotpass.aspx.cs">
       <DependentUpon>forgotpass.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -516,8 +571,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Terms\terms.pdf" />
+    <Content Include="LandingPage\LandingPage.Master" />
+    <Content Include="Users\Admin\Settings\LibrarySettingsData.ashx" />
+    <Content Include="LandingPage\LandingData.ashx" />
     <None Include="packages.config" />
-    <Content Include="Users\MasterPage\admin.Master" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -526,7 +583,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="LandingPage\" />
     <Folder Include="Users\Staff\Inventory\import\" />
   </ItemGroup>
   <PropertyGroup>
