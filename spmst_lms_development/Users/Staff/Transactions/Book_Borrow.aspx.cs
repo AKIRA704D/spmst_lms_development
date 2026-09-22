@@ -1,5 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.IO;
@@ -13,6 +14,16 @@ namespace spmst_lms_development.Users.Staff.Transactions
     {
         private readonly string _connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
         private readonly string EncryptionKey = "SPAMAST_LMS_SECURE_KEY_2026";
+
+        // Sections that are restricted to LOAN-IN only.
+        // Add new sections here as needed.
+        private static readonly HashSet<string> LoanInOnlySections =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Periodicals",
+            "Reference",
+            "Thesis"
+        };
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -158,19 +169,35 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             litBookAccNo.Text = reader["accession_number"].ToString();
                             ViewState["ScannedResourceID"] = resourceId;
 
+                            // Save section for server-side validation later
+                            ViewState["ScannedSection"] = section;
+
                             // Control loan type dropdown based on section
-                            // Only allow LOAN-OUT if section is "Fiction" or "Circulation" (case-insensitive)
-                            string sectionLower = section.ToLower();
-                            if (sectionLower == "fiction" || sectionLower == "circulation")
+                            string cleanSection = (section ?? string.Empty).Trim();
+                            bool isLoanInOnly = LoanInOnlySections.Contains(cleanSection);
+
+                            var loanOutItem = ddlLoanType.Items.FindByValue("LOAN-OUT");
+                            var loanInItem = ddlLoanType.Items.FindByValue("LOAN-IN");
+
+                            if (loanOutItem == null || loanInItem == null)
                             {
-                                ddlLoanType.Items.FindByValue("LOAN-OUT").Enabled = true;
-                                ddlLoanType.Items.FindByValue("LOAN-IN").Enabled = true;
+                                ShowToast("Loan type options are not configured correctly.", "error");
+                                return;
+                            }
+
+                            if (isLoanInOnly)
+                            {
+                                // Periodicals, Reference, Thesis => LOAN-IN only
+                                loanOutItem.Enabled = false;
+                                loanInItem.Enabled = true;
+                                ddlLoanType.SelectedValue = "LOAN-IN";
                             }
                             else
                             {
-                                // Only LOAN-IN allowed
-                                ddlLoanType.Items.FindByValue("LOAN-OUT").Enabled = false;
-                                ddlLoanType.SelectedValue = "LOAN-IN";
+                                // All other sections => both allowed, default LOAN-OUT
+                                loanOutItem.Enabled = true;
+                                loanInItem.Enabled = true;
+                                ddlLoanType.SelectedValue = "LOAN-OUT";
                             }
 
                             ShowToast("Book Recognized: " + reader["title"].ToString(), "success");
@@ -202,6 +229,22 @@ namespace spmst_lms_development.Users.Staff.Transactions
             if (string.IsNullOrEmpty(studentID) || string.IsNullOrEmpty(barcode))
             {
                 ShowSweetAlert("Error", "Missing Patron or Book information.", "error");
+                return;
+            }
+
+            // Server-side validation for loan type based on section
+            string scannedSection = ViewState["ScannedSection"]?.ToString() ?? string.Empty;
+            bool isLoanInOnly = LoanInOnlySections.Contains(scannedSection.Trim());
+
+            if (isLoanInOnly && loanType != "LOAN-IN")
+            {
+                ShowSweetAlert("Invalid Loan Type", "This section is for LOAN-IN only.", "error");
+                return;
+            }
+
+            if (!isLoanInOnly && loanType != "LOAN-OUT" && loanType != "LOAN-IN")
+            {
+                ShowSweetAlert("Invalid Loan Type", "Invalid loan type selected.", "error");
                 return;
             }
 
@@ -313,6 +356,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
             ViewState["DecryptedPatronID"] = null;
             ViewState["UserRole"] = null;
             ViewState["ScannedResourceID"] = null;
+            ViewState["ScannedSection"] = null;   // clear saved section
             txtPatronQR.Focus();
         }
 

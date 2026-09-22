@@ -189,6 +189,8 @@
     <Content Include="Users\Staff\Accounts\userView.aspx" />
     <Content Include="Users\Staff\Dashboard\CirDash.aspx" />
     <Content Include="Users\Staff\Dashboard\MgtDash.aspx" />
+    <Content Include="Users\Staff\Import\TransactionImports.aspx" />
+    <Content Include="Users\Staff\Import\UserImports.aspx" />
     <Content Include="Users\Staff\Inventory\bookFilter.aspx" />
     <Content Include="Users\Staff\Inventory\bookImport.aspx" />
     <Content Include="Users\Staff\Inventory\bookInventory.aspx" />
@@ -217,6 +219,7 @@
     <Compile Include="Assets\Helper\InputHelper.cs" />
     <Compile Include="Assets\Helper\logs_Audit.cs" />
     <Compile Include="Assets\Helper\NotificationHelper.cs" />
+    <Compile Include="Assets\Helper\ProfileHelper.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />
     <Compile Include="LandingPage\AboutContact.aspx.cs">
       <DependentUpon>AboutContact.aspx</DependentUpon>
@@ -492,6 +495,20 @@
     <Compile Include="Users\Staff\Dashboard\MgtDash.aspx.designer.cs">
       <DependentUpon>MgtDash.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Users\Staff\Import\TransactionImports.aspx.cs">
+      <DependentUpon>TransactionImports.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Import\TransactionImports.aspx.designer.cs">
+      <DependentUpon>TransactionImports.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Import\UserImports.aspx.cs">
+      <DependentUpon>UserImports.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Import\UserImports.aspx.designer.cs">
+      <DependentUpon>UserImports.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Users\Staff\Inventory\bookFilter.aspx.cs">
       <DependentUpon>bookFilter.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -618,9 +635,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Users\Staff\Inventory\import\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

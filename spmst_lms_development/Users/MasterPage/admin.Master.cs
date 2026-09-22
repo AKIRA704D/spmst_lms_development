@@ -81,6 +81,9 @@ namespace spmst_lms_development.Users.MasterPage
             Allow(lnkProfile, Everyone);
             Allow(lnkNotifications, Everyone);
             Allow(lnkLibrarySettings, RoleAdmin);
+            Allow(lnkUserImports, RoleAdmin, RoleStaffM);
+            Allow(lnkBookImports, RoleAdmin, RoleStaffC);
+            Allow(lnkTransactionImports, RoleAdmin, RoleStaffC);
 
             // -------- System Registry --------
             Allow(lnkFeedbackRequest, Everyone);

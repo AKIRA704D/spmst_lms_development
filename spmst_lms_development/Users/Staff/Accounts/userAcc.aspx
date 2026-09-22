@@ -7,48 +7,45 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        /* ============================================
-           1. GLOBAL & UTILITY CLASSES
-           ============================================ */
         .btn-hidden { display: none; }
         .search-box { width: 260px; }
 
-        /* ============================================
-           2. TABLE STYLES
-           ============================================ */
         .table th, .table td { vertical-align: middle; white-space: nowrap; }
         .table th { background-color: #f8f9fa; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* ============================================
-           3. BADGE STYLES
-           ============================================ */
         .badge-active { background-color: #d1e7dd; color: #0f5132; }
         .badge-inactive { background-color: #f8d7da; color: #842029; }
         .badge-deactivated { background-color: #e2e3e5; color: #41464b; }
 
-        /* ============================================
-           4. ACTION BUTTONS
-           ============================================ */
         .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin: 0 5px; transition: 0.2s; }
         .action-btn.view:hover { color: #0d6efd; }
         .action-btn.edit:hover { color: #198754; }
         .action-btn.toggle:hover { color: #dc3545; }
 
-        /* ============================================
-           5. FILTER BAR
-           ============================================ */
         .filter-bar { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
-        /* ============================================
-           6. CUSTOM TABS
-           ============================================ */
         .tab-custom .nav-link { color: #6c757d; font-weight: 500; border-bottom: 2px solid transparent; }
         .tab-custom .nav-link.active { color: #0d6efd; border-bottom-color: #0d6efd; background: transparent; }
 
-        /* ============================================
-           7. MODAL & IFRAME
-           ============================================ */
-        .modal-iframe { width: 100%; height: 100%; border: none; }
+        /* ---------- Modal & iframe ---------- */
+        #universalModal .modal-content {
+            border-radius: 1rem;
+            overflow: hidden;
+            max-height: 90vh;
+        }
+
+        /* modal-body does NOT scroll — the iframe handles it */
+        #universalModal .modal-body {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .modal-iframe {
+            width: 100%;
+            height: 0;              /* JS sets it */
+            border: none;
+            display: block;
+        }
     </style>
 </asp:Content>
 
@@ -64,7 +61,7 @@
                 </div>
                 <div class="d-flex flex-wrap gap-2 filter-bar p-2">
                     <div class="position-relative">
-                        <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control form-control-sm ps-3 pe-5 search-box" 
+                        <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control form-control-sm ps-3 pe-5 search-box"
                             placeholder="Search by name, ID, or course..." AutoPostBack="true" OnTextChanged="txtSearch_TextChanged" />
                         <i class="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted small"></i>
                     </div>
@@ -150,11 +147,12 @@
         </Triggers>
     </asp:UpdatePanel>
 
+    <!-- Universal modal -->
     <div class="modal fade" id="universalModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content" style="height: 90vh; border-radius: 1rem; overflow: hidden;">
-                <div class="modal-body p-0" style="height: 100%;">
-                    <iframe id="modalIframe" class="modal-iframe" style="width: 100%; height: 100%; border: none;"></iframe>
+            <div class="modal-content">
+                <div class="modal-body">
+                    <iframe id="modalIframe" class="modal-iframe"></iframe>
                 </div>
             </div>
         </div>
@@ -163,25 +161,62 @@
     <script type="text/javascript">
         let currentModal;
 
+        /* =========================================================
+           Cap the iframe at 90vh only when content actually exceeds it.
+           - Short content  → iframe = content height (no scroll, no sticky needed)
+           - Tall content   → iframe = 90vh (internal scroll; sticky header/footer work)
+           ========================================================= */
+        function resizeModalIframe() {
+            const iframe = document.getElementById('modalIframe');
+            if (!iframe || !iframe.src) return;
+
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!doc || !doc.body) return;
+
+                const natural = Math.max(
+                    doc.documentElement.scrollHeight,
+                    doc.body.scrollHeight,
+                    doc.documentElement.offsetHeight,
+                    doc.body.offsetHeight
+                );
+
+                const maxH = Math.round(window.innerHeight * 0.9);
+                const finalH = Math.min(natural, maxH);
+
+                iframe.style.height = finalH + 'px';
+            } catch (e) {
+                iframe.style.height = '80vh';
+            }
+        }
+
+        window.resizeModalIframe = resizeModalIframe;
+
         function openModal(type, userId = '', role = '') {
             const modalEl = document.getElementById('universalModal');
             const iframe = document.getElementById('modalIframe');
             let url = '';
             switch (type) {
-                case 'filter': url = 'userFilter.aspx'; break;
-                case 'newPatron': url = 'userNew.aspx'; break;
-                case 'edit': url = `userUpdate.aspx?UserID=${userId}`; break;
-                case 'view': url = `userView.aspx?UserID=${userId}&role=${role}`; break;
+                case 'filter':    url = 'userFilter.aspx'; break;
+                case 'newPatron': url = 'userNew.aspx';    break;
+                case 'edit':      url = `userUpdate.aspx?UserID=${userId}`; break;
+                case 'view':      url = `userView.aspx?UserID=${userId}&role=${role}`; break;
                 default: return;
             }
+
+            iframe.style.height = '0px';
+            iframe.onload = function () { setTimeout(resizeModalIframe, 50); };
             iframe.src = url;
+
             currentModal = new bootstrap.Modal(modalEl);
             currentModal.show();
         }
 
         function closeUniversalModal() {
             if (currentModal) currentModal.hide();
-            document.getElementById('modalIframe').src = '';
+            const iframe = document.getElementById('modalIframe');
+            iframe.src = '';
+            iframe.style.height = '0px';
         }
 
         function refreshParentTable() {
@@ -204,6 +239,11 @@
                 });
             });
         }
+
+        window.addEventListener('resize', function () {
+            const iframe = document.getElementById('modalIframe');
+            if (iframe && iframe.src) resizeModalIframe();
+        });
 
         var prm = Sys.WebForms.PageRequestManager.getInstance();
         if (prm) {

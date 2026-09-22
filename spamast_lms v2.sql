@@ -34,6 +34,8 @@ CREATE TABLE Faculty (
     mobile_number VARCHAR(15),
     email VARCHAR(100) NOT NULL UNIQUE,
     institute VARCHAR(50),
+    address text,
+    profile_path VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -49,12 +51,11 @@ CREATE TABLE Staff (
     email VARCHAR(100) NOT NULL UNIQUE,
     office_department VARCHAR(100) DEFAULT 'Circulation Area',
     is_head_librarian TINYINT(1) DEFAULT 0,
+    address text,
+    profile_path VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
-alter table Staff 
-add address text after is_head_librarian,
-add profile_path VARCHAR(255) after address;
 
 -- =============================================
 -- 2. USERS TABLE

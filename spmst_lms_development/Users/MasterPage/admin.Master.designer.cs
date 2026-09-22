@@ -195,6 +195,33 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkLibrarySettings;
 
         /// <summary>
+        /// lnkUserImports control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkUserImports;
+
+        /// <summary>
+        /// lnkBookImports control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkBookImports;
+
+        /// <summary>
+        /// lnkTransactionImports control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkTransactionImports;
+
+        /// <summary>
         /// navGroupRegistry control.
         /// </summary>
         /// <remarks>

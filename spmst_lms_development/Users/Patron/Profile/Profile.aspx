@@ -22,6 +22,7 @@
             resize: none;
             overflow: hidden;
         }
+
         .editable-textbox {
             background-color: #f8fafc !important;
             border-color: #cbd5e1 !important;
@@ -34,11 +35,12 @@
             width: 100%;
             resize: vertical;
         }
-        .editable-textbox:focus {
-            outline: none;
-            border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-        }
+
+            .editable-textbox:focus {
+                outline: none;
+                border-color: #3b82f6 !important;
+                box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+            }
 
         /* ============================================
            2. PROFILE CARD STYLES
@@ -51,6 +53,7 @@
             color: white;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
+
         .avatar-circle {
             width: 80px;
             height: 80px;
@@ -65,6 +68,7 @@
             margin: 0 auto 1rem auto;
             border: 2px solid rgba(255,255,255,0.3);
         }
+
         .qr-box {
             background: white;
             border-radius: 1rem;
@@ -76,11 +80,13 @@
             align-items: center;
             justify-content: center;
         }
-        .qr-box Img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+
+            .qr-box Img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+
         .info-panel {
             background: white;
             border-radius: 1.5rem;
@@ -89,6 +95,7 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 1.5rem;
         }
+
         .status-badge {
             background: #d1fae5;
             color: #065f46;
@@ -111,15 +118,17 @@
                     <div class="avatar-circle">
                         <asp:Literal ID="litInitials" runat="server"></asp:Literal>
                     </div>
-                    <h3 class="fw-bold mb-1"><asp:Literal ID="litCardName" runat="server"></asp:Literal></h3>
+                    <h3 class="fw-bold mb-1">
+                        <asp:Literal ID="litCardName" runat="server"></asp:Literal></h3>
                     <!-- Card ID color changed to white and bold -->
-                    <p class="text-white small mb-3 fw-bold"><asp:Literal ID="litCardID" runat="server"></asp:Literal></p>
+                    <p class="text-white small mb-3 fw-bold">
+                        <span id="userIdDisplay"><asp:Literal ID="litCardID" runat="server"></asp:Literal></span></p>
                     <div class="qr-box">
                         <asp:Image ID="imgQRCode" runat="server" AlternateText="QR Code" />
                     </div>
                     <p class="small text-white-50 mt-2">Digital Library Pass</p>
                     <button id="btnDownloadID" type="button" class="btn btn-light w-100 mt-3" onclick="downloadQR()">
-                        <i class="fas fa-download me-2"></i> DOWNLOAD DIGITAL ID
+                        <i class="fas fa-download me-2"></i>DOWNLOAD DIGITAL ID
                     </button>
                 </div>
 
@@ -152,50 +161,61 @@
                             </div>
 
                             <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">First Name</label>
-                                    <asp:TextBox ID="txtFirstName" runat="server" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Middle Name</label>
-                                    <asp:TextBox ID="txtMiddleName" runat="server" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Last Name</label>
-                                    <asp:TextBox ID="txtLastName" runat="server" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Extension Name</label>
-                                    <asp:TextBox ID="txtExtension" runat="server" TextMode="SingleLine" Rows="1" CssClass="readonly-textbox" placeholder="Jr., Sr., III"></asp:TextBox>
-                                </div>
-                                <!-- New: Gender and Mobile -->
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Gender</label>
-                                    <asp:TextBox ID="txtGender" runat="server" TextMode="SingleLine" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Mobile Number</label>
-                                    <asp:TextBox ID="txtMobile" runat="server" TextMode="SingleLine" MaxLength="11" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">User ID</label>
-                                    <asp:TextBox ID="txtStudentID" runat="server" ReadOnly="true" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Institutional Email</label>
-                                    <asp:TextBox ID="txtEmail" runat="server" ReadOnly="true" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Department / Institute</label>
-                                    <asp:TextBox ID="txtDepartment" runat="server" TextMode="MultiLine" Rows="2" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Course & Year</label>
-                                    <asp:TextBox ID="txtCourse" runat="server" TextMode="MultiLine" Rows="2" CssClass="readonly-textbox"></asp:TextBox>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label small fw-bold text-muted text-uppercase">Home Address</label>
-                                    <asp:TextBox ID="txtAddress" runat="server" TextMode="MultiLine" Rows="2" CssClass="readonly-textbox"></asp:TextBox>
+                                <div class="row g-3">
+                                    <asp:Panel ID="pnlFirstName" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">First Name</label>
+                                        <asp:TextBox ID="txtFirstName" runat="server" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlMiddleName" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Middle Name</label>
+                                        <asp:TextBox ID="txtMiddleName" runat="server" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlLastName" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Last Name</label>
+                                        <asp:TextBox ID="txtLastName" runat="server" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlExtensionName" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Extension Name</label>
+                                        <asp:TextBox ID="txtExtension" runat="server" TextMode="SingleLine" Rows="1" CssClass="readonly-textbox" placeholder="Jr., Sr., III"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlGender" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Gender</label>
+                                        <asp:TextBox ID="txtGender" runat="server" TextMode="SingleLine" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlMobileNumber" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Mobile Number</label>
+                                        <asp:TextBox ID="txtMobile" runat="server" TextMode="SingleLine" MaxLength="11" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlUserID" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">User ID</label>
+                                        <asp:TextBox ID="txtStudentID" runat="server" ReadOnly="true" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlInstitutionalEmail" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Institutional Email</label>
+                                        <asp:TextBox ID="txtEmail" runat="server" ReadOnly="true" TextMode="MultiLine" Rows="1" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlDepartment" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Department / Institute</label>
+                                        <asp:TextBox ID="txtDepartment" runat="server" TextMode="MultiLine" Rows="2" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlCourseYear" runat="server" CssClass="col-md-6">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Course & Year</label>
+                                        <asp:TextBox ID="txtCourse" runat="server" TextMode="MultiLine" Rows="2" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlHomeAddress" runat="server" CssClass="col-12">
+                                        <label class="form-label small fw-bold text-muted text-uppercase">Home Address</label>
+                                        <asp:TextBox ID="txtAddress" runat="server" TextMode="MultiLine" Rows="2" CssClass="readonly-textbox"></asp:TextBox>
+                                    </asp:Panel>
                                 </div>
                             </div>
                         </div>
@@ -264,21 +284,53 @@
         // 3. QR CODE DOWNLOAD FUNCTIONALITY
         // ============================================
         function downloadQR() {
-            var Img = document.getElementById('<%= imgQRCode.ClientID %>');
-        if (!Img) {
-            alert('QR image not found.');
-            return;
-        }
-        var imageUrl = Img.src;
-                var userId = document.getElementById('<%= litCardID.ClientID %>').innerText;
-
-                // Create a temporary link and trigger download
-                var link = document.createElement('a');
-                link.href = imageUrl;
-                link.download = 'QR_' + userId + '.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            var img = document.getElementById('<%= imgQRCode.ClientID %>');
+            if (!img || !img.src) {
+                Swal.fire('Error', 'QR image not found.', 'error');
+                return;
             }
+
+            var imageUrl = img.src;
+            var userIdEl = document.getElementById('userIdDisplay');
+            var userId = userIdEl ? userIdEl.innerText.trim() : 'User';
+
+            // Show a loading indicator (optional)
+            Swal.fire({
+                title: 'Preparing Download...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            // Use fetch to get the image as a binary blob (bypasses CORS download block)
+            fetch(imageUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Create a temporary local URL for the blob
+                    var blobUrl = window.URL.createObjectURL(blob);
+
+                    // Create a temporary anchor tag to trigger the download
+                    var link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = 'DigitalID_' + userId + '.png';
+
+                    // Append, click, and remove
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // Clean up the memory
+                    window.URL.revokeObjectURL(blobUrl);
+
+                    // Close the loading alert
+                    Swal.close();
+                })
+                .catch(error => {
+                    console.error('Error downloading QR:', error);
+                    Swal.fire('Download Failed', 'Could not download the QR code. Please check your internet connection and try again.', 'error');
+                });
+        }
     </script>
 </asp:Content>

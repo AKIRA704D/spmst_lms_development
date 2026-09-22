@@ -1,151 +1,193 @@
 ﻿using System;
-using System.Data;
-using MySql.Data.MySqlClient;
 using System.Configuration;
+using System.Data;
+using System.Text;
 using System.Web.UI;
+using MySql.Data.MySqlClient;
 
 namespace spmst_lms_development.Users.Staff.Accounts
 {
     public partial class userView : System.Web.UI.Page
     {
-        // Connection string from Web.config (must match your project)
         private readonly string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (IsPostBack) return;
+
+            string userId = Request.QueryString["UserID"];
+            if (string.IsNullOrWhiteSpace(userId)) return;
+
+            string role = Request.QueryString["role"];
+            if (string.IsNullOrEmpty(role)) role = GetUserRole(userId);
+
+            if (string.IsNullOrEmpty(role))
             {
-                string userId = Request.QueryString["UserID"];
-                string role = Request.QueryString["role"];
-
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    // If role not provided, fetch it from database
-                    if (string.IsNullOrEmpty(role))
-                    {
-                        role = GetUserRole(userId);
-                    }
-
-                    LoadUserDetails(userId, role);
-                    LoadBorrowingHistory(userId);
-                }
+                ShowErrorMessage("Invalid user role.");
+                return;
             }
+
+            LoadUserDetails(userId, role);
+            LoadBorrowingHistory(userId);
         }
 
         private string GetUserRole(string userId)
         {
-            using (MySqlConnection conn = new MySqlConnection(connStr))
+            using (var conn = new MySqlConnection(connStr))
+            using (var cmd = new MySqlCommand("SELECT role FROM Users WHERE user_id = @id", conn))
             {
-                string query = "SELECT role FROM Users WHERE user_id = @id";
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@id", userId);
-                    conn.Open();
-                    object result = cmd.ExecuteScalar();
-                    return result != null ? result.ToString() : "";
-                }
+                cmd.Parameters.AddWithValue("@id", userId);
+                conn.Open();
+                var result = cmd.ExecuteScalar();
+                return result?.ToString() ?? "";
             }
         }
 
         private void LoadUserDetails(string userId, string role)
         {
-            using (MySqlConnection conn = new MySqlConnection(connStr))
+            using (var conn = new MySqlConnection(connStr))
             {
                 conn.Open();
-                string query = "";
 
-                // Build role-specific query
+                string query;
                 if (role.Equals("student", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = @"SELECT *, CONCAT(last_name, ', ', first_name, ' ', IFNULL(middle_name, ''), ' ', IFNULL(extension_name, '')) as full_name_ext 
-                              FROM Students WHERE student_id = @id";
+                    query = @"SELECT student_id AS user_id,
+                     first_name, middle_name, last_name, extension_name,
+                     gender, mobile_number, email,
+                     institute, course, section, year_level,
+                     address, profile_path
+                    FROM Students WHERE student_id = @id";
                 }
                 else if (role.Equals("faculty", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = @"SELECT *, CONCAT(last_name, ', ', first_name, ' ', IFNULL(middle_name, ''), ' ', IFNULL(extension_name, '')) as full_name_ext 
-                              FROM Faculty WHERE faculty_id = @id";
+                    query = @"SELECT faculty_id AS user_id,
+                     first_name, middle_name, last_name, extension_name,
+                     gender, mobile_number, email,
+                     institute,
+                     address, profile_path
+                    FROM Faculty WHERE faculty_id = @id";
                 }
-                else if (role.Equals("staff", StringComparison.OrdinalIgnoreCase))
+                else if (role.Equals("staff", StringComparison.OrdinalIgnoreCase) ||
+                         role.Equals("admin", StringComparison.OrdinalIgnoreCase))
                 {
-                    query = @"SELECT *, CONCAT(last_name, ', ', first_name) as full_name_ext 
-                              FROM Staff WHERE staff_id = @id";
+                    // Admins are stored in the Staff table (they share the same staff_id column).
+                    query = @"SELECT staff_id AS user_id,
+                     first_name, middle_name, last_name, extension_name,
+                     gender, mobile_number, email,
+                     office_department, is_head_librarian,
+                     address, profile_path
+                    FROM Staff WHERE staff_id = @id";
                 }
                 else
                 {
-                    // Unknown role – show error and exit
-                    ShowErrorMessage("Invalid user role.");
+                    ShowErrorMessage("Invalid user role: " + role);
                     return;
                 }
 
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                using (var cmd = new MySqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@id", userId);
-                    using (MySqlDataReader dr = cmd.ExecuteReader())
+
+                    using (var dr = cmd.ExecuteReader())
                     {
-                        if (dr.Read())
+                        if (!dr.Read())
                         {
-                            // Common fields
-                            litFullName.Text = dr["full_name_ext"].ToString().ToUpper();
-                            litAvatar.Text = dr["first_name"].ToString().Substring(0, 1).ToUpper();
-                            litUserID.Text = userId;
-                            litRole.Text = role.ToUpper();
+                            ShowErrorMessage("User record not found.");
+                            return;
+                        }
 
-                            // Personal information
-                            litGender.Text = dr.HasColumn("gender") ? dr["gender"].ToString() : "N/A";
-                            litContact.Text = dr.HasColumn("mobile_number") ? dr["mobile_number"].ToString() : "N/A";
-                            litEmail.Text = dr.HasColumn("email") ? dr["email"].ToString() : "N/A";
+                        string first = Get(dr, "first_name");
+                        string middle = Get(dr, "middle_name");
+                        string last = Get(dr, "last_name");
+                        string ext = Get(dr, "extension_name");
 
-                            // Role-specific information
-                            if (role.ToLower() == "student")
-                            {
-                                phAcademicInfo.Visible = true;
-                                litInstitute.Text = dr["institute"].ToString();
-                                litCourse.Text = dr["course"].ToString();
-                                litSection.Text = dr["section"].ToString();
-                                litYear.Text = dr["year_level"].ToString();
-                            }
-                            else if (role.ToLower() == "faculty")
-                            {
-                                phAcademicInfo.Visible = true;
-                                litInstitute.Text = dr["institute"].ToString();
-                                litCourse.Text = "N/A";
-                                litSection.Text = "N/A";
-                                litYear.Text = "N/A";
-                            }
-                            else if (role.ToLower() == "staff")
-                            {
-                                phStaffHeader.Visible = true;
-                                litDept.Text = dr["office_department"].ToString();
-                            }
+                        litFullName.Text = BuildFullName(last, first, middle, ext).ToUpper();
+                        litRole.Text = role.ToUpper();
+                        litUserID.Text = userId;
+
+                        // Avatar: real photo if profile_path resolves, otherwise first+last initial.
+                        string initials = BuildInitials(first, last);
+
+                        string resolved = ResolveProfileImage(Get(dr, "profile_path"));
+
+                        if (!string.IsNullOrEmpty(resolved))
+                        {
+                            string safeSrc = Server.HtmlEncode(resolved);
+                            litAvatar.Text =
+                                $"<img src=\"{safeSrc}\" alt=\"{initials}\" " +
+                                $"class=\"w-full h-full object-cover\" " +
+                                $"onerror=\"this.outerHTML='{initials}'\" />";
                         }
                         else
                         {
-                            ShowErrorMessage("User record not found.");
+                            litAvatar.Text = initials;
+                        }
+
+                        // Contact block — identical columns across all three tables.
+                        litGender.Text = Get(dr, "gender", "N/A");
+                        litContact.Text = Get(dr, "mobile_number", "N/A");
+                        litEmail.Text = Get(dr, "email", "N/A");
+                        litAddress.Text = Get(dr, "address", "N/A");
+
+                        // Role-specific blocks.
+                        if (role.Equals("student", StringComparison.OrdinalIgnoreCase))
+                        {
+                            phAcademicInfo.Visible = true;
+                            litInstitute.Text = Get(dr, "institute", "N/A");
+                            litCourse.Text = Get(dr, "course", "N/A");
+                            litSection.Text = Get(dr, "section", "N/A");
+                            litYear.Text = Get(dr, "year_level", "N/A");
+                        }
+                        else if (role.Equals("faculty", StringComparison.OrdinalIgnoreCase))
+                        {
+                            phAcademicInfo.Visible = true;
+                            litInstitute.Text = Get(dr, "institute", "N/A");
+                            litCourse.Text = "—";
+                            litSection.Text = "—";
+                            litYear.Text = "—";
+                        }
+                        else // staff or admin
+                        {
+                            phStaffHeader.Visible = true;
+
+                            string dept = Get(dr, "office_department", "N/A");
+                            bool isHead = false;
+                            object head = dr["is_head_librarian"];
+                            if (head != null && head != DBNull.Value)
+                                isHead = Convert.ToInt32(head) == 1;
+
+                            litDept.Text = isHead ? dept + " · Head Librarian" : dept;
                         }
                     }
                 }
 
-                // Load account status from Users table
-                using (MySqlCommand cmdStatus = new MySqlCommand("SELECT is_active FROM Users WHERE user_id = @id", conn))
+                // Account status lives on the Users table, not the role table.
+                using (var cmdStatus = new MySqlCommand("SELECT is_active FROM Users WHERE user_id = @id", conn))
                 {
                     cmdStatus.Parameters.AddWithValue("@id", userId);
                     object activeStatus = cmdStatus.ExecuteScalar();
-                    int statusVal = activeStatus != null ? Convert.ToInt32(activeStatus) : 0;
+                    int statusVal = (activeStatus != null && activeStatus != DBNull.Value)
+                        ? Convert.ToInt32(activeStatus)
+                        : 0;
 
-                    if (statusVal == 1)
+                    switch (statusVal)
                     {
-                        litStatus.Text = "ACTIVE";
-                        statusBadge.Attributes["class"] = "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-green-100 text-green-700";
-                    }
-                    else if (statusVal == 2)
-                    {
-                        litStatus.Text = "DEACTIVATED";
-                        statusBadge.Attributes["class"] = "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700";
-                    }
-                    else
-                    {
-                        litStatus.Text = "INACTIVE";
-                        statusBadge.Attributes["class"] = "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-yellow-100 text-yellow-700";
+                        case 1:
+                            litStatus.Text = "ACTIVE";
+                            statusBadge.Attributes["class"] =
+                                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-green-100 text-green-700";
+                            break;
+                        case 2:
+                            litStatus.Text = "DEACTIVATED";
+                            statusBadge.Attributes["class"] =
+                                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700";
+                            break;
+                        default:
+                            litStatus.Text = "INACTIVE";
+                            statusBadge.Attributes["class"] =
+                                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-yellow-100 text-yellow-700";
+                            break;
                     }
                 }
             }
@@ -153,24 +195,29 @@ namespace spmst_lms_development.Users.Staff.Accounts
 
         private void LoadBorrowingHistory(string userId)
         {
-            using (MySqlConnection conn = new MySqlConnection(connStr))
+            using (var conn = new MySqlConnection(connStr))
             {
-                string query = @"
-                    SELECT r.title AS BookTitle, r.isbn AS ISBN, t.borrow_date AS DateBorrowed, 
-                           t.due_date AS DueDate, t.status AS Status 
-                    FROM Transactions t 
-                    INNER JOIN Item_Copies c ON t.accession_number = c.accession_number
-                    INNER JOIN Library_Resources r ON c.resource_id = r.resource_id
-                    WHERE t.user_id = @id 
-                    ORDER BY t.borrow_date DESC LIMIT 5";
+                const string query = @"
+                    SELECT r.title AS BookTitle,
+                           r.isbn  AS ISBN,
+                           t.borrow_date AS DateBorrowed,
+                           t.due_date    AS DueDate,
+                           t.status      AS Status
+                    FROM Transactions t
+                    INNER JOIN Item_Copies       c ON t.accession_number = c.accession_number
+                    INNER JOIN Library_Resources r ON c.resource_id     = r.resource_id
+                    WHERE t.user_id = @id
+                    ORDER BY t.borrow_date DESC
+                    LIMIT 5";
 
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                using (var cmd = new MySqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@id", userId);
                     conn.Open();
-                    using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+
+                    using (var da = new MySqlDataAdapter(cmd))
                     {
-                        DataTable dt = new DataTable();
+                        var dt = new DataTable();
                         da.Fill(dt);
 
                         if (dt.Rows.Count > 0)
@@ -188,38 +235,93 @@ namespace spmst_lms_development.Users.Staff.Accounts
             }
         }
 
-        protected string GetStatusClass(string status)
+        /// <summary>Reads a column as a trimmed string, returning a fallback for NULL/empty.</summary>
+        private static string Get(IDataRecord dr, string column, string fallback = "")
         {
-            if (string.IsNullOrEmpty(status)) return "bg-gray-100 text-gray-600";
+            int i = dr.GetOrdinal(column);
+            if (dr.IsDBNull(i)) return fallback;
 
-            switch (status.ToLower())
+            string value = dr.GetValue(i).ToString().Trim();
+            return string.IsNullOrEmpty(value) ? fallback : value;
+        }
+
+        /// <summary>Formats "Last, First M. Ext" — middle name collapses to an initial.</summary>
+        private static string BuildFullName(string last, string first, string middle, string ext)
+        {
+            var sb = new StringBuilder();
+            sb.Append(last);
+
+            if (!string.IsNullOrEmpty(first))
             {
-                case "returned": return "bg-green-100 text-green-600";
-                case "overdue": return "bg-red-100 text-red-600";
-                case "borrowed": return "bg-blue-100 text-blue-600";
-                default: return "bg-gray-100 text-gray-600";
+                sb.Append(", ").Append(first);
+
+                if (!string.IsNullOrEmpty(middle))
+                {
+                    sb.Append(' ')
+                      .Append(char.ToUpper(middle[0]))
+                      .Append('.');
+                }
             }
+
+            if (!string.IsNullOrEmpty(ext))
+                sb.Append(' ').Append(ext);
+
+            return sb.ToString();
+        }
+
+        /// <summary>Two-letter placeholder from the first and last names (falls back to one or '?').</summary>
+        private static string BuildInitials(string first, string last)
+        {
+            char f = !string.IsNullOrEmpty(first) ? char.ToUpper(first[0]) : '?';
+            char l = !string.IsNullOrEmpty(last) ? char.ToUpper(last[0]) : '\0';
+            return l == '\0' ? f.ToString() : new string(new[] { f, l });
+        }
+
+        /// <summary>
+        /// Normalises a stored image path to an app-relative URL.
+        /// Returns null if the path is empty or the file doesn't exist on disk,
+        /// so the caller can fall back to initials.
+        /// </summary>
+        private string ResolveProfileImage(string profilePath)
+        {
+            if (string.IsNullOrWhiteSpace(profilePath)) return null;
+
+            // Tolerate backslashes copied in from Windows tooling.
+            string raw = profilePath.Trim().Replace('\\', '/');
+
+            // Absolute URLs are left alone.
+            if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return raw;
+            }
+
+            // Anything without "~/" or "/" is treated as app-root-relative.
+            // This is what fixes "Assets/Covers/default-cover.jpg".
+            if (!raw.StartsWith("~/") && !raw.StartsWith("/"))
+                raw = "~/" + raw;
+
+            // For app-relative paths, make sure the file actually exists.
+            if (raw.StartsWith("~/"))
+            {
+                try
+                {
+                    if (!System.IO.File.Exists(Server.MapPath(raw)))
+                        return null;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+
+            return ResolveUrl(raw);
         }
 
         private void ShowErrorMessage(string message)
         {
-            // Simple alert (can be replaced with SweetAlert if needed)
             string script = $"alert('{message.Replace("'", "\\'")}');";
             ClientScript.RegisterStartupScript(GetType(), "error", script, true);
-        }
-    }
-
-    // Extension method helper for IDataReader column existence
-    public static class DataReaderExtensions
-    {
-        public static bool HasColumn(this IDataRecord dr, string columnName)
-        {
-            for (int i = 0; i < dr.FieldCount; i++)
-            {
-                if (dr.GetName(i).Equals(columnName, StringComparison.InvariantCultureIgnoreCase))
-                    return true;
-            }
-            return false;
         }
     }
 }

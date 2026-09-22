@@ -168,6 +168,15 @@ namespace spmst_lms_development.Users.Staff.Accounts
         protected global::System.Web.UI.WebControls.Literal litEmail;
 
         /// <summary>
+        /// litAddress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litAddress;
+
+        /// <summary>
         /// rptHistory control.
         /// </summary>
         /// <remarks>

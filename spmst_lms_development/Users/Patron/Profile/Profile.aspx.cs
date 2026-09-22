@@ -1,11 +1,9 @@
 ﻿using MySql.Data.MySqlClient;
+using spmst_lms_development.Assets.Helper;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using System.Net;
-using System.Security.Cryptography;
+using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.UI;
@@ -16,6 +14,14 @@ namespace spmst_lms_development.Users.Patron
     public partial class Profile : System.Web.UI.Page
     {
         private readonly string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+
+        // 1. Define Role Groups (like admin.Master.cs)
+        private static readonly string[] AnyRole = { "admin", "staff", "faculty", "student" };
+        private static readonly string[] StudentRole = { "student" };
+
+        private HashSet<string> _roles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private HashSet<string> _allowedFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
@@ -35,51 +41,87 @@ namespace spmst_lms_development.Users.Patron
             }
         }
 
-        private string GetUserRole(string userId, MySqlConnection conn)
+        // 2. The Allow() method (matching admin.Master.cs)
+        private void Allow(Control control, string[] allowedRoles)
         {
-            string role = "student";
-            string query = "SELECT role FROM Users WHERE user_id = @id";
-            using (MySqlCommand cmd = new MySqlCommand(query, conn))
-            {
-                cmd.Parameters.AddWithValue("@id", userId);
-                object result = cmd.ExecuteScalar();
-                if (result != null)
-                    role = result.ToString().ToLower();
-            }
-            return role;
+            if (control == null) return;
+            control.Visible = allowedRoles != null && allowedRoles.Any(r => _roles.Contains(r));
         }
 
-        private void LoadUserProfile(string userId)
+        // 3. The Role-Based Visibility Matrix
+        private void ApplyRoleBasedNavigation()
+        {
+            Allow(pnlFirstName, AnyRole);
+            Allow(pnlMiddleName, AnyRole);
+            Allow(pnlLastName, AnyRole);
+            Allow(pnlExtensionName, AnyRole);
+
+            Allow(pnlGender, AnyRole);
+            Allow(pnlMobileNumber, AnyRole);
+            Allow(pnlUserID, AnyRole);
+            Allow(pnlInstitutionalEmail, AnyRole);
+
+            Allow(pnlDepartment, AnyRole);
+            Allow(pnlCourseYear, StudentRole); // Only visible for Students
+            Allow(pnlHomeAddress, AnyRole);
+        }
+
+        private (string userId, string role) ResolveUser(string inputUserId, MySqlConnection conn)
+        {
+            string actualUserId = inputUserId;
+            string role = "student";
+
+            string query = "SELECT user_id, role FROM Users WHERE TRIM(user_id) = TRIM(@id) OR TRIM(email) = TRIM(@id)";
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@id", inputUserId);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        actualUserId = reader["user_id"].ToString();
+                        role = reader["role"].ToString().ToLower().Trim();
+                    }
+                }
+            }
+            return (actualUserId, role);
+        }
+
+        private void LoadUserProfile(string inputUserId)
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 try
                 {
                     conn.Open();
-                    string role = GetUserRole(userId, conn);
-                    string query = "";
 
-                    if (role == "faculty")
+                    var userInfo = ResolveUser(inputUserId, conn);
+                    string userId = userInfo.userId;
+                    string role = userInfo.role;
+
+                    if (inputUserId != userId) Session["UserID"] = userId;
+
+                    // 4. Populate _roles and Apply Navigation Visibility
+                    _roles.Clear();
+                    _roles.Add(role);
+                    ApplyRoleBasedNavigation();
+
+                    // 5. Build dynamic query based on allowed fields
+                    _allowedFields = ProfileHelper.GetAllowedFields(role); // From Helper
+                    string tableName = role == "faculty" ? "Faculty" : (role == "student" ? "Students" : "Staff");
+                    string idColumn = role == "faculty" ? "faculty_id" : (role == "student" ? "student_id" : "staff_id");
+                    string deptColumn = role == "faculty" ? "institute" : (role == "student" ? "institute" : "office_department");
+
+                    List<string> selectFields = new List<string> { "first_name", "middle_name", "last_name", "extension_name", "gender", "mobile_number", "email", $"{deptColumn} AS department", "address" };
+
+                    if (role == "student")
                     {
-                        query = @"SELECT first_name, middle_name, last_name, extension_name, 
-                                         gender, mobile_number, email, 
-                                         institute AS department, '' AS course_info 
-                                  FROM Faculty WHERE faculty_id = @id";
+                        selectFields.Add("course");
+                        selectFields.Add("year_level");
+                        selectFields.Add("section");
                     }
-                    else if (role == "staff" || role == "admin")
-                    {
-                        query = @"SELECT first_name, middle_name, last_name, extension_name, 
-                                         gender, mobile_number, email, 
-                                         office_department AS department, '' AS course_info 
-                                  FROM Staff WHERE staff_id = @id";
-                    }
-                    else // student
-                    {
-                        query = @"SELECT first_name, middle_name, last_name, extension_name, 
-                                         gender, mobile_number, email, 
-                                         institute AS department, course AS course_info 
-                                  FROM Students WHERE student_id = @id";
-                    }
+
+                    string query = $"SELECT {string.Join(", ", selectFields)} FROM {tableName} WHERE TRIM({idColumn}) = TRIM(@id)";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -88,45 +130,11 @@ namespace spmst_lms_development.Users.Patron
                         {
                             if (reader.Read())
                             {
-                                string fName = reader["first_name"].ToString().Trim();
-                                string mName = reader["middle_name"]?.ToString().Trim() ?? "";
-                                string lName = reader["last_name"].ToString().Trim();
-                                string extName = reader["extension_name"]?.ToString().Trim() ?? "";
-                                string gender = reader["gender"]?.ToString() ?? "";
-                                string mobile = reader["mobile_number"]?.ToString() ?? "";
-
-                                string fullName = $"{fName} {mName} {lName}".Trim();
-                                if (!string.IsNullOrEmpty(extName))
-                                    fullName += $" {extName}";
-
-                                string initialF = fName.Length > 0 ? fName.Substring(0, 1).ToUpper() : "";
-                                string initialL = lName.Length > 0 ? lName.Substring(0, 1).ToUpper() : "";
-                                litInitials.Text = $"{initialF}{initialL}";
-                                litCardName.Text = string.IsNullOrEmpty(fullName) ? "UNKNOWN" : fullName;
-                                litCardID.Text = userId;
-
-                                // ----- QR CODE: now using plain userId (no encryption) -----
-                                string plainId = userId;
-                                string urlEncodedId = HttpUtility.UrlEncode(plainId);
-                                imgQRCode.ImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={urlEncodedId}";
-                                // Store the plain ID for download as well
-                                ViewState["PlainUserID"] = plainId;
-
-                                // Populate textboxes
-                                SetTextBoxData(txtFirstName, fName);
-                                SetTextBoxData(txtMiddleName, mName);
-                                SetTextBoxData(txtLastName, lName);
-                                SetTextBoxData(txtExtension, extName);
-                                SetTextBoxData(txtGender, gender);
-                                SetTextBoxData(txtMobile, mobile);
-                                SetTextBoxData(txtStudentID, userId);
-                                SetTextBoxData(txtEmail, reader["email"].ToString());
-                                SetTextBoxData(txtDepartment, reader["department"].ToString());
-                                SetTextBoxData(txtCourse, reader["course_info"].ToString());
-                                SetTextBoxData(txtAddress, "");
-                                SetTextBoxData(txtGuardianName, "");
-                                SetTextBoxData(txtGuardianRel, "");
-                                SetTextBoxData(txtGuardianContact, "");
+                                PopulateProfileFields(reader, role, userId);
+                            }
+                            else
+                            {
+                                ShowSweetAlert("Data Not Found", $"No profile data found for role '{role}' with ID '{userId}'.", "warning");
                             }
                         }
                     }
@@ -136,9 +144,57 @@ namespace spmst_lms_development.Users.Patron
                 catch (Exception ex)
                 {
                     ShowSweetAlert("Load Error", "Failed to load profile: " + ex.Message, "error");
-                    System.Diagnostics.Debug.WriteLine("Load error: " + ex.Message);
                 }
             }
+        }
+
+        // ... [The rest of the methods (PopulateProfileFields, LoadLibraryStatus, btnSaveAccount_Click, etc.) remain exactly as provided in the previous step] ...
+        private void PopulateProfileFields(MySqlDataReader reader, string role, string userId)
+        {
+            string fName = reader["first_name"].ToString().Trim();
+            string mName = reader["middle_name"]?.ToString().Trim() ?? "";
+            string lName = reader["last_name"].ToString().Trim();
+            string extName = reader["extension_name"]?.ToString().Trim() ?? "";
+            string gender = reader["gender"]?.ToString() ?? "";
+            string mobile = reader["mobile_number"]?.ToString() ?? "";
+
+            string fullName = $"{fName} {mName} {lName}".Trim();
+            if (!string.IsNullOrEmpty(extName)) fullName += $" {extName}";
+
+            litInitials.Text = $"{(fName.Length > 0 ? fName.Substring(0, 1).ToUpper() : "")}{(lName.Length > 0 ? lName.Substring(0, 1).ToUpper() : "")}";
+            litCardName.Text = string.IsNullOrEmpty(fullName) ? "UNKNOWN" : fullName;
+            litCardID.Text = userId;
+
+            imgQRCode.ImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={HttpUtility.UrlEncode(userId)}";
+            ViewState["PlainUserID"] = userId;
+
+            SetTextBoxData(txtFirstName, fName);
+            SetTextBoxData(txtMiddleName, mName);
+            SetTextBoxData(txtLastName, lName);
+            SetTextBoxData(txtExtension, extName);
+            SetTextBoxData(txtGender, gender);
+            SetTextBoxData(txtMobile, mobile);
+            SetTextBoxData(txtStudentID, userId);
+            SetTextBoxData(txtEmail, reader["email"].ToString());
+            SetTextBoxData(txtDepartment, reader["department"].ToString());
+            SetTextBoxData(txtAddress, reader["address"] != DBNull.Value ? reader["address"].ToString() : "");
+
+            string courseInfo = "";
+            if (role == "student")
+            {
+                string course = reader["course"]?.ToString() ?? "";
+                string yearLevel = reader["year_level"]?.ToString() ?? "";
+                string section = reader["section"]?.ToString() ?? "";
+
+                courseInfo = course;
+                if (!string.IsNullOrEmpty(yearLevel)) courseInfo += $" - {yearLevel}";
+                if (!string.IsNullOrEmpty(section)) courseInfo += $" ({section})";
+            }
+            SetTextBoxData(txtCourse, courseInfo);
+
+            SetTextBoxData(txtGuardianName, "");
+            SetTextBoxData(txtGuardianRel, "");
+            SetTextBoxData(txtGuardianContact, "");
         }
 
         private void LoadLibraryStatus(string userId)
@@ -147,13 +203,11 @@ namespace spmst_lms_development.Users.Patron
             decimal totalBalance = 0;
 
             string query = @"
-                SELECT t.transaction_id, t.due_date, t.fine_amount, t.amount_paid, t.balance, t.fine_status,
-                       r.title
+                SELECT t.transaction_id, t.due_date, t.fine_amount, t.amount_paid, t.balance, t.fine_status, r.title
                 FROM Transactions t
                 LEFT JOIN Item_Copies ic ON t.accession_number = ic.accession_number
                 LEFT JOIN Library_Resources r ON ic.resource_id = r.resource_id
-                WHERE t.user_id = @userId
-                  AND t.fine_status IN ('Unpaid', 'Partial')
+                WHERE TRIM(t.user_id) = TRIM(@userId) AND t.fine_status IN ('Unpaid', 'Partial')
                 ORDER BY t.due_date ASC";
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
@@ -181,7 +235,6 @@ namespace spmst_lms_development.Users.Patron
                                 string status = reader["fine_status"].ToString();
 
                                 totalBalance += balance;
-
                                 html.Append("<li class='mb-2 p-2 border-bottom'>");
                                 html.Append($"<div><strong>{HttpUtility.HtmlEncode(title)}</strong></div>");
                                 html.Append($"<div class='small text-muted'>Due: {dueDate:MMM dd, yyyy} | Fine: ₱{fine:F2} | Paid: ₱{paid:F2} | Balance: ₱{balance:F2} | Status: {status}</div>");
@@ -193,7 +246,6 @@ namespace spmst_lms_development.Users.Patron
                     }
                 }
             }
-
             litLibraryStatusList.Text = html.ToString();
         }
 
@@ -203,19 +255,12 @@ namespace spmst_lms_development.Users.Patron
         }
 
         // ========== ACCOUNT EDIT LOGIC ==========
-        protected void btnEditAccount_Click(object sender, EventArgs e)
-        {
-            ToggleAccountEditMode(true);
-        }
+        protected void btnEditAccount_Click(object sender, EventArgs e) => ToggleAccountEditMode(true);
 
         protected void btnCancelAccount_Click(object sender, EventArgs e)
         {
             string currentUserId = Session["UserID"]?.ToString() ?? txtStudentID.Text;
-            if (string.IsNullOrEmpty(currentUserId) || currentUserId == "N/A")
-            {
-                ShowSweetAlert("Error", "Cannot reload profile: user ID missing.", "error");
-                return;
-            }
+            if (string.IsNullOrEmpty(currentUserId) || currentUserId == "N/A") return;
             LoadUserProfile(currentUserId);
             ToggleAccountEditMode(false);
         }
@@ -228,34 +273,60 @@ namespace spmst_lms_development.Users.Patron
                 try
                 {
                     conn.Open();
-                    string role = GetUserRole(userId, conn);
-                    string updateSql = "";
+                    var userInfo = ResolveUser(userId, conn);
+                    string role = userInfo.role;
 
-                    if (role == "faculty")
-                        updateSql = @"UPDATE Faculty SET first_name = @fname, middle_name = @mname, last_name = @lname, 
-                                      extension_name = @extname, gender = @gender, mobile_number = @mobile,
-                                      email = @email, institute = @dept WHERE faculty_id = @id";
-                    else if (role == "staff" || role == "admin")
-                        updateSql = @"UPDATE Staff SET first_name = @fname, middle_name = @mname, last_name = @lname, 
-                                      extension_name = @extname, gender = @gender, mobile_number = @mobile,
-                                      email = @email, office_department = @dept WHERE staff_id = @id";
-                    else
-                        updateSql = @"UPDATE Students SET first_name = @fname, middle_name = @mname, last_name = @lname, 
-                                      extension_name = @extname, gender = @gender, mobile_number = @mobile,
-                                      email = @email, institute = @dept, course = @course WHERE student_id = @id";
+                    string tableName = role == "faculty" ? "Faculty" : (role == "student" ? "Students" : "Staff");
+                    string idColumn = role == "faculty" ? "faculty_id" : (role == "student" ? "student_id" : "staff_id");
+                    string deptColumn = role == "faculty" ? "institute" : (role == "student" ? "institute" : "office_department");
+
+                    // Apply Sentence Case to all relevant text fields
+                    string fname = ProfileHelper.ToSentenceCase(txtFirstName.Text == "N/A" ? "" : txtFirstName.Text);
+                    string mname = ProfileHelper.ToSentenceCase(txtMiddleName.Text == "N/A" ? "" : txtMiddleName.Text);
+                    string lname = ProfileHelper.ToSentenceCase(txtLastName.Text == "N/A" ? "" : txtLastName.Text);
+                    string extname = ProfileHelper.ToSentenceCase(txtExtension.Text == "N/A" ? "" : txtExtension.Text);
+                    string gender = ProfileHelper.ToSentenceCase(txtGender.Text == "N/A" ? "" : txtGender.Text);
+                    string mobile = txtMobile.Text == "N/A" ? "" : txtMobile.Text; // Keep numbers as is
+                    string email = txtEmail.Text == "N/A" ? "" : txtEmail.Text; // Keep email as is
+                    string dept = ProfileHelper.ToSentenceCase(txtDepartment.Text == "N/A" ? "" : txtDepartment.Text);
+                    string address = ProfileHelper.ToSentenceCase(txtAddress.Text == "N/A" ? "" : txtAddress.Text);
+
+                    // Dynamically build UPDATE query based on allowed fields
+                    List<string> setClauses = new List<string>
+                    {
+                        "first_name = @fname", "middle_name = @mname", "last_name = @lname",
+                        "extension_name = @extname", "gender = @gender", "mobile_number = @mobile",
+                        "email = @email", $"{deptColumn} = @dept", "address = @address"
+                    };
+
+                    if (role == "student")
+                    {
+                        setClauses.Add("course = @course");
+                        // Note: Year level and section are displayed in txtCourse but not edited separately here.
+                        // If you need to save them separately, you'd need separate textboxes for them.
+                    }
+
+                    string updateSql = $"UPDATE {tableName} SET {string.Join(", ", setClauses)} WHERE TRIM({idColumn}) = TRIM(@id)";
 
                     using (MySqlCommand cmd = new MySqlCommand(updateSql, conn))
                     {
-                        cmd.Parameters.AddWithValue("@fname", txtFirstName.Text == "N/A" ? "" : txtFirstName.Text);
-                        cmd.Parameters.AddWithValue("@mname", txtMiddleName.Text == "N/A" ? "" : txtMiddleName.Text);
-                        cmd.Parameters.AddWithValue("@lname", txtLastName.Text == "N/A" ? "" : txtLastName.Text);
-                        cmd.Parameters.AddWithValue("@extname", txtExtension.Text == "N/A" ? "" : txtExtension.Text);
-                        cmd.Parameters.AddWithValue("@gender", txtGender.Text == "N/A" ? "" : txtGender.Text);
-                        cmd.Parameters.AddWithValue("@mobile", txtMobile.Text == "N/A" ? "" : txtMobile.Text);
-                        cmd.Parameters.AddWithValue("@email", txtEmail.Text == "N/A" ? "" : txtEmail.Text);
-                        cmd.Parameters.AddWithValue("@dept", txtDepartment.Text == "N/A" ? "" : txtDepartment.Text);
+                        cmd.Parameters.AddWithValue("@fname", fname);
+                        cmd.Parameters.AddWithValue("@mname", mname);
+                        cmd.Parameters.AddWithValue("@lname", lname);
+                        cmd.Parameters.AddWithValue("@extname", extname);
+                        cmd.Parameters.AddWithValue("@gender", gender);
+                        cmd.Parameters.AddWithValue("@mobile", mobile);
+                        cmd.Parameters.AddWithValue("@email", email);
+                        cmd.Parameters.AddWithValue("@dept", dept);
+                        cmd.Parameters.AddWithValue("@address", address);
                         cmd.Parameters.AddWithValue("@id", userId);
-                        cmd.Parameters.AddWithValue("@course", txtCourse.Text == "N/A" ? "" : txtCourse.Text);
+
+                        if (role == "student")
+                        {
+                            // Extract just the course part if needed, or save the whole string. 
+                            // Assuming txtCourse holds the main course string.
+                            cmd.Parameters.AddWithValue("@course", ProfileHelper.ToSentenceCase(txtCourse.Text == "N/A" ? "" : txtCourse.Text));
+                        }
 
                         cmd.ExecuteNonQuery();
                     }
@@ -293,16 +364,8 @@ namespace spmst_lms_development.Users.Patron
         }
 
         // ========== EMERGENCY CONTACT LOGIC ==========
-        protected void btnEditEmergency_Click(object sender, EventArgs e)
-        {
-            ToggleEmergencyEditMode(true);
-        }
-
-        protected void btnCancelEmergency_Click(object sender, EventArgs e)
-        {
-            ToggleEmergencyEditMode(false);
-        }
-
+        protected void btnEditEmergency_Click(object sender, EventArgs e) => ToggleEmergencyEditMode(true);
+        protected void btnCancelEmergency_Click(object sender, EventArgs e) => ToggleEmergencyEditMode(false);
         protected void btnSaveEmergency_Click(object sender, EventArgs e)
         {
             ShowSweetAlert("Info", "Emergency contact saving not yet implemented.", "info");
@@ -318,11 +381,9 @@ namespace spmst_lms_development.Users.Patron
             SetTextBoxEditability(txtGuardianName, isEditing);
             SetTextBoxEditability(txtGuardianRel, isEditing);
             SetTextBoxEditability(txtGuardianContact, isEditing);
-
             upEmergencyContact.Update();
         }
 
-        // ========== HELPER & ENCRYPTION ==========
         private void SetTextBoxEditability(TextBox txt, bool isEditing)
         {
             txt.Enabled = isEditing;
@@ -338,14 +399,9 @@ namespace spmst_lms_development.Users.Patron
             }
         }
 
-        // ========== DOWNLOAD DIGITAL ID (UPDATED) ==========
-        
-
         private void ShowSweetAlert(string title, string message, string icon)
         {
-            string cleanTitle = title.Replace("'", "\\'");
-            string cleanMsg = message.Replace("'", "\\'");
-            string script = $"showSweetAlert('{cleanTitle}', '{cleanMsg}', '{icon}');";
+            string script = $"showSweetAlert('{title.Replace("'", "\\'")}', '{message.Replace("'", "\\'")}', '{icon}');";
             ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(), script, true);
         }
     }

@@ -96,6 +96,15 @@ namespace spmst_lms_development.Users.Patron
         protected global::System.Web.UI.WebControls.Button btnCancelAccount;
 
         /// <summary>
+        /// pnlFirstName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlFirstName;
+
+        /// <summary>
         /// txtFirstName control.
         /// </summary>
         /// <remarks>
@@ -103,6 +112,15 @@ namespace spmst_lms_development.Users.Patron
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtFirstName;
+
+        /// <summary>
+        /// pnlMiddleName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlMiddleName;
 
         /// <summary>
         /// txtMiddleName control.
@@ -114,6 +132,15 @@ namespace spmst_lms_development.Users.Patron
         protected global::System.Web.UI.WebControls.TextBox txtMiddleName;
 
         /// <summary>
+        /// pnlLastName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlLastName;
+
+        /// <summary>
         /// txtLastName control.
         /// </summary>
         /// <remarks>
@@ -121,6 +148,15 @@ namespace spmst_lms_development.Users.Patron
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtLastName;
+
+        /// <summary>
+        /// pnlExtensionName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlExtensionName;
 
         /// <summary>
         /// txtExtension control.
@@ -132,6 +168,15 @@ namespace spmst_lms_development.Users.Patron
         protected global::System.Web.UI.WebControls.TextBox txtExtension;
 
         /// <summary>
+        /// pnlGender control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlGender;
+
+        /// <summary>
         /// txtGender control.
         /// </summary>
         /// <remarks>
@@ -139,6 +184,15 @@ namespace spmst_lms_development.Users.Patron
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtGender;
+
+        /// <summary>
+        /// pnlMobileNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlMobileNumber;
 
         /// <summary>
         /// txtMobile control.
@@ -150,6 +204,15 @@ namespace spmst_lms_development.Users.Patron
         protected global::System.Web.UI.WebControls.TextBox txtMobile;
 
         /// <summary>
+        /// pnlUserID control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlUserID;
+
+        /// <summary>
         /// txtStudentID control.
         /// </summary>
         /// <remarks>
@@ -157,6 +220,15 @@ namespace spmst_lms_development.Users.Patron
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtStudentID;
+
+        /// <summary>
+        /// pnlInstitutionalEmail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlInstitutionalEmail;
 
         /// <summary>
         /// txtEmail control.
@@ -168,6 +240,15 @@ namespace spmst_lms_development.Users.Patron
         protected global::System.Web.UI.WebControls.TextBox txtEmail;
 
         /// <summary>
+        /// pnlDepartment control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlDepartment;
+
+        /// <summary>
         /// txtDepartment control.
         /// </summary>
         /// <remarks>
@@ -177,6 +258,15 @@ namespace spmst_lms_development.Users.Patron
         protected global::System.Web.UI.WebControls.TextBox txtDepartment;
 
         /// <summary>
+        /// pnlCourseYear control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlCourseYear;
+
+        /// <summary>
         /// txtCourse control.
         /// </summary>
         /// <remarks>
@@ -184,6 +274,15 @@ namespace spmst_lms_development.Users.Patron
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtCourse;
+
+        /// <summary>
+        /// pnlHomeAddress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlHomeAddress;
 
         /// <summary>
         /// txtAddress control.
