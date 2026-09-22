@@ -338,7 +338,7 @@
                             <label class="field-label">Purpose of Visit</label>
                             <div class="select-wrap">
                                 <asp:DropDownList ID="ddlPurpose" runat="server" CssClass="kiosk-select" ClientIDMode="Static">
-                                    <asp:ListItem Value="" Text="Select…" disabled="disabled" selected="True" />
+                                    <asp:ListItem Value="" Text="Select..." disabled="disabled" selected="True" />
                                     <asp:ListItem Value="Study" Text="Study / Self-review" />
                                     <asp:ListItem Value="Research" Text="Research" />
                                     <asp:ListItem Value="Borrow/Return" Text="Borrow / Return Books" />
@@ -436,14 +436,14 @@
         $('#qrPlaceholder').hide();
         $('#reader').show();
         $('#scanLine').show();
-        $('#scanStatus').text('Scanning…');
+        $('#scanStatus').text('Scanning...');
         $('#btnCam').html('<i class="fas fa-times"></i> Close Scanner').addClass('active');
 
         html5QrCode = new Html5Qrcode('reader');
         html5QrCode.start({ facingMode: 'environment' }, { fps: 30, qrbox: { width: 250, height: 250 } },
             function (decoded) {
                 stopScanner();
-                $('#scanStatus').text('QR detected – looking up…');
+                $('#scanStatus').text('QR detected - looking up...');
                 $('#txtIdNumber').val(decoded);
                 verifyUser();
             }

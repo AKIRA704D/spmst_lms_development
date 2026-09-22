@@ -52,7 +52,7 @@
             </div>
 
             <div class="lmsa-service-grid" id="servicesGrid">
-                <div class="lmsa-empty" style="grid-column:1/-1;"><i class="fa-solid fa-spinner fa-spin"></i>Loading services…</div>
+                <div class="lmsa-empty" style="grid-column:1/-1;"><i class="fa-solid fa-spinner fa-spin"></i>Loading services...</div>
             </div>
         </div>
     </section>

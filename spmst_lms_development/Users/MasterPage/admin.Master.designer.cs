@@ -42,67 +42,112 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.ScriptManager ScriptManager1;
 
         /// <summary>
-        /// lnkDashboard control.
+        /// navGroupCoreOps control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkDashboard;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl navGroupCoreOps;
 
         /// <summary>
-        /// lnkCirculation control.
+        /// lnkAdminDashboard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkCirculation;
+        protected global::System.Web.UI.WebControls.HyperLink lnkAdminDashboard;
 
         /// <summary>
-        /// HyperLink4 control.
+        /// lnkPatronDashboard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink4;
+        protected global::System.Web.UI.WebControls.HyperLink lnkPatronDashboard;
 
         /// <summary>
-        /// HyperLink5 control.
+        /// lnkMgtDashboard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink5;
+        protected global::System.Web.UI.WebControls.HyperLink lnkMgtDashboard;
 
         /// <summary>
-        /// HyperLink6 control.
+        /// lnkCirDashboard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink6;
+        protected global::System.Web.UI.WebControls.HyperLink lnkCirDashboard;
 
         /// <summary>
-        /// HyperLink7 control.
+        /// lnkBookBorrow control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink7;
+        protected global::System.Web.UI.WebControls.HyperLink lnkBookBorrow;
 
         /// <summary>
-        /// HyperLink8 control.
+        /// lnkCatalog control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink8;
+        protected global::System.Web.UI.WebControls.HyperLink lnkCatalog;
+
+        /// <summary>
+        /// lnkToPickUp control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkToPickUp;
+
+        /// <summary>
+        /// lnkReservations control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkReservations;
+
+        /// <summary>
+        /// lnkPenalties control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkPenalties;
+
+        /// <summary>
+        /// lnkAttendance control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkAttendance;
+
+        /// <summary>
+        /// navGroupManagement control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl navGroupManagement;
 
         /// <summary>
         /// lnkInventory control.
@@ -123,22 +168,22 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkAccounts;
 
         /// <summary>
-        /// HyperLink1 control.
+        /// lnkProfile control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink1;
+        protected global::System.Web.UI.WebControls.HyperLink lnkProfile;
 
         /// <summary>
-        /// HyperLink2 control.
+        /// lnkNotifications control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink2;
+        protected global::System.Web.UI.WebControls.HyperLink lnkNotifications;
 
         /// <summary>
         /// lnkLibrarySettings control.
@@ -150,22 +195,31 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkLibrarySettings;
 
         /// <summary>
-        /// HyperLink3 control.
+        /// navGroupRegistry control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink3;
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl navGroupRegistry;
 
         /// <summary>
-        /// HyperLink9 control.
+        /// lnkFeedbackRequest control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink9;
+        protected global::System.Web.UI.WebControls.HyperLink lnkFeedbackRequest;
+
+        /// <summary>
+        /// lnkFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkFeedback;
 
         /// <summary>
         /// lnkReports control.
@@ -177,13 +231,13 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkReports;
 
         /// <summary>
-        /// HyperLink10 control.
+        /// lnkGenerateReports control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink10;
+        protected global::System.Web.UI.WebControls.HyperLink lnkGenerateReports;
 
         /// <summary>
         /// lnkSystemLogs control.

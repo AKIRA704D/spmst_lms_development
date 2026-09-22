@@ -74,7 +74,7 @@
             <button type="button" class="pr-btn pr-btn-primary" id="btnDoPrint">Print / Save as PDF</button>
         </div>
         <div class="pr-sheet" id="prSheet">
-            <div class="pr-empty" id="prEmpty">Loading report…</div>
+            <div class="pr-empty" id="prEmpty">Loading report...</div>
         </div>
     </form>
 

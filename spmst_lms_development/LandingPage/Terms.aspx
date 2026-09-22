@@ -1,7 +1,7 @@
 <%@ Page Title="" Language="C#" MasterPageFile="~/LandingPage/LandingPage.Master" AutoEventWireup="true" CodeBehind="Terms.aspx.cs" Inherits="spmst_lms_development.LandingPage.Terms" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <title>Terms &amp; Conditions | SPAMAST Library — LMSA</title>
+    <title>Terms &amp; Conditions | SPAMAST Library - LMSA</title>
     <style>
         .lmsa-page-header { background: linear-gradient(135deg, var(--lmsa-navy) 0%, var(--lmsa-navy-2) 100%); color: #fff; padding: 56px 0 64px; }
         .lmsa-page-header h1 { font-size: 2.1rem; font-weight: 800; margin-bottom: 10px; }
@@ -39,7 +39,7 @@
 
             <div id="termsContent">
                 <div class="lmsa-card" style="padding:60px 20px;">
-                    <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading terms &amp; conditions…</div>
+                    <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading terms &amp; conditions...</div>
                 </div>
             </div>
         </div>
@@ -68,7 +68,11 @@
                 }
 
                 var pdfUrl = assetUrl(d.filePath);
-                content.innerHTML = '<div class="lmsa-card" style="padding:10px;"><iframe class="lmsa-terms-frame" src="' + pdfUrl + '" title="Terms and Conditions"></iframe></div>' +
+                // Hide toolbar, thumbnails/nav pane, and secondary toolbar; force fit-width view.
+                // Note: browsers only honor these fragments when the PDF is served inline.
+                var viewerUrl = pdfUrl + '#toolbar=0&navpanes=0&scrollbar=0&statusbar=0&messages=0&view=FitH';
+
+                content.innerHTML = '<div class="lmsa-card" style="padding:10px;"><iframe class="lmsa-terms-frame" src="' + viewerUrl + '" title="Terms and Conditions" scrolling="no"></iframe></div>' +
                     '<p style="margin-top:14px;font-size:0.82rem;color:var(--lmsa-text-muted);">If the document does not display, <a href="' + pdfUrl + '" target="_blank" rel="noopener" style="color:var(--lmsa-blue-dark);font-weight:700;">open it in a new tab</a>.</p>';
             }).catch(function () {
                 document.getElementById('termsContent').innerHTML = '<div class="lmsa-card" style="padding:60px 20px;"><div class="lmsa-empty"><i class="fa-solid fa-triangle-exclamation"></i>Could not load the Terms &amp; Conditions document.</div></div>';

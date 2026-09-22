@@ -176,15 +176,19 @@
     <Content Include="Users\Admin\Reports\generateReports.aspx" />
     <Content Include="Users\Admin\Reports\PrintReports.aspx" />
     <Content Include="Users\MasterPage\admin.Master" />
+    <Content Include="Users\Patron\Dashboard\PatronDash.aspx" />
     <Content Include="Users\Patron\FeedReq\Feedback.aspx" />
     <Content Include="Users\Patron\FeedReq\FeedbackRequest.aspx" />
     <Content Include="Users\Patron\History\History.aspx" />
     <Content Include="Users\Patron\Notifications\Notifications.aspx" />
+    <Content Include="Users\Patron\patronDash.aspx" />
     <Content Include="Users\Staff\Accounts\userAcc.aspx" />
     <Content Include="Users\Staff\Accounts\userFilter.aspx" />
     <Content Include="Users\Staff\Accounts\userNew.aspx" />
     <Content Include="Users\Staff\Accounts\userUpdate.aspx" />
     <Content Include="Users\Staff\Accounts\userView.aspx" />
+    <Content Include="Users\Staff\Dashboard\CirDash.aspx" />
+    <Content Include="Users\Staff\Dashboard\MgtDash.aspx" />
     <Content Include="Users\Staff\Inventory\bookFilter.aspx" />
     <Content Include="Users\Staff\Inventory\bookImport.aspx" />
     <Content Include="Users\Staff\Inventory\bookInventory.aspx" />
@@ -205,7 +209,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Helper\AlertHelper.cs" />
+    <Compile Include="Assets\Helper\DbHelper.cs" />
     <Compile Include="Assets\Helper\EmailHelper.cs" />
+    <Compile Include="Assets\Helper\Handlers\AttendanceHelper.cs" />
+    <Compile Include="Assets\Helper\Handlers\CirculationHelper.cs" />
+    <Compile Include="Assets\Helper\Handlers\PatronAnalyticsHelper.cs" />
     <Compile Include="Assets\Helper\InputHelper.cs" />
     <Compile Include="Assets\Helper\logs_Audit.cs" />
     <Compile Include="Assets\Helper\NotificationHelper.cs" />
@@ -393,6 +401,13 @@
     <Compile Include="Users\MasterPage\admin.Master.designer.cs">
       <DependentUpon>admin.Master</DependentUpon>
     </Compile>
+    <Compile Include="Users\Patron\Dashboard\PatronDash.aspx.cs">
+      <DependentUpon>PatronDash.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\Dashboard\PatronDash.aspx.designer.cs">
+      <DependentUpon>PatronDash.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Users\Patron\FeedReq\Feedback.aspx.cs">
       <DependentUpon>Feedback.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -420,6 +435,13 @@
     </Compile>
     <Compile Include="Users\Patron\Notifications\Notifications.aspx.designer.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Patron\patronDash.aspx.cs">
+      <DependentUpon>patronDash.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Patron\patronDash.aspx.designer.cs">
+      <DependentUpon>patronDash.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Accounts\userAcc.aspx.cs">
       <DependentUpon>userAcc.aspx</DependentUpon>
@@ -455,6 +477,20 @@
     </Compile>
     <Compile Include="Users\Staff\Accounts\userView.aspx.designer.cs">
       <DependentUpon>userView.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Dashboard\CirDash.aspx.cs">
+      <DependentUpon>CirDash.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Dashboard\CirDash.aspx.designer.cs">
+      <DependentUpon>CirDash.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Staff\Dashboard\MgtDash.aspx.cs">
+      <DependentUpon>MgtDash.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Dashboard\MgtDash.aspx.designer.cs">
+      <DependentUpon>MgtDash.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Inventory\bookFilter.aspx.cs">
       <DependentUpon>bookFilter.aspx</DependentUpon>

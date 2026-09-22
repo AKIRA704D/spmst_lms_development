@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Web;
 using System.Web.Script.Serialization;
+using System.Web.SessionState;
 using MySql.Data.MySqlClient;
 
 namespace spmst_lms_development.Users.Admin.Settings
@@ -30,7 +31,7 @@ namespace spmst_lms_development.Users.Admin.Settings
     /// POST ?action=setactiveterms   (form: termsId)
     /// POST ?action=deleteterms      (form: termsId)
     /// </summary>
-    public class LibrarySettingsData : IHttpHandler
+    public class LibrarySettingsData : IHttpHandler, IRequiresSessionState
     {
         public bool IsReusable { get { return false; } }
 

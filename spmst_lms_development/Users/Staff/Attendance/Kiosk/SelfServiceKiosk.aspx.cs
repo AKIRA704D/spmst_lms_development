@@ -62,7 +62,7 @@ namespace spmst_lms_development.Users.Staff.Attendance.Kiosk   // ← changed to
                 return;
             }
 
-            if (hfCurrentStatus.Value != "Entry" && (string.IsNullOrEmpty(purpose) || purpose == "Select…"))
+            if (hfCurrentStatus.Value != "Entry" && (string.IsNullOrEmpty(purpose) || purpose == "Select..."))
             {
                 RegisterAlert("error", "Please select a valid purpose for your visit.");
                 return;

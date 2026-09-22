@@ -162,7 +162,7 @@
                 </div>
             </div>
             <div class="lmsa-scroller" id="borrowersScroller">
-                <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading top borrowers…</div>
+                <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading top borrowers...</div>
             </div>
         </div>
     </section>
@@ -184,7 +184,7 @@
             </div>
             <div class="lmsa-card" style="padding:22px 26px;">
                 <div id="institutesList">
-                    <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading top institutes…</div>
+                    <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading top institutes...</div>
                 </div>
             </div>
         </div>
@@ -201,7 +201,7 @@
                 </div>
             </div>
             <div class="lmsa-resource-grid" id="topResourcesGrid">
-                <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading most borrowed resources…</div>
+                <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading most borrowed resources...</div>
             </div>
         </div>
     </section>
@@ -218,7 +218,7 @@
             </div>
             <div class="lmsa-card" style="padding:22px 26px;">
                 <div id="sectionsList">
-                    <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading section activity…</div>
+                    <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading section activity...</div>
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
             </div>
 
             <div class="lmsa-resource-grid" id="catalogGrid">
-                <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading collection…</div>
+                <div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading collection...</div>
             </div>
 
             <div class="lmsa-pagination" id="catalogPagination"></div>
@@ -348,7 +348,7 @@
         // ---------- Top institutes ----------
         function loadTopInstitutes(role) {
             var el = document.getElementById('institutesList');
-            el.innerHTML = '<div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading…</div>';
+            el.innerHTML = '<div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div>';
             lmsaApi('topinstitutes', { role: role || 'All', count: 20 }).then(function (res) {
                 if (!res.success || !res.data.items || res.data.items.length === 0) {
                     el.innerHTML = '<div class="lmsa-empty"><i class="fa-solid fa-building-columns"></i>No institute borrowing activity yet.</div>';
@@ -462,7 +462,7 @@
         // ---------- Catalog grid ----------
         function loadCatalog() {
             var grid = document.getElementById('catalogGrid');
-            grid.innerHTML = '<div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading collection…</div>';
+            grid.innerHTML = '<div class="lmsa-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading collection...</div>';
             lmsaApi('catalog', catalogState).then(function (res) {
                 if (!res.success) { grid.innerHTML = '<div class="lmsa-empty"><i class="fa-solid fa-triangle-exclamation"></i>Could not load the catalog.</div>'; return; }
                 var data = res.data;

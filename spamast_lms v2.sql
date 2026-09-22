@@ -18,6 +18,8 @@ CREATE TABLE Students (
     course VARCHAR(50),
     section VARCHAR(10),
     year_level VARCHAR(20),
+    address text,
+    profile_path VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
@@ -50,6 +52,9 @@ CREATE TABLE Staff (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
+alter table Staff 
+add address text after is_head_librarian,
+add profile_path VARCHAR(255) after address;
 
 -- =============================================
 -- 2. USERS TABLE
@@ -163,7 +168,7 @@ CREATE TABLE Notifications (
 CREATE TABLE User_Submissions (
     submission_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(20),
-    type ENUM('Feedback', 'Request'),
+    type ENUM('Inquiry','Feedback', 'Request'),
     message TEXT,
     is_restock_suggestion TINYINT(1) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

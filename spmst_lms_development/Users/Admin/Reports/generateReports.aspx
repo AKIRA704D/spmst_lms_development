@@ -1286,7 +1286,7 @@
                 <div class="gr-section">
                     <div class="gr-section-title"><i class="fas fa-user"></i> Select a Borrower</div>
                     <select id="selBorrower" class="gr-input" style="margin-bottom:8px;">
-                        <option value="">Loading borrowers…</option>
+                        <option value="">Loading borrowers...</option>
                     </select>
 
                     <label class="gr-field-label"><i class="fas fa-calendar-alt"></i> Borrow date from / to</label>
@@ -1314,7 +1314,7 @@
                         <input type="text" id="inpResourceSearch" class="gr-input" style="margin-bottom:0; padding-left:28px;" placeholder="Search by title or author..." />
                     </div>
                     <select id="selResource" class="gr-input" style="margin-bottom:6px;">
-                        <option value="">Loading resources…</option>
+                        <option value="">Loading resources...</option>
                     </select>
                     <div class="gr-copies-preview" id="resourceCopiesPreview" style="display:none;"></div>
                     <button type="button" class="gr-btn gr-btn-outline gr-add-btn" id="btnAddResource">
@@ -1616,7 +1616,7 @@
                     return;
                 }
                 els.resourceCopiesPreview.style.display = "block";
-                els.resourceCopiesPreview.innerHTML = '<div class="gr-loading-note"><i class="fas fa-spinner fa-spin"></i> Loading copies…</div>';
+                els.resourceCopiesPreview.innerHTML = '<div class="gr-loading-note"><i class="fas fa-spinner fa-spin"></i> Loading copies...</div>';
                 api("resource_copies", { id: opt.value }).then(function (copies) {
                     els.resourceCopiesPreview.innerHTML = renderCopiesTable(copies);
                 }).catch(function (err) {
@@ -1911,7 +1911,7 @@
                     return;
                 }
                 els.btnGenerate.disabled = true;
-                els.btnGenerate.textContent = "Generating…";
+                els.btnGenerate.textContent = "Generating...";
                 els.emptyState.style.display = "none";
                 els.resultsBody.innerHTML = '<div class="gr-skeleton"></div>';
 

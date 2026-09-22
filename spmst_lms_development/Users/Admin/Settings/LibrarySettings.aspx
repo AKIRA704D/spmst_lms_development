@@ -68,7 +68,7 @@
             <div class="ls-card ls-form">
                 <h5>Contact Information</h5>
                 <div class="sub">Shown on the public "About &amp; Contact" page and site footer.</div>
-                <form id="contactForm" onsubmit="return false;">
+                <div id="contactForm">
                     <div class="row g-3">
                         <div class="col-12"><label>Address</label><input type="text" class="form-control" id="ciAddress" /></div>
                         <div class="col-md-6"><label>Phone</label><input type="text" class="form-control" id="ciPhone" /></div>
@@ -79,11 +79,11 @@
                         <div class="col-md-6"><label>Facebook URL <span class="text-muted fw-normal">(optional)</span></label><input type="text" class="form-control" id="ciFacebook" /></div>
                         <div class="col-md-6"><label>Google Maps Embed URL</label><input type="text" class="form-control" id="ciMapUrl" placeholder="https://www.google.com/maps/embed?..." /></div>
                         <div class="col-12">
-                            <button type="submit" id="ciSaveBtn" class="btn-ls-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save Contact Info</button>
+                            <button type="button" id="ciSaveBtn" class="btn-ls-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save Contact Info</button>
                             <span class="ls-save-note" id="ciNote"></span>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -92,7 +92,7 @@
             <div class="ls-card ls-form">
                 <h5>About Us</h5>
                 <div class="sub">Shown on the public "About &amp; Contact" page.</div>
-                <form id="aboutForm" onsubmit="return false;">
+                <div id="aboutForm">
                     <div class="row g-3">
                         <div class="col-12"><label>Heading</label><input type="text" class="form-control" id="auHeading" /></div>
                         <div class="col-12"><label>Body <span class="text-muted fw-normal">(separate paragraphs with a blank line)</span></label><textarea class="form-control" id="auBody" rows="5"></textarea></div>
@@ -103,11 +103,11 @@
                         <div class="col-md-4"><label>Stat 3 Label</label><input type="text" class="form-control" id="auStat3Label" placeholder="Days a Week Open" /></div>
                         <div class="col-md-2"><label>Value</label><input type="text" class="form-control" id="auStat3Value" placeholder="6" /></div>
                         <div class="col-12">
-                            <button type="submit" id="auSaveBtn" class="btn-ls-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save About Us</button>
+                            <button type="button" id="auSaveBtn" class="btn-ls-primary"><i class="fa-solid fa-floppy-disk me-1"></i> Save About Us</button>
                             <span class="ls-save-note" id="auNote"></span>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -139,10 +139,10 @@
             <div class="ls-card ls-form">
                 <h5>Upload Terms &amp; Conditions</h5>
                 <div class="sub">Only PDF files are accepted. Uploading a new document does not remove older ones - you can keep history and switch which one is active.</div>
-                <form id="termsForm" onsubmit="return false;">
+                <div id="termsForm">
                     <div class="row g-3">
                         <div class="col-md-6"><label>Title</label><input type="text" class="form-control" id="tTitle" placeholder="Library Terms & Conditions" /></div>
-                        <div class="col-md-3"><label>Version <span class="text-muted fw-normal">(optional)</span></label><input type="text" class="form-control" id="tVersion" placeholder="v1.0" /></div>
+                        <div class="col-md-3"><label>Version <span class="text-muted fw-normal">(optional)</span></label><input type="text" class="form-control" id="tVersion" placeholder="1.0" /></div>
                         <div class="col-md-3 d-flex align-items-end">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="tSetActive" checked />
@@ -159,11 +159,11 @@
                             <iframe id="tPreviewFrame" class="ls-terms-preview"></iframe>
                         </div>
                         <div class="col-12">
-                            <button type="submit" id="tUploadBtn" class="btn-ls-primary"><i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload</button>
+                            <button type="button" id="tUploadBtn" class="btn-ls-primary"><i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload</button>
                             <span class="ls-save-note" id="tNote"></span>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
 
             <div class="ls-card">
@@ -247,8 +247,21 @@
         }
         function lsAssetUrl(p) { return p ? siteRoot + p.replace(/^\/+/, '') : ''; }
 
+        // Appends PDF Open Parameters so the embedded viewer hides its
+        // toolbar, thumbnail pane, and status bar (read-only content view).
+        function lsPdfViewerUrl(url) {
+            if (!url) return '';
+            // Strip any existing fragment so we don't end up with "...#...#toolbar=0"
+            var base = url.split('#')[0];
+            return base + '#toolbar=0&navpanes=0&statusbar=0&messages=0&scrollbar=1&view=FitH';
+        }
+
+
         function lsApiGet(action) {
-            return fetch(apiUrl + '?action=' + encodeURIComponent(action), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            var url = apiUrl + '?action=' + encodeURIComponent(action) + '&_=' + Date.now();
+            return fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                cache: 'no-store' })
                 .then(function (r) { return r.json(); });
         }
         function lsApiPost(action, formData) {
@@ -272,7 +285,7 @@
             });
         }
 
-        document.getElementById('contactForm').addEventListener('submit', function () {
+        document.getElementById('ciSaveBtn').addEventListener('click', function () {
             var fd = new FormData();
             fd.append('address', document.getElementById('ciAddress').value);
             fd.append('phone', document.getElementById('ciPhone').value);
@@ -284,7 +297,7 @@
             fd.append('mapEmbedUrl', document.getElementById('ciMapUrl').value);
 
             var note = document.getElementById('ciNote');
-            note.textContent = 'Saving…'; note.className = 'ls-save-note';
+            note.textContent = 'Saving...'; note.className = 'ls-save-note';
             lsApiPost('savecontact', fd).then(function (res) {
                 note.textContent = res.success ? 'Saved.' : (res.message || 'Could not save.');
                 note.className = 'ls-save-note' + (res.success ? ' ok' : '');
@@ -307,7 +320,7 @@
             });
         }
 
-        document.getElementById('aboutForm').addEventListener('submit', function () {
+        document.getElementById('auSaveBtn').addEventListener('click', function () {
             var fd = new FormData();
             fd.append('heading', document.getElementById('auHeading').value);
             fd.append('body', document.getElementById('auBody').value);
@@ -319,7 +332,7 @@
             fd.append('stat3Value', document.getElementById('auStat3Value').value);
 
             var note = document.getElementById('auNote');
-            note.textContent = 'Saving…'; note.className = 'ls-save-note';
+            note.textContent = 'Saving...'; note.className = 'ls-save-note';
             lsApiPost('saveabout', fd).then(function (res) {
                 note.textContent = res.success ? 'Saved.' : (res.message || 'Could not save.');
                 note.className = 'ls-save-note' + (res.success ? ' ok' : '');
@@ -340,7 +353,7 @@
                     return '<tr>' +
                         '<td><span class="ls-icon-preview"><i class="fa-solid ' + lsEscape(s.iconClass) + '"></i></span></td>' +
                         '<td class="fw-semibold">' + lsEscape(s.title) + '</td>' +
-                        '<td class="text-muted" style="max-width:320px;">' + lsEscape((s.description || '').substring(0, 90)) + ((s.description || '').length > 90 ? '…' : '') + '</td>' +
+                        '<td class="text-muted" style="max-width:320px;">' + lsEscape((s.description || '').substring(0, 90)) + ((s.description || '').length > 90 ? '...' : '') + '</td>' +
                         '<td>' + s.sortOrder + '</td>' +
                         '<td><span class="ls-badge ' + (s.isActive ? 'on' : 'off') + '">' + (s.isActive ? 'Active' : 'Hidden') + '</span></td>' +
                         '<td><div class="ls-row-actions">' +
@@ -383,23 +396,44 @@
         }
 
         // ---------------- Terms & Conditions ----------------
+        var termsCache = {};   // keyed by termsId
+
         function loadTerms() {
             lsApiGet('listterms').then(function (res) {
                 var body = document.getElementById('termsTableBody');
+
                 if (!res.success || !res.data || res.data.length === 0) {
-                    body.innerHTML = '<tr><td colspan="5" class="ls-empty"><i class="fa-solid fa-file-circle-question"></i><br/>No documents uploaded yet.</td></tr>';
+                    termsCache = {};
+                    body.innerHTML =
+                        '<tr><td colspan="5" class="ls-empty">' +
+                        '<i class="fa-solid fa-file-circle-question"></i><br/>' +
+                        'No documents uploaded yet.</td></tr>';
                     return;
                 }
+
+                // Index by id so the click handler can look up the row later.
+                termsCache = {};
+                res.data.forEach(function (t) { termsCache[t.termsId] = t; });
+
                 body.innerHTML = res.data.map(function (t) {
-                    return '<tr>' +
+                    return '<tr data-id="' + t.termsId + '">' +
                         '<td class="fw-semibold">' + lsEscape(t.title) + '</td>' +
                         '<td>' + lsEscape(t.versionLabel || '—') + '</td>' +
                         '<td class="text-muted">' + lsEscape(t.uploadedAt) + '</td>' +
-                        '<td><span class="ls-badge ' + (t.isActive ? 'on' : 'off') + '">' + (t.isActive ? 'Active' : 'Inactive') + '</span></td>' +
+                        '<td><span class="ls-badge ' + (t.isActive ? 'on' : 'off') + '">' +
+                        (t.isActive ? 'Active' : 'Inactive') +
+                        '</span></td>' +
                         '<td><div class="ls-row-actions">' +
-                        '  <button type="button" title="Preview" onclick="previewTerms(' + JSON.stringify(t.filePath) + ', ' + JSON.stringify(t.title) + ')"><i class="fa-solid fa-eye"></i></button>' +
-                        (t.isActive ? '' : '  <button type="button" title="Set Active" onclick="setActiveTerms(' + t.termsId + ')"><i class="fa-solid fa-check"></i></button>') +
-                        '  <button type="button" class="danger" title="Delete" onclick="deleteTerms(' + t.termsId + ', ' + JSON.stringify(t.title) + ')"><i class="fa-solid fa-trash"></i></button>' +
+                        '<button type="button" title="View" data-action="view" data-id="' + t.termsId + '">' +
+                        '<i class="fa-solid fa-eye"></i>' +
+                        '</button>' +
+                        (t.isActive ? '' :
+                            '<button type="button" title="Set as active" data-action="activate" data-id="' + t.termsId + '">' +
+                            '<i class="fa-solid fa-circle-check"></i>' +
+                            '</button>') +
+                        '<button type="button" class="danger" title="Delete" data-action="delete" data-id="' + t.termsId + '">' +
+                        '<i class="fa-solid fa-trash"></i>' +
+                        '</button>' +
                         '</div></td>' +
                         '</tr>';
                 }).join('');
@@ -408,35 +442,42 @@
 
         function previewTerms(filePath, title) {
             document.getElementById('previewModalTitle').textContent = title;
-            document.getElementById('previewModalFrame').src = lsAssetUrl(filePath);
+            document.getElementById('previewModalFrame').src = lsPdfViewerUrl(lsAssetUrl(filePath));
             previewModal.show();
         }
 
         function setActiveTerms(id) {
             var fd = new FormData();
             fd.append('termsId', id);
-            lsApiPost('setactiveterms', fd).then(function () { loadTerms(); });
+            lsApiPost('setactiveterms', fd).then(function (res) {
+                if (res && res.success === false) { alert(res.message || 'Could not activate.'); return; }
+                loadTerms();          // <-- reflect the new Active badge immediately
+            });
         }
 
         function deleteTerms(id, title) {
             if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
             var fd = new FormData();
             fd.append('termsId', id);
-            lsApiPost('deleteterms', fd).then(function () { loadTerms(); });
+            lsApiPost('deleteterms', fd).then(function (res) {
+                if (res && res.success === false) { alert(res.message || 'Could not delete.'); return; }
+                loadTerms();
+            });
         }
 
         document.getElementById('tFile').addEventListener('change', function (e) {
             var file = e.target.files[0];
             var frame = document.getElementById('tPreviewFrame');
             if (file) {
-                frame.src = URL.createObjectURL(file);
+                frame.src = lsPdfViewerUrl(URL.createObjectURL(file));
                 frame.style.display = 'block';
             } else {
                 frame.style.display = 'none';
+                frame.src = '';
             }
         });
 
-        document.getElementById('termsForm').addEventListener('submit', function () {
+        document.getElementById('tUploadBtn').addEventListener('click', function () {
             var fileInput = document.getElementById('tFile');
             var note = document.getElementById('tNote');
             if (!fileInput.files || fileInput.files.length === 0) {
@@ -450,12 +491,16 @@
             fd.append('versionLabel', document.getElementById('tVersion').value);
             fd.append('isActive', document.getElementById('tSetActive').checked ? 'true' : 'false');
 
-            note.textContent = 'Uploading…'; note.className = 'ls-save-note';
+            note.textContent = 'Uploading...'; note.className = 'ls-save-note';
             lsApiPost('uploadterms', fd).then(function (res) {
                 if (res.success) {
                     note.textContent = 'Uploaded.'; note.className = 'ls-save-note ok';
-                    document.getElementById('termsForm').reset();
+                    document.getElementById('tTitle').value = '';
+                    document.getElementById('tVersion').value = '';
+                    document.getElementById('tFile').value = '';
+                    document.getElementById('tSetActive').checked = true;
                     document.getElementById('tPreviewFrame').style.display = 'none';
+                    document.getElementById('tPreviewFrame').src = '';
                     loadTerms();
                 } else {
                     note.textContent = res.message || 'Upload failed.'; note.className = 'ls-save-note';
@@ -497,6 +542,24 @@
                         alert(res.message || 'Could not save service.');
                     }
                 });
+            });
+
+            document.getElementById('termsTableBody').addEventListener('click', function(e) {
+                var btn = e.target.closest('button[data-action]');
+                if (!btn) return;
+
+                var id = parseInt(btn.getAttribute('data-id'), 10);
+                var action = btn.getAttribute('data-action');
+                var t = termsCache[id];
+                if (!t) return;
+
+                if (action === 'view') {
+                    previewTerms(t.filePath, t.title);
+                } else if (action === 'activate') {
+                    setActiveTerms(id);
+                } else if (action === 'delete') {
+                    deleteTerms(id, t.title);
+                }
             });
 
             loadContact();
