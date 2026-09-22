@@ -1,50 +1,111 @@
 ﻿using System;
 using System.Web;
-using System.Web.SessionState;
 
 namespace spmst_lms_development
 {
     public static class sessionHelper
     {
-        // Property hooks matching your EXACT login.aspx.cs session naming conventions
+        // =====================================================================
+        // CANONICAL ROLE TOKENS — single source of truth for the entire app.
+        // All lowercase so they align with case-insensitive comparisons.
+        // =====================================================================
+        public const string RoleAdmin = "admin";
+        public const string RoleStaffC = "staff-c";   // Circulation Area
+        public const string RoleStaffM = "staff-m";   // Management Area
+        public const string RoleStaffO = "staff-o";   // Other staff (patron-level)
+        public const string RoleStudent = "student";
+        public const string RoleFaculty = "faculty";
+        public const string RoleVisitor = "visitor";
+
+        // =====================================================================
+        // SESSION PROPERTIES
+        // =====================================================================
         public static string UserID => HttpContext.Current.Session["UserID"]?.ToString() ?? string.Empty;
         public static string FullName => HttpContext.Current.Session["FullName"]?.ToString() ?? "Guest User";
-        public static string UserRole => HttpContext.Current.Session["UserRole"]?.ToString() ?? "visitor";
+        public static string UserRole => HttpContext.Current.Session["UserRole"]?.ToString() ?? RoleVisitor;
         public static string Email => HttpContext.Current.Session["Email"]?.ToString() ?? string.Empty;
 
+        // =====================================================================
+        // ROLE RESOLUTION — called only by login.aspx.cs after successful auth.
+        // =====================================================================
         /// <summary>
-        /// Translates backend database codes into clean frontend display names
+        /// Maps (Users.role, Staff.office_department, Staff.is_head_librarian)
+        /// to a canonical session role token.
+        ///
+        /// Admin priority (any of these → admin):
+        ///   1. Users.role = 'admin'
+        ///   2. Staff.is_head_librarian = 1
+        ///   3. Staff.office_department contains "head office"
         /// </summary>
+        public static string ResolveRole(string dbRole, string department, bool isHeadLibrarian)
+        {
+            string role = (dbRole ?? string.Empty).Trim().ToLowerInvariant();
+            string dept = (department ?? string.Empty).Trim().ToLowerInvariant();
+
+            // --- Admin wins first so department never overrides it ---
+            if (role == "admin"
+                || isHeadLibrarian
+                || dept.Contains("head office"))
+            {
+                return RoleAdmin;
+            }
+
+            if (role == "staff")
+            {
+                if (dept.Contains("circulation")) return RoleStaffC;   // "Circulation Desk"/"Circulation Area"
+                if (dept.Contains("management")) return RoleStaffM;   // "Management Desk"/"Management Area"
+                return RoleStaffO;                                     // any other office
+            }
+
+            if (role == "student") return RoleStudent;
+            if (role == "faculty") return RoleFaculty;
+
+            return RoleVisitor;
+        }
+
+        // =====================================================================
+        // DISPLAY — for UI labels only. NEVER parse this for logic.
+        // =====================================================================
         public static string GetRoleDisplayName()
         {
-            string code = UserRole.ToLower().Trim();
-
-            switch (code)
+            switch ((UserRole ?? string.Empty).Trim().ToLowerInvariant())
             {
-                case "staff-a":
-                    return "admin";
-                case "staff-c":
-                    return "Circulation Librarian";
-                case "staff-m":
-                    return "Management Specialist";
-                case "staff-o":
-                    return "Library Staff";
-                case "student":
-                    return "Student Patron";
-                case "faculty":
-                    return "Faculty Patron";
-                default:
-                    return "System Visitor";
+                case RoleAdmin: return "Admin";
+                case RoleStaffC: return "Circulation Area";
+                case RoleStaffM: return "Management Area";
+                case RoleStaffO: return "Library Staff";
+                case RoleStudent: return "Student";
+                case RoleFaculty: return "Faculty";
+                default: return "Visitor";
             }
         }
 
-        /// <summary>
-        /// Generates a two-letter structural abbreviation from a full name (e.g., "Juan Dela Cruz" -> "JC")
-        /// </summary>
+        // =====================================================================
+        // DASHBOARD ROUTING — resolves a role code to its landing page.
+        // =====================================================================
+        public static string GetDashboardPath(string roleCode = null)
+        {
+            switch ((roleCode ?? UserRole ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case RoleAdmin: return "~/Users/Admin/Dashboard/adminDashC.aspx";
+                case RoleStaffC: return "~/Users/Staff/Dashboard/CirDash.aspx";
+                case RoleStaffM: return "~/Users/Staff/Dashboard/MgtDash.aspx";
+                case RoleStaffO:
+                case RoleStudent:
+                case RoleFaculty: return "~/Users/Patron/Dashboard/patronDash.aspx";
+                default: return "~/Login/login.aspx";
+            }
+        }
+
+        // =====================================================================
+        // UI HELPERS
+        // =====================================================================
         public static string GetInitials()
         {
             string name = FullName.Trim();
-            if (string.IsNullOrWhiteSpace(name) || name.Equals("Guest User", StringComparison.OrdinalIgnoreCase) || name.Equals("System User", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(name)
+                || name.Equals("Guest User", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("System User", StringComparison.OrdinalIgnoreCase))
             {
                 return "SU";
             }
@@ -55,19 +116,11 @@ namespace spmst_lms_development
                 return tokens[0].Substring(0, Math.Min(2, tokens[0].Length)).ToUpper();
             }
 
-            // Grabs the first character of the first name token and the first character of the last name token
             string firstInitial = tokens[0].Substring(0, 1);
             string lastInitial = tokens[tokens.Length - 1].Substring(0, 1);
-
             return (firstInitial + lastInitial).ToUpper();
         }
 
-        /// <summary>
-        /// Security Gate checking user authentication state
-        /// </summary>
-        public static bool IsLoggedIn()
-        {
-            return !string.IsNullOrEmpty(UserID);
-        }
+        public static bool IsLoggedIn() => !string.IsNullOrEmpty(UserID);
     }
 }

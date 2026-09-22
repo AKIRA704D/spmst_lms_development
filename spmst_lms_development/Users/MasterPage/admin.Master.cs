@@ -9,19 +9,17 @@ namespace spmst_lms_development.Users.MasterPage
 {
     public partial class admin : System.Web.UI.MasterPage
     {
-        #region Role tokens
+        #region Role tokens (aliased to canonical constants)
 
-        private const string RoleAdmin = "admin";
-        private const string RoleStaff = "staff";   // umbrella
-        private const string RoleStaffC = "staffC";  // Circulation
-        private const string RoleStaffM = "staffM";  // Management
-        private const string RoleStaffO = "staffO";  // Library Staff (other staff)
-        private const string RoleStudent = "student";
-        private const string RoleFaculty = "faculty";
+        private const string RoleAdmin = sessionHelper.RoleAdmin;
+        private const string RoleStaffC = sessionHelper.RoleStaffC;
+        private const string RoleStaffM = sessionHelper.RoleStaffM;
+        private const string RoleStaffO = sessionHelper.RoleStaffO;
+        private const string RoleStudent = sessionHelper.RoleStudent;
+        private const string RoleFaculty = sessionHelper.RoleFaculty;
 
-        // Convenience groups
         private static readonly string[] Everyone =
-            { RoleAdmin, RoleStaff, RoleStaffC, RoleStaffM, RoleStaffO, RoleStudent, RoleFaculty };
+            { RoleAdmin, RoleStaffC, RoleStaffM, RoleStaffO, RoleStudent, RoleFaculty };
 
         private static readonly string[] PatronsOnly =
             { RoleStudent, RoleFaculty, RoleStaffO };
@@ -39,7 +37,12 @@ namespace spmst_lms_development.Users.MasterPage
                 return;
             }
 
-            _roles = NormalizeRoles(sessionHelper.GetRoleDisplayName());
+            // Session already stores a canonical code — no parsing needed.
+            _roles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                sessionHelper.UserRole
+            };
+
             ApplyRoleBasedNavigation();
 
             if (!IsPostBack)
@@ -50,6 +53,7 @@ namespace spmst_lms_development.Users.MasterPage
 
         private void LoadUserProfileFooter()
         {
+            // Intentionally left empty — kept for future footer data hooks.
         }
 
         // =====================================================================
@@ -57,35 +61,35 @@ namespace spmst_lms_development.Users.MasterPage
         // =====================================================================
         private void ApplyRoleBasedNavigation()
         {
-            // ---------------- Dashboards — one per audience ---------------
-            Allow(lnkAdminDashboard, RoleAdmin);                              // Admin dashboard
-            Allow(lnkPatronDashboard, PatronsOnly);                            // Patron dashboard
-            Allow(lnkMgtDashboard, RoleAdmin, RoleStaffM);                  // Management dashboard
-            Allow(lnkCirDashboard, RoleAdmin, RoleStaffC);                  // Circulation dashboard
+            // -------- Dashboards (one per audience) --------
+            Allow(lnkAdminDashboard, RoleAdmin);
+            Allow(lnkPatronDashboard, PatronsOnly);
+            Allow(lnkMgtDashboard, RoleAdmin, RoleStaffM);
+            Allow(lnkCirDashboard, RoleAdmin, RoleStaffC);
 
-            // ---------------- Core Operations -------------------------------
-            Allow(lnkBookBorrow, RoleAdmin, RoleStaffC);                     // Circulation / Loans
-            Allow(lnkCatalog, Everyone);                                  // Catalog — everyone
-            Allow(lnkToPickUp, PatronsOnly);                               // To Pick Up — patrons only
-            Allow(lnkReservations, RoleAdmin, RoleStaffC, RoleStaffM);         // Reservations
-            Allow(lnkPenalties, RoleAdmin, RoleStaffC);                     // Penalties
-            Allow(lnkAttendance, RoleAdmin, RoleStaffM);                     // Attendance
+            // -------- Core Operations --------
+            Allow(lnkBookBorrow, RoleAdmin, RoleStaffC);
+            Allow(lnkCatalog, Everyone);
+            Allow(lnkToPickUp, PatronsOnly);
+            Allow(lnkReservations, RoleAdmin, RoleStaffC, RoleStaffM);
+            Allow(lnkPenalties, RoleAdmin, RoleStaffC);
+            Allow(lnkAttendance, RoleAdmin, RoleStaffM);
 
-            // ---------------- Management ------------------------------------
-            Allow(lnkInventory, RoleAdmin, RoleStaffC);                  // Inventory
-            Allow(lnkAccounts, RoleAdmin, RoleStaffM);                  // Accounts
-            Allow(lnkProfile, Everyone);                               // Profile — everyone
-            Allow(lnkNotifications, Everyone);                               // Notifications — everyone
-            Allow(lnkLibrarySettings, RoleAdmin);                              // Settings — admin only
+            // -------- Management --------
+            Allow(lnkInventory, RoleAdmin, RoleStaffC);
+            Allow(lnkAccounts, RoleAdmin, RoleStaffM);
+            Allow(lnkProfile, Everyone);
+            Allow(lnkNotifications, Everyone);
+            Allow(lnkLibrarySettings, RoleAdmin);
 
-            // ---------------- System Registry -------------------------------
-            Allow(lnkFeedbackRequest, Everyone); // Feedback & Request
-            Allow(lnkFeedback, PatronsOnly);                                     // Feedback
-            Allow(lnkReports, RoleAdmin, RoleStaffM);                           // Reports
-            Allow(lnkGenerateReports, RoleAdmin);                                       // Generate Reports
-            Allow(lnkSystemLogs, RoleAdmin);                                       // System Logs
+            // -------- System Registry --------
+            Allow(lnkFeedbackRequest, Everyone);
+            Allow(lnkFeedback, PatronsOnly);
+            Allow(lnkReports, RoleAdmin, RoleStaffM);
+            Allow(lnkGenerateReports, RoleAdmin);
+            Allow(lnkSystemLogs, RoleAdmin);
 
-            // Hide section headers if every child tab is hidden
+            // Hide section headers when every child tab is hidden
             navGroupCoreOps.Visible = AnyVisible(
                 lnkAdminDashboard, lnkPatronDashboard, lnkMgtDashboard, lnkCirDashboard,
                 lnkBookBorrow, lnkCatalog, lnkToPickUp,
@@ -108,52 +112,5 @@ namespace spmst_lms_development.Users.MasterPage
 
         private static bool AnyVisible(params HyperLink[] links)
             => links.Any(l => l != null && l.Visible);
-
-        /// <summary>
-        /// Maps sessionHelper.GetRoleDisplayName() output AND raw staff codes
-        /// to the canonical role tokens used above.
-        /// </summary>
-        private static HashSet<string> NormalizeRoles(string rawRole)
-        {
-            var roles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (string.IsNullOrWhiteSpace(rawRole)) return roles;
-
-            string compact = rawRole.Trim().ToLowerInvariant()
-                .Replace(" ", "").Replace("-", "").Replace("_", "").Replace(".", "");
-
-            // Admin
-            if (compact == "admin" || compact == "staffa" || compact.Contains("administrator"))
-                roles.Add(RoleAdmin);
-
-            // Circulation
-            if (compact.Contains("circulation") || compact.Contains("staffc") || compact.Contains("librarian"))
-            {
-                roles.Add(RoleStaff);
-                roles.Add(RoleStaffC);
-            }
-
-            // Management
-            if (compact.Contains("management") || compact.Contains("staffm"))
-            {
-                roles.Add(RoleStaff);
-                roles.Add(RoleStaffM);
-            }
-
-            // Other staff (Library Staff)
-            if (compact.Contains("librarystaff") || compact.Contains("staffo"))
-            {
-                roles.Add(RoleStaff);
-                roles.Add(RoleStaffO);
-            }
-
-            // Students / Faculty
-            if (compact.Contains("student") || (compact.Contains("patron") && !compact.Contains("faculty")))
-                roles.Add(RoleStudent);
-
-            if (compact.Contains("faculty"))
-                roles.Add(RoleFaculty);
-
-            return roles;
-        }
     }
 }

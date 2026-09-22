@@ -770,30 +770,12 @@
 
                 <header class="desktop-header">
                     <div>
-                        <div class="desktop-role-badge">
-                            <i class="fa-solid fa-building-user"></i>
-                            <span>
-                                <% 
-                                    string currentRole = spmst_lms_development.sessionHelper.GetRoleDisplayName() ?? "";
-                                    if (currentRole.Equals("admin", StringComparison.OrdinalIgnoreCase))
-                                    {
-                                %>
-                                    Head Librarian
-                                <% }
-                                    else if (currentRole.Equals("staff C", StringComparison.OrdinalIgnoreCase))
-                                    { %>
-                                Circulation Area
-                                <% }
-                                    else if (currentRole.Equals("staff M", StringComparison.OrdinalIgnoreCase))
-                                    { %>
-                                Management Area
-                                <% }
-                                    else
-                                    { %>
-                                <%= HttpUtility.HtmlEncode(currentRole) %>
-                                <% } %>
-                            </span>
-                        </div>
+                       <div class="desktop-role-badge">
+                           <i class="fa-solid fa-building-user"></i>
+                           <span>
+                               <%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %>
+                           </span>
+                       </div>
                     </div>
 
                     <div class="header-action-group">
