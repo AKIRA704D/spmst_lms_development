@@ -8,7 +8,7 @@ using System.Web.UI.WebControls;
 
 namespace spmst_lms_development.Users.Staff.Accounts
 {
-    public partial class userAcc : System.Web.UI.Page
+    public partial class UserAcc : System.Web.UI.Page
     {
         private string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
         private string currentUser = "";

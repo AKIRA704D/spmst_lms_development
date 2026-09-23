@@ -11,7 +11,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
 {
 
 
-    public partial class userAcc
+    public partial class UserAcc
     {
 
         /// <summary>

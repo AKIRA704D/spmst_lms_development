@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Account Management" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="userAcc.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Accounts.userAcc" %>
+﻿<%@ Page Title="Account Management" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="UserAcc.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Accounts.UserAcc" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />

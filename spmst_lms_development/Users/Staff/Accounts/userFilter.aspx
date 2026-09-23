@@ -69,7 +69,7 @@
     <script>
         function resetFilters() {
             // Reload parent page without any filter parameters
-            window.parent.location.href = 'userAcc.aspx';
+            window.parent.location.href = 'UserAcc.aspx';
         }
     </script>
 </head>

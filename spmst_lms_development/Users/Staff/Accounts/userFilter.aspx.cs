@@ -96,7 +96,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
             string queryParams = $"isFilter=1&role={Uri.EscapeDataString(role)}&inst={Uri.EscapeDataString(inst)}&prog={Uri.EscapeDataString(prog)}&year={Uri.EscapeDataString(year)}&stat={stat}";
 
             // Redirect parent page
-            string script = $"window.parent.location.href = 'userAcc.aspx?{queryParams}';";
+            string script = $"window.parent.location.href = 'UserAcc.aspx?{queryParams}';";
             ClientScript.RegisterStartupScript(GetType(), "ApplyFilters", script, true);
         }
 
