@@ -683,7 +683,7 @@
 
                     <!-- Accounts -->
                     <asp:HyperLink ID="lnkAccounts" runat="server"
-                        NavigateUrl="~/Users/Staff/Accounts/userAcc.aspx" CssClass="nav-menu-item">
+                        NavigateUrl="~/Users/Staff/Accounts/UserAcc.aspx" CssClass="nav-menu-item">
                         <i class="fa-solid fa-tags"></i><span>Accounts</span>
                     </asp:HyperLink>
 

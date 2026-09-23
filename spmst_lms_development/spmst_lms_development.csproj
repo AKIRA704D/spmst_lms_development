@@ -182,7 +182,7 @@
     <Content Include="Users\Patron\History\History.aspx" />
     <Content Include="Users\Patron\Notifications\Notifications.aspx" />
     <Content Include="Users\Patron\patronDash.aspx" />
-    <Content Include="Users\Staff\Accounts\userAcc.aspx" />
+    <Content Include="Users\Staff\Accounts\UserAcc.aspx" />
     <Content Include="Users\Staff\Accounts\userFilter.aspx" />
     <Content Include="Users\Staff\Accounts\userNew.aspx" />
     <Content Include="Users\Staff\Accounts\userUpdate.aspx" />
@@ -199,6 +199,7 @@
     <Content Include="Users\Staff\Inventory\bookUS.aspx" />
     <Content Include="Users\Staff\Penalties\Penalties.aspx" />
     <Content Include="Users\Patron\Profile\Profile.aspx" />
+    <Content Include="Users\Staff\Penalties\SettlePay.aspx" />
     <Content Include="Users\Staff\Reservation\Reservations.aspx" />
     <Content Include="Users\Patron\Reservations\ToPickUp.aspx" />
     <Content Include="Users\Staff\Transactions\Book_Borrow.aspx" />
@@ -446,12 +447,12 @@
     <Compile Include="Users\Patron\patronDash.aspx.designer.cs">
       <DependentUpon>patronDash.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Users\Staff\Accounts\userAcc.aspx.cs">
-      <DependentUpon>userAcc.aspx</DependentUpon>
+    <Compile Include="Users\Staff\Accounts\UserAcc.aspx.cs">
+      <DependentUpon>UserAcc.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Users\Staff\Accounts\userAcc.aspx.designer.cs">
-      <DependentUpon>userAcc.aspx</DependentUpon>
+    <Compile Include="Users\Staff\Accounts\UserAcc.aspx.designer.cs">
+      <DependentUpon>UserAcc.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Accounts\userFilter.aspx.cs">
       <DependentUpon>userFilter.aspx</DependentUpon>
@@ -564,6 +565,14 @@
     </Compile>
     <Compile Include="Users\Patron\Profile\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Assets\Helper\PenaltyService.cs" />
+    <Compile Include="Users\Staff\Penalties\SettlePay.aspx.cs">
+      <DependentUpon>SettlePay.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Staff\Penalties\SettlePay.aspx.designer.cs">
+      <DependentUpon>SettlePay.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Reservation\Reservations.aspx.cs">
       <DependentUpon>Reservations.aspx</DependentUpon>
