@@ -20,15 +20,9 @@ namespace spmst_lms_development.Users.Admin.Reports
         private const string DefaultAvatarDataUri =
             "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMzIiIGZpbGw9IiNFNkU5RkYiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjI0IiByPSIxMiIgZmlsbD0iIzhDOTNENiIvPjxwYXRoIGQ9Ik0xMCA1NmMyLTE0IDEyLTIwIDIyLTIwczIwIDYgMjIgMjAiIGZpbGw9IiM4QzkzRDYiLz48L3N2Zz4=";
 
-        // Project asset convention (confirmed against Assets/Covers and Assets/Profile in the
-        // solution): resources without a cover, and borrowers without a profile photo, fall back
-        // to these shared placeholder files rather than the inline SVG silhouette.
         private const string DefaultCoverAssetPath = "Assets/Covers/default-cover.jpg";
         private const string DefaultProfileAssetPath = "Assets/Profile/default-cover.png";
 
-        // Reusable derived table that unifies students/faculty/staff into one borrower identity.
-        // NOTE: assumes users.user_id == students.student_id == faculty.faculty_id == staff.staff_id
-        // (the FK convention flagged for manual verification in project notes).
         private const string BorrowerNameJoin = @"
             (
                 SELECT student_id AS uid,
@@ -62,9 +56,15 @@ namespace spmst_lms_development.Users.Admin.Reports
             new ReportQuery {
                 Key = "status_breakdown", Label = "Transactions by Status", Category = "Circulation",
                 ChartType = "pie", Columns = new[] { "Status", "Count" },
-                Sql = @"SELECT status AS Status, COUNT(*) AS Count
+                Sql = @"SELECT
+                            CASE
+                                WHEN status = 'Borrowed' AND return_date IS NULL AND due_date < CURDATE()
+                                    THEN 'Overdue'
+                                ELSE status
+                            END AS Status,
+                            COUNT(*) AS Count
                         FROM transactions
-                        GROUP BY status
+                        GROUP BY Status
                         ORDER BY Count DESC;"
             },
             new ReportQuery {
@@ -131,9 +131,9 @@ namespace spmst_lms_development.Users.Admin.Reports
             new ReportQuery {
                 Key = "fines_trend", Label = "Fines Collected by Month", Category = "Fines",
                 ChartType = "line", Columns = new[] { "Month", "Amount Collected" },
-                Sql = @"SELECT DATE_FORMAT(paid_date, '%Y-%m') AS Month, COALESCE(SUM(amount_paid), 0) AS AmountCollected
-                        FROM transactions
-                        WHERE paid_date IS NOT NULL
+                Sql = @"SELECT DATE_FORMAT(payment_date, '%Y-%m') AS Month,
+                               COALESCE(SUM(amount), 0) AS AmountCollected
+                        FROM penalty_payments
                         GROUP BY Month
                         ORDER BY Month ASC;"
             },
@@ -166,9 +166,11 @@ namespace spmst_lms_development.Users.Admin.Reports
                                DATEDIFF(CURDATE(), t.due_date) AS DaysOverdue
                         FROM transactions t
                         LEFT JOIN " + BorrowerNameJoin + @" bn ON bn.uid = t.user_id
-                        LEFT JOIN item_copies ic ON ic.accession_number = t.accession_number
+                        LEFT JOIN item_copies ic    ON ic.accession_number = t.accession_number
                         LEFT JOIN library_resources lr ON lr.resource_id = ic.resource_id
-                        WHERE t.return_date IS NULL AND t.due_date < CURDATE()
+                        WHERE t.return_date IS NULL
+                          AND t.status NOT IN ('Returned','Cancelled')
+                          AND t.due_date < CURDATE()
                         ORDER BY DaysOverdue DESC
                         LIMIT 50;"
             },
@@ -254,10 +256,6 @@ namespace spmst_lms_development.Users.Admin.Reports
 
             try
             {
-                // NOTE: this only confirms a session exists. It does not verify an "admin" role,
-                // since this project's role check goes through sessionHelper rather than a raw
-                // Session["UserRole"] key (see masterpages/admin.master). Tighten this once the
-                // exact sessionHelper API for role checks is confirmed.
                 if (context.Session["UserId"] == null)
                 {
                     context.Response.StatusCode = 401;
@@ -289,9 +287,6 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
-        // NOTE: admin.master reads ConfigurationManager.ConnectionStrings["LmsDb"].
-        // Prior project memory referenced the key "LmsDbConnectionString" instead - please confirm
-        // which key is actually present in Web.config and adjust if needed.
         private static MySqlConnection GetConnection()
         {
             string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
@@ -371,9 +366,6 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
-        // Resolves a stored image path (cover_path / profile_path), falling back to the shared
-        // project placeholder asset when the DB value is empty, so list/detail views always show
-        // something instead of a blank cell.
         private static string ResolveImageUrl(HttpContext context, string rawPath, string defaultAssetPath)
         {
             string path = string.IsNullOrWhiteSpace(rawPath) ? defaultAssetPath : rawPath;
@@ -423,7 +415,6 @@ namespace spmst_lms_development.Users.Admin.Reports
                                 object val = reader.GetValue(c);
                                 string cellValue = FormatCell(val);
 
-                                // For resource list queries, convert Cover (image path) into an HTML <img> tag
                                 if (key.StartsWith("resource_list") && c == 0 && !string.IsNullOrEmpty(cellValue) && cellValue != "-")
                                 {
                                     string resolvedUrl = ResolveAppUrl(context, cellValue);
@@ -452,9 +443,6 @@ namespace spmst_lms_development.Users.Admin.Reports
             context.Response.Write(sb.ToString());
         }
 
-        // ============================================================
-        //  WriteBorrowersList - all active student/faculty/staff users
-        // ============================================================
         private void WriteBorrowersList(HttpContext context)
         {
             string sql = @"
@@ -483,9 +471,6 @@ namespace spmst_lms_development.Users.Admin.Reports
             context.Response.Write("[" + string.Join(",", items) + "]");
         }
 
-        // ============================================================
-        //  WriteResourcesList - filtered by kind: all / book / periodical
-        // ============================================================
         private void WriteResourcesList(HttpContext context)
         {
             string kind = (context.Request["kind"] ?? "all").Trim().ToLowerInvariant();
@@ -528,9 +513,6 @@ namespace spmst_lms_development.Users.Admin.Reports
             context.Response.Write("[" + string.Join(",", items) + "]");
         }
 
-        // ============================================================
-        //  WriteResourceDetail - single library_resources reference card
-        // ============================================================
         private void WriteResourceDetail(HttpContext context, string idRaw)
         {
             try
@@ -596,8 +578,6 @@ namespace spmst_lms_development.Users.Admin.Reports
                         return;
                     }
 
-                    // ---- Copies (single source of truth: counts derived from the same list
-                    //      that populates the Item Copies table, so they can never disagree) ----
                     var copies = GetCopiesForResource(conn, resourceId);
                     int totalCopies = copies.Count;
                     int copiesAvailable = 0;
@@ -634,13 +614,6 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
-        // ============================================================
-        //  Item-copy data model + fetch - SINGLE SOURCE OF TRUTH.
-        //  Both the "Item Copies" table and the totalCopies/copiesAvailable
-        //  counts are now derived from the same in-memory list, so they can
-        //  never disagree with each other (previously two separate queries
-        //  computed the counts and the list independently).
-        // ============================================================
         private class CopyRow
         {
             public string AccessionNumber;
@@ -703,10 +676,6 @@ namespace spmst_lms_development.Users.Admin.Reports
                    "\"status\":\"" + JsonEscape(c.Status) + "\"}";
         }
 
-        // ============================================================
-        //  WriteResourceCopies - live item-copy list for the sidebar
-        //  "Select a Resource" quick-preview (search-and-inspect flow).
-        // ============================================================
         private void WriteResourceCopies(HttpContext context, string idRaw)
         {
             int resourceId;
@@ -727,14 +696,15 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
+        // ValidStatuses includes the virtual "Overdue" state. Under the new schema the
+        // transactions.status column only has: Borrowed, Returned, Reserved, Ready, Cancelled.
+        // "Overdue" is now derived at query time from (status = 'Borrowed' AND return_date IS NULL
+        // AND due_date < CURDATE()), so the parser below splits real vs. virtual statuses.
         private static readonly HashSet<string> ValidStatuses = new HashSet<string>
         {
             "Borrowed", "Returned", "Overdue", "Reserved", "Ready", "Cancelled"
         };
 
-        // ============================================================
-        //  WriteBorrowerDetail - full borrower profile + loan history
-        // ============================================================
         private void WriteBorrowerDetail(HttpContext context, string idRaw, string statusesRaw, string dateFromRaw, string dateToRaw)
         {
             try
@@ -747,6 +717,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                 }
                 string userId = idRaw.Trim();
 
+                // ---- Parse requested statuses ----
                 var statuses = new List<string>();
                 if (!string.IsNullOrWhiteSpace(statusesRaw))
                 {
@@ -764,6 +735,34 @@ namespace spmst_lms_development.Users.Admin.Reports
                     statuses.AddRange(ValidStatuses);
                 }
 
+                // Split real enum values from the virtual "Overdue" state.
+                var realStatuses = new List<string>();
+                bool includeOverdue = false;
+                foreach (var s in statuses)
+                {
+                    if (string.Equals(s, "Overdue", StringComparison.OrdinalIgnoreCase))
+                        includeOverdue = true;
+                    else
+                        realStatuses.Add(s);
+                }
+                if (realStatuses.Count == 0 && !includeOverdue)
+                {
+                    realStatuses.AddRange(new[] { "Borrowed", "Returned", "Reserved", "Ready", "Cancelled" });
+                }
+
+                var statusParamNames = new List<string>();
+                var statusClauses = new List<string>();
+                if (realStatuses.Count > 0)
+                {
+                    for (int i = 0; i < realStatuses.Count; i++) statusParamNames.Add("@st" + i);
+                    statusClauses.Add("t.status IN (" + string.Join(",", statusParamNames) + ")");
+                }
+                if (includeOverdue)
+                {
+                    statusClauses.Add("(t.status = 'Borrowed' AND t.return_date IS NULL AND t.due_date < CURDATE())");
+                }
+                string statusClause = "(" + string.Join(" OR ", statusClauses) + ")";
+
                 DateTime dateFrom;
                 if (!DateTime.TryParse(dateFromRaw, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateFrom))
                     dateFrom = new DateTime(2000, 1, 1);
@@ -772,10 +771,6 @@ namespace spmst_lms_development.Users.Admin.Reports
                 if (!DateTime.TryParse(dateToRaw, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTo))
                     dateTo = DateTime.Today;
                 if (dateTo < dateFrom) { var tmp = dateFrom; dateFrom = dateTo; dateTo = tmp; }
-
-                var statusParamNames = new List<string>();
-                for (int i = 0; i < statuses.Count; i++) statusParamNames.Add("@st" + i);
-                string statusInClause = string.Join(",", statusParamNames);
 
                 using (var conn = GetConnection())
                 {
@@ -853,24 +848,28 @@ namespace spmst_lms_development.Users.Admin.Reports
                         return;
                     }
 
-                    // ---- STATS: loan count, fines paid, last borrow date ----
+                    // ---- STATS: loan count, fines paid (from penalties), last borrow date ----
                     int loanCount = 0;
                     decimal totalFinesPaid = 0m;
                     DateTime? lastBorrowDate = null;
 
                     string statsSql = @"
-                        SELECT COUNT(*) AS LoanCount, COALESCE(SUM(amount_paid), 0) AS FinesPaid, MAX(borrow_date) AS LastBorrow
-                        FROM transactions
-                        WHERE user_id = @uid
-                          AND status IN (" + statusInClause + @")
-                          AND borrow_date BETWEEN @dfrom AND @dto;";
+                        SELECT COUNT(*) AS LoanCount,
+                               COALESCE(SUM(COALESCE(p.amount_paid, 0)), 0) AS FinesPaid,
+                               MAX(t.borrow_date) AS LastBorrow
+                        FROM transactions t
+                        LEFT JOIN penalties p ON p.transaction_id = t.transaction_id
+                        WHERE t.user_id = @uid
+                          AND " + statusClause + @"
+                          AND t.borrow_date BETWEEN @dfrom AND @dto;";
 
                     using (var cmd = new MySqlCommand(statsSql, conn))
                     {
                         cmd.Parameters.AddWithValue("@uid", userId);
                         cmd.Parameters.AddWithValue("@dfrom", dateFrom.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@dto", dateTo.ToString("yyyy-MM-dd"));
-                        for (int i = 0; i < statuses.Count; i++) cmd.Parameters.AddWithValue(statusParamNames[i], statuses[i]);
+                        for (int i = 0; i < realStatuses.Count; i++)
+                            cmd.Parameters.AddWithValue(statusParamNames[i], realStatuses[i]);
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -884,12 +883,22 @@ namespace spmst_lms_development.Users.Admin.Reports
                         }
                     }
 
-                    // ---- TRANSACTION RECORDS (may be empty) ----
+                    // ---- TRANSACTION RECORDS ----
+                    // Status shown uses the virtual "Overdue" derivation so the user sees a
+                    // meaningful label even though it's not a stored enum value.
                     string recordsSql = @"
-                        SELECT t.borrow_date, t.due_date, t.return_date, t.status, t.accession_number, t.fine_amount
+                        SELECT t.borrow_date, t.due_date, t.return_date,
+                               CASE
+                                   WHEN t.status = 'Borrowed' AND t.return_date IS NULL AND t.due_date < CURDATE()
+                                       THEN 'Overdue'
+                                   ELSE t.status
+                               END AS display_status,
+                               t.accession_number,
+                               COALESCE(p.fine_amount, 0) AS fine_amount
                         FROM transactions t
+                        LEFT JOIN penalties p ON p.transaction_id = t.transaction_id
                         WHERE t.user_id = @uid
-                          AND t.status IN (" + statusInClause + @")
+                          AND " + statusClause + @"
                           AND t.borrow_date BETWEEN @dfrom AND @dto
                         ORDER BY t.borrow_date DESC;";
 
@@ -899,7 +908,8 @@ namespace spmst_lms_development.Users.Admin.Reports
                         cmd.Parameters.AddWithValue("@uid", userId);
                         cmd.Parameters.AddWithValue("@dfrom", dateFrom.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@dto", dateTo.ToString("yyyy-MM-dd"));
-                        for (int i = 0; i < statuses.Count; i++) cmd.Parameters.AddWithValue(statusParamNames[i], statuses[i]);
+                        for (int i = 0; i < realStatuses.Count; i++)
+                            cmd.Parameters.AddWithValue(statusParamNames[i], realStatuses[i]);
 
                         using (var reader = cmd.ExecuteReader())
                         {
@@ -908,20 +918,22 @@ namespace spmst_lms_development.Users.Admin.Reports
                                 DateTime bd = Convert.ToDateTime(reader["borrow_date"]);
                                 DateTime dd = Convert.ToDateTime(reader["due_date"]);
                                 object rdObj = reader["return_date"];
-                                string returnDate = rdObj == DBNull.Value ? "-" : Convert.ToDateTime(rdObj).ToString("MMM dd, yyyy");
+                                string returnDate = rdObj == DBNull.Value
+                                    ? "-"
+                                    : Convert.ToDateTime(rdObj).ToString("MMM dd, yyyy");
                                 decimal fine = GetSafeDecimal(reader, "fine_amount") ?? 0m;
 
                                 recordRows.Add("{\"borrowDate\":\"" + JsonEscape(bd.ToString("MMM dd, yyyy")) + "\"," +
                                                "\"dueDate\":\"" + JsonEscape(dd.ToString("MMM dd, yyyy")) + "\"," +
                                                "\"returnDate\":\"" + JsonEscape(returnDate) + "\"," +
-                                               "\"status\":\"" + JsonEscape(NullToDash(reader["status"])) + "\"," +
+                                               "\"status\":\"" + JsonEscape(NullToDash(reader["display_status"])) + "\"," +
                                                "\"accessionNumber\":\"" + JsonEscape(NullToDash(reader["accession_number"])) + "\"," +
                                                "\"fineAmount\":\"" + fine.ToString("0.##", CultureInfo.InvariantCulture) + "\"}");
                             }
                         }
                     }
 
-                    // ---- RESOURCES BORROWED (grouped, may be empty) ----
+                    // ---- RESOURCES BORROWED (grouped) ----
                     string resourcesSql = @"
                         SELECT lr.title AS Title, lr.author AS Author, lr.genre AS Genre, lr.call_number AS CallNumber,
                                lr.cover_path AS CoverPath, COUNT(*) AS TimesBorrowed
@@ -929,7 +941,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                         INNER JOIN item_copies ic ON ic.accession_number = t.accession_number
                         INNER JOIN library_resources lr ON lr.resource_id = ic.resource_id
                         WHERE t.user_id = @uid
-                          AND t.status IN (" + statusInClause + @")
+                          AND " + statusClause + @"
                           AND t.borrow_date BETWEEN @dfrom AND @dto
                         GROUP BY lr.resource_id, lr.title, lr.author, lr.genre, lr.call_number, lr.cover_path
                         ORDER BY TimesBorrowed DESC;";
@@ -940,7 +952,8 @@ namespace spmst_lms_development.Users.Admin.Reports
                         cmd.Parameters.AddWithValue("@uid", userId);
                         cmd.Parameters.AddWithValue("@dfrom", dateFrom.ToString("yyyy-MM-dd"));
                         cmd.Parameters.AddWithValue("@dto", dateTo.ToString("yyyy-MM-dd"));
-                        for (int i = 0; i < statuses.Count; i++) cmd.Parameters.AddWithValue(statusParamNames[i], statuses[i]);
+                        for (int i = 0; i < realStatuses.Count; i++)
+                            cmd.Parameters.AddWithValue(statusParamNames[i], realStatuses[i]);
 
                         using (var reader = cmd.ExecuteReader())
                         {

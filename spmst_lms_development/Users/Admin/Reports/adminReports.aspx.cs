@@ -19,6 +19,7 @@ namespace spmst_lms_development.Users.Admin.Reports
         protected int CurrentlyBorrowed { get; private set; }
         protected int OverdueCount { get; private set; }
         protected decimal OutstandingFines { get; private set; }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             // Consistent with the rest of the LMS admin area, which relies on sessionHelper
@@ -47,11 +48,25 @@ namespace spmst_lms_development.Users.Admin.Reports
                 TotalTitles = ExecScalarInt(conn, "SELECT COUNT(*) FROM library_resources");
                 TotalCopies = ExecScalarInt(conn, "SELECT COUNT(*) FROM item_copies");
                 AvailableCopies = ExecScalarInt(conn, "SELECT COUNT(*) FROM item_copies WHERE is_available = 1");
-                CurrentlyBorrowed = ExecScalarInt(conn, "SELECT COUNT(*) FROM transactions WHERE status = 'Borrowed'");
-                OverdueCount = ExecScalarInt(conn, "SELECT COUNT(*) FROM transactions WHERE status = 'Overdue'");
 
-                using (var cmd = new MySqlCommand(
-                    "SELECT COALESCE(SUM(balance), 0) FROM transactions WHERE fine_status IN ('Unpaid','Partial')", conn))
+                // "Currently borrowed" = active, un-returned loans.
+                CurrentlyBorrowed = ExecScalarInt(conn, @"
+                    SELECT COUNT(*) FROM transactions
+                    WHERE status = 'Borrowed' AND return_date IS NULL");
+
+                // Overdue is no longer an enum value - derive it from due_date + return_date.
+                OverdueCount = ExecScalarInt(conn, @"
+                    SELECT COUNT(*) FROM transactions
+                    WHERE return_date IS NULL
+                      AND status NOT IN ('Returned','Cancelled')
+                      AND due_date < CURDATE()");
+
+                // Fines now live in the Penalties table.
+                // Outstanding = SUM(fine_amount - amount_paid) for anything not fully paid.
+                using (var cmd = new MySqlCommand(@"
+                    SELECT COALESCE(SUM(fine_amount - amount_paid), 0)
+                    FROM penalties
+                    WHERE fine_status IN ('Unpaid','Partial')", conn))
                 {
                     OutstandingFines = Convert.ToDecimal(cmd.ExecuteScalar());
                 }
@@ -75,7 +90,7 @@ namespace spmst_lms_development.Users.Admin.Reports
             var payload = new Dictionary<string, object>
             {
                 { "trend", GetCirculationTrend() },
-                { "statusBreakdown", GetGroupedCounts("transactions", "status", null, 0) },
+                { "statusBreakdown", GetStatusBreakdown() },
                 { "topTitles", GetTopBorrowedTitles() },
                 { "genreBreakdown", GetGenreBreakdown() },
                 { "fineStatus", GetFineStatusBreakdown() },
@@ -153,7 +168,40 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
-        // Generic "GROUP BY column, COUNT(*)" helper used for status / condition breakdowns.
+        // Status breakdown with the virtual "Overdue" state derived from due_date/return_date.
+        private List<Dictionary<string, object>> GetStatusBreakdown()
+        {
+            var list = new List<Dictionary<string, object>>();
+            using (var conn = new MySqlConnection(ConnStr))
+            using (var cmd = new MySqlCommand(@"
+                SELECT
+                    CASE
+                        WHEN status = 'Borrowed' AND return_date IS NULL AND due_date < CURDATE()
+                            THEN 'Overdue'
+                        ELSE status
+                    END AS grp,
+                    COUNT(*) AS c
+                FROM transactions
+                GROUP BY grp
+                ORDER BY c DESC", conn))
+            {
+                conn.Open();
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new Dictionary<string, object>
+                        {
+                            { "label", reader["grp"] == DBNull.Value ? "Unspecified" : reader["grp"].ToString() },
+                            { "count", Convert.ToInt32(reader["c"]) }
+                        });
+                    }
+                }
+            }
+            return list;
+        }
+
+        // Generic "GROUP BY column, COUNT(*)" helper used for condition breakdowns.
         private List<Dictionary<string, object>> GetGroupedCounts(string table, string column, string whereClause, int limit)
         {
             var list = new List<Dictionary<string, object>>();
@@ -237,13 +285,17 @@ namespace spmst_lms_development.Users.Admin.Reports
             return list;
         }
 
+        // Fine status now sourced from the Penalties table. The chart value is the
+        // OUTSTANDING amount (fine_amount - amount_paid), not the original fine.
         private List<Dictionary<string, object>> GetFineStatusBreakdown()
         {
             var list = new List<Dictionary<string, object>>();
             using (var conn = new MySqlConnection(ConnStr))
             using (var cmd = new MySqlCommand(@"
-                SELECT fine_status, COALESCE(SUM(fine_amount), 0) AS total_amount, COUNT(*) AS c
-                FROM transactions
+                SELECT fine_status,
+                       COALESCE(SUM(fine_amount - amount_paid), 0) AS outstanding_amount,
+                       COUNT(*) AS c
+                FROM penalties
                 WHERE fine_amount > 0
                 GROUP BY fine_status", conn))
             {
@@ -254,9 +306,9 @@ namespace spmst_lms_development.Users.Admin.Reports
                     {
                         list.Add(new Dictionary<string, object>
                         {
-                            { "label", reader["fine_status"].ToString() },
-                            { "amount", Convert.ToDouble(reader["total_amount"]) },
-                            { "count", Convert.ToInt32(reader["c"]) }
+                            { "label",  reader["fine_status"].ToString() },
+                            { "amount", Convert.ToDouble(reader["outstanding_amount"]) },
+                            { "count",  Convert.ToInt32(reader["c"]) }
                         });
                     }
                 }
@@ -272,17 +324,20 @@ namespace spmst_lms_development.Users.Admin.Reports
                 SELECT
                     lr.title AS title,
                     COALESCE(s.first_name, f.first_name, st.first_name, t.user_id) AS first_name,
-                    COALESCE(s.last_name, f.last_name, st.last_name, '') AS last_name,
+                    COALESCE(s.last_name,  f.last_name,  st.last_name,  '')        AS last_name,
                     t.due_date AS due_date,
                     DATEDIFF(CURDATE(), t.due_date) AS days_overdue,
-                    t.balance AS balance
+                    COALESCE(p.fine_amount - p.amount_paid, 0) AS balance
                 FROM transactions t
-                JOIN item_copies ic ON ic.accession_number = t.accession_number
-                JOIN library_resources lr ON lr.resource_id = ic.resource_id
-                LEFT JOIN students s ON s.student_id = t.user_id
-                LEFT JOIN faculty f ON f.faculty_id = t.user_id
-                LEFT JOIN staff st ON st.staff_id = t.user_id
-                WHERE t.status = 'Overdue'
+                JOIN item_copies ic        ON ic.accession_number = t.accession_number
+                JOIN library_resources lr  ON lr.resource_id      = ic.resource_id
+                LEFT JOIN students s       ON s.student_id        = t.user_id
+                LEFT JOIN faculty  f       ON f.faculty_id        = t.user_id
+                LEFT JOIN staff    st      ON st.staff_id         = t.user_id
+                LEFT JOIN penalties p      ON p.transaction_id    = t.transaction_id
+                WHERE t.return_date IS NULL
+                  AND t.status NOT IN ('Returned','Cancelled')
+                  AND t.due_date < CURDATE()
                 ORDER BY days_overdue DESC
                 LIMIT 10", conn))
             {
@@ -347,7 +402,7 @@ namespace spmst_lms_development.Users.Admin.Reports
             pnlBorrowersEmpty.Visible = list.Count == 0;
         }
 
-        // Handles the "Export CSV" button — streams a simple CSV of the current overdue list.
+        // Handles the "Export CSV" button - streams a simple CSV of the current overdue list.
         protected void btnExportOverdueCsv_Click(object sender, EventArgs e)
         {
             var rows = new List<OverdueRow>();
@@ -356,17 +411,20 @@ namespace spmst_lms_development.Users.Admin.Reports
                 SELECT
                     lr.title AS title,
                     COALESCE(s.first_name, f.first_name, st.first_name, t.user_id) AS first_name,
-                    COALESCE(s.last_name, f.last_name, st.last_name, '') AS last_name,
+                    COALESCE(s.last_name,  f.last_name,  st.last_name,  '')        AS last_name,
                     t.due_date AS due_date,
                     DATEDIFF(CURDATE(), t.due_date) AS days_overdue,
-                    t.balance AS balance
+                    COALESCE(p.fine_amount - p.amount_paid, 0) AS balance
                 FROM transactions t
-                JOIN item_copies ic ON ic.accession_number = t.accession_number
-                JOIN library_resources lr ON lr.resource_id = ic.resource_id
-                LEFT JOIN students s ON s.student_id = t.user_id
-                LEFT JOIN faculty f ON f.faculty_id = t.user_id
-                LEFT JOIN staff st ON st.staff_id = t.user_id
-                WHERE t.status = 'Overdue'
+                JOIN item_copies ic        ON ic.accession_number = t.accession_number
+                JOIN library_resources lr  ON lr.resource_id      = ic.resource_id
+                LEFT JOIN students s       ON s.student_id        = t.user_id
+                LEFT JOIN faculty  f       ON f.faculty_id        = t.user_id
+                LEFT JOIN staff    st      ON st.staff_id         = t.user_id
+                LEFT JOIN penalties p      ON p.transaction_id    = t.transaction_id
+                WHERE t.return_date IS NULL
+                  AND t.status NOT IN ('Returned','Cancelled')
+                  AND t.due_date < CURDATE()
                 ORDER BY days_overdue DESC", conn))
             {
                 conn.Open();
