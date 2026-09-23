@@ -34,18 +34,24 @@ namespace spmst_lms_development.Assets.Helper.Handlers
             var s = new DashboardStats();
             using (var conn = new MySqlConnection(_connStr))
             {
+                // CHANGES:
+                //  • PendingTotal & Collected now come from `Penalties` (source of truth).
+                //  • Transactions.status no longer has an 'Overdue' value.
+                //    Overdue = still Borrowed AND due_date < today.
                 const string sql = @"
                     SELECT
                         (SELECT COUNT(*) FROM Library_Attendance la
                             INNER JOIN Users u ON la.user_id = u.user_id
-                            WHERE u.role = 'faculty')                       AS FacultyVisits,
+                            WHERE u.role = 'faculty')                                 AS FacultyVisits,
                         (SELECT COUNT(*) FROM Transactions WHERE status = 'Borrowed') AS Circulated,
-                        (SELECT COUNT(*) FROM Transactions WHERE status = 'Overdue')  AS OverdueCount,
-                        (SELECT IFNULL(SUM(balance), 0) FROM Transactions)         AS PendingTotal,
-                        (SELECT COUNT(DISTINCT user_id) FROM Library_Attendance)   AS ActivePatrons,
+                        (SELECT COUNT(*) FROM Transactions
+                            WHERE status = 'Borrowed' AND due_date < CURDATE())       AS OverdueCount,
+                        (SELECT IFNULL(SUM(fine_amount - amount_paid), 0)
+                            FROM Penalties)                                           AS PendingTotal,
+                        (SELECT COUNT(DISTINCT user_id) FROM Library_Attendance)      AS ActivePatrons,
                         (SELECT COUNT(*) FROM Item_Copies WHERE status_condition = 'Damage') AS DamageCount,
                         (SELECT COUNT(*) FROM Item_Copies WHERE status_condition = 'Lost')   AS LostCount,
-                        (SELECT IFNULL(SUM(amount_paid), 0) FROM Transactions)     AS Collected";
+                        (SELECT IFNULL(SUM(amount_paid), 0) FROM Penalties)           AS Collected";
                 conn.Open();
                 using (var cmd = new MySqlCommand(sql, conn))
                 using (var r = cmd.ExecuteReader())
@@ -89,12 +95,12 @@ namespace spmst_lms_development.Assets.Helper.Handlers
         public string GetInstituteJson(string start, string end) => GetStackedJson(@"
             SELECT
                 COALESCE(s.institute, f.institute, st.office_department) AS institute,
-                SUM(CASE WHEN t.status IN ('Borrowed','Overdue')  THEN 1 ELSE 0 END) AS Borrowed,
-                SUM(CASE WHEN t.status = 'Returned'                THEN 1 ELSE 0 END) AS Returned,
-                SUM(CASE WHEN t.status IN ('Reserved','Ready')     THEN 1 ELSE 0 END) AS Reserved,
-                SUM(CASE WHEN u.role='student' AND t.status IN ('Borrowed','Overdue') THEN 1 ELSE 0 END) AS StudentBorrowed,
-                SUM(CASE WHEN u.role='faculty' AND t.status IN ('Borrowed','Overdue') THEN 1 ELSE 0 END) AS FacultyBorrowed,
-                SUM(CASE WHEN u.role='staff'   AND t.status IN ('Borrowed','Overdue') THEN 1 ELSE 0 END) AS StaffBorrowed
+                SUM(CASE WHEN t.status = 'Borrowed'                 THEN 1 ELSE 0 END) AS Borrowed,
+                SUM(CASE WHEN t.status = 'Returned'                 THEN 1 ELSE 0 END) AS Returned,
+                SUM(CASE WHEN t.status IN ('Reserved','Ready')      THEN 1 ELSE 0 END) AS Reserved,
+                SUM(CASE WHEN u.role='student' AND t.status = 'Borrowed' THEN 1 ELSE 0 END) AS StudentBorrowed,
+                SUM(CASE WHEN u.role='faculty' AND t.status = 'Borrowed' THEN 1 ELSE 0 END) AS FacultyBorrowed,
+                SUM(CASE WHEN u.role='staff'   AND t.status = 'Borrowed' THEN 1 ELSE 0 END) AS StaffBorrowed
             FROM Transactions t
             INNER JOIN Users   u  ON t.user_id = u.user_id
             LEFT  JOIN Students s ON t.user_id = s.student_id
@@ -106,12 +112,12 @@ namespace spmst_lms_development.Assets.Helper.Handlers
         public string GetProgramJson(string start, string end) => GetStackedJson(@"
             SELECT
                 COALESCE(s.course, f.institute, st.office_department) AS program,
-                SUM(CASE WHEN t.status IN ('Borrowed','Overdue')  THEN 1 ELSE 0 END) AS Borrowed,
-                SUM(CASE WHEN t.status = 'Returned'                THEN 1 ELSE 0 END) AS Returned,
-                SUM(CASE WHEN t.status IN ('Reserved','Ready')     THEN 1 ELSE 0 END) AS Reserved,
-                SUM(CASE WHEN u.role='student' AND t.status IN ('Borrowed','Overdue') THEN 1 ELSE 0 END) AS StudentBorrowed,
-                SUM(CASE WHEN u.role='faculty' AND t.status IN ('Borrowed','Overdue') THEN 1 ELSE 0 END) AS FacultyBorrowed,
-                SUM(CASE WHEN u.role='staff'   AND t.status IN ('Borrowed','Overdue') THEN 1 ELSE 0 END) AS StaffBorrowed
+                SUM(CASE WHEN t.status = 'Borrowed'                 THEN 1 ELSE 0 END) AS Borrowed,
+                SUM(CASE WHEN t.status = 'Returned'                 THEN 1 ELSE 0 END) AS Returned,
+                SUM(CASE WHEN t.status IN ('Reserved','Ready')      THEN 1 ELSE 0 END) AS Reserved,
+                SUM(CASE WHEN u.role='student' AND t.status = 'Borrowed' THEN 1 ELSE 0 END) AS StudentBorrowed,
+                SUM(CASE WHEN u.role='faculty' AND t.status = 'Borrowed' THEN 1 ELSE 0 END) AS FacultyBorrowed,
+                SUM(CASE WHEN u.role='staff'   AND t.status = 'Borrowed' THEN 1 ELSE 0 END) AS StaffBorrowed
             FROM Transactions t
             INNER JOIN Users   u  ON t.user_id = u.user_id
             LEFT  JOIN Students s ON t.user_id = s.student_id
@@ -122,39 +128,28 @@ namespace spmst_lms_development.Assets.Helper.Handlers
 
         public PenaltyBreakdown GetPenaltyBreakdown(string start, string end)
         {
+            // CHANGED: previously computed fines on the fly from t.is_damaged,
+            // t.is_lost and date arithmetic. Now sourced from the Penalties table.
+            //
+            // `penalty_type` is a combined enum, e.g. 'Overdue_Damaged_Lost'.
+            // LIKE '%X%' lets a single combined row contribute to each relevant
+            // bucket, matching the old chart semantics (a damaged-and-overdue
+            // transaction counted in both DamageAmount and OverdueAmount).
             var p = new PenaltyBreakdown();
             using (var conn = new MySqlConnection(_connStr))
             {
                 const string sql = @"
                     SELECT
-                        SUM(CASE WHEN t.is_damaged = 1 THEN 100 ELSE 0 END) AS DamageAmount,
-                        SUM(CASE WHEN t.is_damaged = 1 THEN 1   ELSE 0 END) AS DamageCount,
-                        SUM(CASE WHEN t.is_lost    = 1 THEN 600 ELSE 0 END) AS LostAmount,
-                        SUM(CASE WHEN t.is_lost    = 1 THEN 1   ELSE 0 END) AS LostCount,
-                        SUM(CASE
-                            WHEN t.return_date IS NULL THEN
-                                CASE WHEN t.due_date < CURDATE() THEN DATEDIFF(CURDATE(), t.due_date) * 5 ELSE 0 END
-                            ELSE
-                                CASE WHEN t.return_date > t.due_date THEN DATEDIFF(t.return_date, t.due_date) * 5 ELSE 0 END
-                        END) AS OverdueAmount,
-                        SUM(CASE
-                            WHEN t.return_date IS NULL THEN
-                                CASE WHEN t.due_date < CURDATE() THEN 1 ELSE 0 END
-                            ELSE
-                                CASE WHEN t.return_date > t.due_date THEN 1 ELSE 0 END
-                        END) AS OverdueCount,
-                        SUM(
-                            CASE WHEN t.is_damaged = 1 THEN 100 ELSE 0 END
-                          + CASE WHEN t.is_lost    = 1 THEN 600 ELSE 0 END
-                          + CASE
-                                WHEN t.return_date IS NULL THEN
-                                    CASE WHEN t.due_date < CURDATE() THEN DATEDIFF(CURDATE(), t.due_date) * 5 ELSE 0 END
-                                ELSE
-                                    CASE WHEN t.return_date > t.due_date THEN DATEDIFF(t.return_date, t.due_date) * 5 ELSE 0 END
-                            END
-                        ) AS TotalComputedFine,
-                        IFNULL(SUM(t.amount_paid), 0) AS TotalPaid
-                    FROM Transactions t
+                        SUM(CASE WHEN p.penalty_type LIKE '%Damaged%' THEN p.fine_amount ELSE 0 END) AS DamageAmount,
+                        COUNT(CASE WHEN p.penalty_type LIKE '%Damaged%' THEN 1 END)                  AS DamageCount,
+                        SUM(CASE WHEN p.penalty_type LIKE '%Lost%'    THEN p.fine_amount ELSE 0 END) AS LostAmount,
+                        COUNT(CASE WHEN p.penalty_type LIKE '%Lost%'    THEN 1 END)                  AS LostCount,
+                        SUM(CASE WHEN p.penalty_type LIKE '%Overdue%' THEN p.fine_amount ELSE 0 END) AS OverdueAmount,
+                        COUNT(CASE WHEN p.penalty_type LIKE '%Overdue%' THEN 1 END)                  AS OverdueCount,
+                        IFNULL(SUM(p.fine_amount), 0)                                                AS TotalComputedFine,
+                        IFNULL(SUM(p.amount_paid), 0)                                                AS TotalPaid
+                    FROM Penalties p
+                    JOIN Transactions t ON p.transaction_id = t.transaction_id
                     WHERE t.borrow_date BETWEEN @start AND @end";
                 conn.Open();
                 using (var cmd = new MySqlCommand(sql, conn))

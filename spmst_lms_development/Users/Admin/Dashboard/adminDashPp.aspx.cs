@@ -111,31 +111,37 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                 try
                 {
                     conn.Open();
+                    // CHANGES:
+                    //  • Source of truth is now Penalties (fine_amount, fine_status, penalty_type).
+                    //  • Join Transactions to keep borrow_date available as PenaltyDate context.
+                    //  • PenaltyType displays the actual enum value from Penalties.penalty_type.
+                    //  • All filter/sort columns come from the Penalties row (p.penalty_id PK ordering is stable).
                     string query = @"
                 SELECT 
-                    t.borrow_date as PenaltyDate,
-                    CONCAT(p.first_name, ' ', p.last_name) as FullName,
-                    p.user_id as PatronID,
-                    p.program as Program,
-                    r.title as BookTitle,
-                    'Overdue/Damage' as PenaltyType,
-                    t.fine_amount as Amount,
-                    t.fine_status as Status
-                FROM Transactions t
-                JOIN (
-                    SELECT student_id as user_id, first_name, last_name, course as program FROM Students
+                    t.borrow_date        AS PenaltyDate,
+                    CONCAT(u.first_name, ' ', u.last_name) AS FullName,
+                    u.user_id            AS PatronID,
+                    u.program            AS Program,
+                    r.title              AS BookTitle,
+                    p.penalty_type       AS PenaltyType,
+                    p.fine_amount        AS Amount,
+                    p.fine_status        AS Status
+                FROM Penalties p
+                INNER JOIN Transactions t ON p.transaction_id = t.transaction_id
+                INNER JOIN (
+                    SELECT student_id AS user_id, first_name, last_name, course     AS program FROM Students
                     UNION ALL
-                    SELECT faculty_id as user_id, first_name, last_name, institute as program FROM Faculty
-                ) p ON t.user_id = p.user_id
-                JOIN Item_Copies c ON t.accession_number = c.accession_number
-                JOIN Library_Resources r ON c.resource_id = r.resource_id
-                WHERE t.fine_amount > 0";
+                    SELECT faculty_id AS user_id, first_name, last_name, institute  AS program FROM Faculty
+                ) u ON p.user_id = u.user_id
+                LEFT JOIN Item_Copies c        ON p.accession_number = c.accession_number
+                LEFT JOIN Library_Resources r  ON c.resource_id = r.resource_id
+                WHERE p.fine_amount > 0";
 
                     if (!string.IsNullOrEmpty(search))
                     {
-                        query += " AND (p.first_name LIKE @s OR p.last_name LIKE @s OR p.user_id LIKE @s)";
+                        query += " AND (u.first_name LIKE @s OR u.last_name LIKE @s OR u.user_id LIKE @s)";
                     }
-                    query += " ORDER BY t.borrow_date DESC";
+                    query += " ORDER BY p.created_at DESC";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     if (!string.IsNullOrEmpty(search))
