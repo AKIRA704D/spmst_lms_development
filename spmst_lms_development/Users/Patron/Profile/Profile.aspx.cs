@@ -199,16 +199,29 @@ namespace spmst_lms_development.Users.Patron
 
         private void LoadLibraryStatus(string userId)
         {
+            // --- Same constants used in Penalties.aspx.cs ---
+            const decimal DAILY_RATE = 50.00m;
+            const decimal DAMAGE_FEE = 100.00m;
+            const decimal LOST_FEE = 200.00m;
+
             StringBuilder html = new StringBuilder();
             decimal totalBalance = 0;
+            bool hasPenalties = false;
 
+            // Pull return_date, status, and status_condition so we can compute live
             string query = @"
-                SELECT t.transaction_id, t.due_date, t.fine_amount, t.amount_paid, t.balance, t.fine_status, r.title
-                FROM Transactions t
-                LEFT JOIN Item_Copies ic ON t.accession_number = ic.accession_number
-                LEFT JOIN Library_Resources r ON ic.resource_id = r.resource_id
-                WHERE TRIM(t.user_id) = TRIM(@userId) AND t.fine_status IN ('Unpaid', 'Partial')
-                ORDER BY t.due_date ASC";
+        SELECT 
+            t.transaction_id, t.due_date, t.return_date, t.status,
+            t.fine_amount  AS db_fine_amount,
+            t.amount_paid  AS db_amount_paid,
+            ic.status_condition,
+            r.title
+        FROM Transactions t
+        INNER JOIN Item_Copies ic       ON t.accession_number = ic.accession_number
+        INNER JOIN Library_Resources r  ON ic.resource_id     = r.resource_id
+        WHERE TRIM(t.user_id) = TRIM(@userId)
+          AND t.status IN ('Borrowed', 'Overdue', 'Returned')
+        ORDER BY t.due_date ASC";
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
@@ -218,34 +231,102 @@ namespace spmst_lms_development.Users.Patron
                     cmd.Parameters.AddWithValue("@userId", userId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        if (!reader.HasRows)
+                        while (reader.Read())
                         {
-                            html.Append("<p class='text-success mb-0'><i class='fas fa-check-circle'></i> No outstanding fines.</p>");
+                            string transStatus = reader["status"].ToString();
+                            string bookCondition = reader["status_condition"]?.ToString() ?? "";
+                            DateTime dbDueDate = Convert.ToDateTime(reader["due_date"]).Date;
+
+                            // If the book was returned, stop counting overdue at the return date.
+                            DateTime calculationEndDate =
+                                (transStatus == "Returned" && reader["return_date"] != DBNull.Value)
+                                    ? Convert.ToDateTime(reader["return_date"]).Date
+                                    : DateTime.Now.Date;
+
+                            decimal calculatedFine = 0;
+                            List<string> penaltyLabels = new List<string>();
+
+                            // 1) Overdue fine
+                            if (calculationEndDate > dbDueDate)
+                            {
+                                int overdueDays = (calculationEndDate - dbDueDate).Days;
+                                if (overdueDays > 0)
+                                {
+                                    calculatedFine += overdueDays * DAILY_RATE;
+                                    penaltyLabels.Add($"Overdue ({overdueDays} days)");
+                                }
+                            }
+
+                            // 2) Damage / Lost fees (only meaningful once returned or overdue)
+                            if (transStatus == "Returned" || transStatus == "Overdue")
+                            {
+                                if (bookCondition == "Damage")
+                                {
+                                    calculatedFine += DAMAGE_FEE;
+                                    penaltyLabels.Add("Damaged");
+                                }
+                                else if (bookCondition == "Lost")
+                                {
+                                    calculatedFine += LOST_FEE;
+                                    penaltyLabels.Add("Lost");
+                                }
+                            }
+
+                            decimal dbFineAmount = reader["db_fine_amount"] != DBNull.Value
+                                ? Convert.ToDecimal(reader["db_fine_amount"]) : 0m;
+                            decimal dbAmountPaid = reader["db_amount_paid"] != DBNull.Value
+                                ? Convert.ToDecimal(reader["db_amount_paid"]) : 0m;
+
+                            // Same safety net as Penalties page:
+                            // take whichever is larger – the calculated total or the stored total.
+                            decimal totalFine = Math.Max(calculatedFine, dbFineAmount);
+                            decimal currentBalance = totalFine - dbAmountPaid;
+
+                            // Only show rows that still owe something
+                            if (currentBalance > 0)
+                            {
+                                if (!hasPenalties)
+                                {
+                                    html.Append("<ul class='list-unstyled mb-0'>");
+                                    hasPenalties = true;
+                                }
+
+                                string title = reader["title"]?.ToString() ?? "Unknown Item";
+                                string reason = penaltyLabels.Count > 0
+                                    ? string.Join(" + ", penaltyLabels)
+                                    : "Penalty";
+
+                                totalBalance += currentBalance;
+
+                                html.Append("<li class='mb-2 p-2 border-bottom'>");
+                                html.Append($"<div><strong>{HttpUtility.HtmlEncode(title)}</strong></div>");
+                                html.Append(
+                                    $"<div class='small text-muted'>" +
+                                    $"Due: {dbDueDate:MMM dd, yyyy} | " +
+                                    $"Fine: ₱{totalFine:F2} | " +
+                                    $"Paid: ₱{dbAmountPaid:F2} | " +
+                                    $"Balance: ₱{currentBalance:F2}" +
+                                    $"</div>");
+                                html.Append($"<div class='small text-danger fw-semibold'>{HttpUtility.HtmlEncode(reason)}</div>");
+                                html.Append("</li>");
+                            }
+                        }
+
+                        if (!hasPenalties)
+                        {
+                            html.Append("<p class='text-success mb-0'>" +
+                                        "<i class='fas fa-check-circle'></i> No outstanding fines.</p>");
                         }
                         else
                         {
-                            html.Append("<ul class='list-unstyled mb-0'>");
-                            while (reader.Read())
-                            {
-                                string title = reader["title"]?.ToString() ?? "Unknown Item";
-                                DateTime dueDate = Convert.ToDateTime(reader["due_date"]);
-                                decimal fine = Convert.ToDecimal(reader["fine_amount"]);
-                                decimal paid = Convert.ToDecimal(reader["amount_paid"]);
-                                decimal balance = Convert.ToDecimal(reader["balance"]);
-                                string status = reader["fine_status"].ToString();
-
-                                totalBalance += balance;
-                                html.Append("<li class='mb-2 p-2 border-bottom'>");
-                                html.Append($"<div><strong>{HttpUtility.HtmlEncode(title)}</strong></div>");
-                                html.Append($"<div class='small text-muted'>Due: {dueDate:MMM dd, yyyy} | Fine: ₱{fine:F2} | Paid: ₱{paid:F2} | Balance: ₱{balance:F2} | Status: {status}</div>");
-                                html.Append("</li>");
-                            }
                             html.Append("</ul>");
-                            html.Append($"<div class='mt-2 fw-bold'>Total Unpaid Balance: ₱{totalBalance:F2}</div>");
+                            html.Append($"<div class='mt-2 fw-bold text-danger'>" +
+                                        $"Total Unpaid Balance: ₱{totalBalance:F2}</div>");
                         }
                     }
                 }
             }
+
             litLibraryStatusList.Text = html.ToString();
         }
 
