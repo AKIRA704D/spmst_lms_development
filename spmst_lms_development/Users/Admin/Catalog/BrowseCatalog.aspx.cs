@@ -8,7 +8,6 @@ using System.Web.UI.WebControls;
 
 namespace spmst_lms_development.Users.Admin.Catalog
 {
-
     public partial class BrowseCatalog : System.Web.UI.Page
     {
         private readonly string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
@@ -26,7 +25,10 @@ namespace spmst_lms_development.Users.Admin.Catalog
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
-                string query = "SELECT DISTINCT section AS section_name FROM Library_Resources WHERE section IS NOT NULL ORDER BY section";
+                string query = @"SELECT DISTINCT section AS section_name
+                                 FROM Library_Resources
+                                 WHERE section IS NOT NULL
+                                 ORDER BY section";
                 MySqlDataAdapter da = new MySqlDataAdapter(query, conn);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
@@ -39,12 +41,28 @@ namespace spmst_lms_development.Users.Admin.Catalog
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
+                // Schema-aligned availability definition:
+                //   "Available" copy = status_condition='Good' AND is_available=1
+                //   (the Reserved_Book flow flips is_available=0 on reserve/borrow)
                 string query = @"
-                    SELECT r.resource_id, r.title, r.author, r.isbn, r.call_number, r.section, r.cover_path,
-                           COUNT(c.accession_number) as total_copies,
-                           SUM(CASE WHEN c.is_available = 1 AND c.status_condition = 'Good' THEN 1 ELSE 0 END) as available_copies,
-                           CASE WHEN SUM(CASE WHEN c.is_available = 1 AND c.status_condition = 'Good' THEN 1 ELSE 0 END) > 0 
-                                THEN 'Available' ELSE 'On Hold' END as display_status
+                    SELECT
+                        r.resource_id,
+                        r.title,
+                        r.author,
+                        r.isbn,
+                        r.call_number,
+                        r.section,
+                        r.cover_path,
+                        COUNT(c.accession_number) AS total_copies,
+                        SUM(CASE WHEN c.is_available = 1
+                                  AND c.status_condition = 'Good'
+                                 THEN 1 ELSE 0 END) AS available_copies,
+                        CASE WHEN SUM(CASE WHEN c.is_available = 1
+                                            AND c.status_condition = 'Good'
+                                           THEN 1 ELSE 0 END) > 0
+                             THEN 'Available'
+                             ELSE 'On Hold'
+                        END AS display_status
                     FROM Library_Resources r
                     LEFT JOIN Item_Copies c ON r.resource_id = c.resource_id
                     WHERE 1=1";
@@ -53,11 +71,17 @@ namespace spmst_lms_development.Users.Admin.Catalog
                     query += " AND r.section = @section";
                 if (!string.IsNullOrEmpty(search))
                     query += " AND (r.title LIKE @search OR r.author LIKE @search OR r.isbn LIKE @search)";
-                query += " GROUP BY r.resource_id";
+
+                // MySQL strict-mode: every non-aggregated column must be in GROUP BY
+                query += @" GROUP BY r.resource_id, r.title, r.author, r.isbn,
+                                    r.call_number, r.section, r.cover_path
+                            ORDER BY r.title";
 
                 MySqlCommand cmd = new MySqlCommand(query, conn);
-                if (!string.IsNullOrEmpty(section)) cmd.Parameters.AddWithValue("@section", section);
-                if (!string.IsNullOrEmpty(search)) cmd.Parameters.AddWithValue("@search", "%" + search + "%");
+                if (!string.IsNullOrEmpty(section))
+                    cmd.Parameters.AddWithValue("@section", section);
+                if (!string.IsNullOrEmpty(search))
+                    cmd.Parameters.AddWithValue("@search", "%" + search + "%");
 
                 DataTable dt = new DataTable();
                 using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
@@ -98,14 +122,18 @@ namespace spmst_lms_development.Users.Admin.Catalog
             string selectedCategory = btn.CommandArgument;
             ViewState["SelectedCategory"] = selectedCategory;
 
-            // Update button styles
-            lnkAll.CssClass = string.IsNullOrEmpty(selectedCategory) ? "btn category-pill active" : "btn category-pill inactive";
+            lnkAll.CssClass = string.IsNullOrEmpty(selectedCategory)
+                ? "btn category-pill active"
+                : "btn category-pill inactive";
+
             foreach (RepeaterItem item in rptSections.Items)
             {
                 LinkButton lb = (LinkButton)item.FindControl("lnkSection");
                 if (lb != null)
                 {
-                    lb.CssClass = (lb.CommandArgument == selectedCategory) ? "btn category-pill active" : "btn category-pill inactive";
+                    lb.CssClass = (lb.CommandArgument == selectedCategory)
+                        ? "btn category-pill active"
+                        : "btn category-pill inactive";
                 }
             }
 

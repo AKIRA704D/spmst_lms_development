@@ -30,8 +30,11 @@ namespace spmst_lms_development.Users.Admin.Catalog
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
-                // Book details
-                string bookQuery = "SELECT title, author, section, cover_path FROM Library_Resources WHERE resource_id = @id";
+
+                // ---- Book header ----
+                string bookQuery = @"SELECT title, author, section, cover_path
+                                     FROM Library_Resources
+                                     WHERE resource_id = @id";
                 MySqlCommand cmd = new MySqlCommand(bookQuery, conn);
                 cmd.Parameters.AddWithValue("@id", bookId);
                 using (MySqlDataReader dr = cmd.ExecuteReader())
@@ -50,17 +53,26 @@ namespace spmst_lms_development.Users.Admin.Catalog
                     }
                 }
 
-                // Available locations
-                string locQuery = @"SELECT MIN(accession_number) as first_copy,
-                                           CONCAT(campus, ' (', specific_location, ')') as display_text
-                                    FROM Item_Copies
-                                    WHERE resource_id = @id AND is_available = 1
-                                    GROUP BY campus, specific_location";
+                // ---- Available pickup locations ----
+                // Only "Good" copies that are currently available can be reserved.
+                // Schema: Item_Copies.status_condition ENUM('Good','Damage','Lost','Reserved')
+                string locQuery = @"
+                    SELECT MIN(accession_number) AS first_copy,
+                           CONCAT(campus, ' (', specific_location, ')') AS display_text
+                    FROM Item_Copies
+                    WHERE resource_id    = @id
+                      AND is_available   = 1
+                      AND status_condition = 'Good'
+                    GROUP BY campus, specific_location
+                    ORDER BY campus, specific_location";
+
                 MySqlCommand cmdLoc = new MySqlCommand(locQuery, conn);
                 cmdLoc.Parameters.AddWithValue("@id", bookId);
+
                 DataTable dt = new DataTable();
                 using (MySqlDataAdapter da = new MySqlDataAdapter(cmdLoc))
                     da.Fill(dt);
+
                 rblLocations.DataSource = dt;
                 rblLocations.DataTextField = "display_text";
                 rblLocations.DataValueField = "first_copy";
@@ -101,8 +113,17 @@ namespace spmst_lms_development.Users.Admin.Catalog
             }
 
             string userId = Session["UserID"]?.ToString();
+            if (string.IsNullOrEmpty(userId))
+            {
+                ShowSweetAlert("Session Expired", "Please log in again.", "error");
+                return;
+            }
+
             string selectedAccession = rblLocations.SelectedValue;
-            DateTime deadline = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 17, 0, 0);
+
+            // Schema: Transactions.borrow_date / due_date are DATE, not DATETIME.
+            DateTime today = DateTime.Now.Date;
+            DateTime deadline = today.AddHours(17);   // today @ 5:00 PM (still truncated to DATE on insert)
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
@@ -111,17 +132,47 @@ namespace spmst_lms_development.Users.Admin.Catalog
                 {
                     try
                     {
-                        // Insert transaction
-                        string ins = "INSERT INTO Transactions (user_id, accession_number, borrow_date, due_date, status) VALUES (@uid, @acc, @bd, @dd, 'Reserved')";
+                        // Re-verify the copy is still available inside the transaction
+                        string checkSql = @"SELECT is_available, status_condition
+                                            FROM Item_Copies
+                                            WHERE accession_number = @acc
+                                            FOR UPDATE";
+                        using (MySqlCommand checkCmd = new MySqlCommand(checkSql, conn, trans))
+                        {
+                            checkCmd.Parameters.AddWithValue("@acc", selectedAccession);
+                            using (var r = checkCmd.ExecuteReader())
+                            {
+                                if (!r.Read()
+                                    || Convert.ToInt32(r["is_available"]) != 1
+                                    || !r["status_condition"].ToString()
+                                          .Equals("Good", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    r.Close();
+                                    trans.Rollback();
+                                    ShowSweetAlert("Unavailable",
+                                        "This copy was just reserved by someone else. Please pick another.",
+                                        "warning");
+                                    return;
+                                }
+                            }
+                        }
+
+                        // 1) Insert the reservation transaction
+                        //    status_condition stays 'Good' — only is_available flips to 0.
+                        string ins = @"INSERT INTO Transactions
+                                       (user_id, accession_number, borrow_date, due_date, status)
+                                       VALUES (@uid, @acc, @bd, @dd, 'Reserved')";
                         MySqlCommand cmd = new MySqlCommand(ins, conn, trans);
                         cmd.Parameters.AddWithValue("@uid", userId);
                         cmd.Parameters.AddWithValue("@acc", selectedAccession);
-                        cmd.Parameters.AddWithValue("@bd", DateTime.Now);
-                        cmd.Parameters.AddWithValue("@dd", deadline);
+                        cmd.Parameters.AddWithValue("@bd", today);
+                        cmd.Parameters.AddWithValue("@dd", deadline.Date);
                         cmd.ExecuteNonQuery();
 
-                        // Mark copy as unavailable
-                        string upd = "UPDATE Item_Copies SET is_available = 0 WHERE accession_number = @acc";
+                        // 2) Mark copy unavailable
+                        string upd = @"UPDATE Item_Copies
+                                       SET is_available = 0
+                                       WHERE accession_number = @acc";
                         MySqlCommand cmdUpd = new MySqlCommand(upd, conn, trans);
                         cmdUpd.Parameters.AddWithValue("@acc", selectedAccession);
                         cmdUpd.ExecuteNonQuery();
@@ -131,7 +182,6 @@ namespace spmst_lms_development.Users.Admin.Catalog
                         litDeadline.Text = "Today by 5:00 PM";
                         pnlStep2.Visible = false;
                         pnlStep3.Visible = true;
-                        // phHeader.Visible = false; // REMOVED – no such control in Bootstrap version
                         upReservation.Update();
                     }
                     catch (Exception ex)
@@ -151,7 +201,7 @@ namespace spmst_lms_development.Users.Admin.Catalog
 
         private void UpdateProgressBar()
         {
-            // Not used in Bootstrap version, kept for compatibility
+            // Kept for compatibility — Bootstrap layout doesn't render a progress bar.
         }
 
         private void ShowSweetAlert(string title, string message, string icon)
