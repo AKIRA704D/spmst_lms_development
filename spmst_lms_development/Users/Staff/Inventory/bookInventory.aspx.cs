@@ -143,6 +143,131 @@ namespace spmst_lms_development.Users.Staff.Inventory
             ShowSweetAlert("Refreshed", "Inventory data has been refreshed.", "success");
         }
 
+        // ===== bookInventory.aspx.cs — add these members to the class =====
+
+        /// <summary>
+        /// Permanently deletes the selected resource together with all of its copies.
+        /// </summary>
+        protected void btnDeleteResource_Click(object sender, EventArgs e)
+        {
+            int resourceId;
+            if (!int.TryParse(hfDeleteResourceId.Value, out resourceId) || resourceId <= 0)
+            {
+                ShowSweetAlert("Invalid Resource", "The selected resource could not be identified.", "error");
+                return;
+            }
+
+            string coverPath = null;
+
+            try
+            {
+                using (var conn = new MySqlConnection(_connStr))
+                {
+                    conn.Open();
+
+                    // 1. Verify the resource exists and grab its cover path (needed for file cleanup).
+                    using (var cmd = new MySqlCommand(
+                        "SELECT cover_path FROM Library_Resources WHERE resource_id = @resId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@resId", resourceId);
+                        object result = cmd.ExecuteScalar();
+
+                        if (result == null)
+                        {
+                            LoadStats();
+                            LoadInventory();
+                            ShowSweetAlert("Not Found", "This resource no longer exists in the inventory.", "warning");
+                            return;
+                        }
+
+                        coverPath = result == DBNull.Value ? null : result.ToString();
+                    }
+
+                    // 2. Delete copies + resource inside a single transaction.
+                    using (var tran = conn.BeginTransaction())
+                    {
+                        try
+                        {
+                            using (var cmd = new MySqlCommand(
+                                "DELETE FROM Item_Copies WHERE resource_id = @resId", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@resId", resourceId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            using (var cmd = new MySqlCommand(
+                                "DELETE FROM Library_Resources WHERE resource_id = @resId", conn, tran))
+                            {
+                                cmd.Parameters.AddWithValue("@resId", resourceId);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            tran.Commit();
+                        }
+                        catch
+                        {
+                            tran.Rollback();
+                            throw;
+                        }
+                    }
+                }
+
+                // 3. Remove the orphaned cover image (non-critical).
+                DeleteCoverFile(coverPath);
+
+                LoadStats();
+                LoadInventory();
+                ShowSweetAlert("Deleted", "The resource and all of its copies have been removed.", "success");
+            }
+            catch (MySqlException ex)
+            {
+                // 1451 = ER_ROW_IS_REFERENCED_2 (foreign key constraint on a circulation record)
+                if (ex.Number == 1451)
+                {
+                    ShowSweetAlert("Cannot Delete",
+                        "This resource is linked to existing circulation records (borrowings, reservations or fines). " +
+                        "Archive or clear those records before deleting it.", "error");
+                }
+                else
+                {
+                    ShowSweetAlert("Error", "Failed to delete the resource: " + ex.Message, "error");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowSweetAlert("Error", "Failed to delete the resource: " + ex.Message, "error");
+            }
+            finally
+            {
+                hfDeleteResourceId.Value = string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Deletes the physical cover image for a resource, ignoring any I/O problems.
+        /// </summary>
+        private void DeleteCoverFile(string coverPath)
+        {
+            if (string.IsNullOrEmpty(coverPath)) return;
+
+            try
+            {
+                string relative = coverPath.Replace("~/", string.Empty)
+                                           .Replace("\\", "/")
+                                           .TrimStart('/');
+                string physical = Server.MapPath("~/" + relative);
+
+                if (File.Exists(physical))
+                {
+                    File.Delete(physical);
+                }
+            }
+            catch
+            {
+                // Cover cleanup is best-effort — never fail the delete because of it.
+            }
+        }
+
         private void ShowSweetAlert(string title, string message, string icon)
         {
             string cleanTitle = title.Replace("'", "\\'");

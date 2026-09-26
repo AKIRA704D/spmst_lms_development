@@ -33,6 +33,24 @@ namespace spmst_lms_development.Users.Staff.Inventory
         protected global::System.Web.UI.WebControls.Button btnRefreshTable;
 
         /// <summary>
+        /// hfDeleteResourceId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfDeleteResourceId;
+
+        /// <summary>
+        /// btnDeleteResource control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnDeleteResource;
+
+        /// <summary>
         /// litTotalBooks control.
         /// </summary>
         /// <remarks>

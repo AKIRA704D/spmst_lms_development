@@ -106,6 +106,11 @@
                     if (icon) icon.classList.remove('rotated');
                 }
             }
+}
+
+        /* Helper: find server controls by the tail of their generated ClientID */
+        function byIdEndsWith(suffix) {
+            return document.querySelector('[id$="' + suffix + '"]');
         }
 
         function openModal(type, event, resourceId = '') {
@@ -121,6 +126,33 @@
                 const modal = new bootstrap.Modal(modalEl);
                 modal.show();
             }
+}
+
+        /* NEW: confirm + post back the delete request */
+        function confirmDelete(event, resourceId) {
+            if (event) { event.preventDefault(); event.stopPropagation(); }
+
+            Swal.fire({
+                title: 'Delete this resource?',
+                html: 'The book record and <b>all of its copies</b> will be permanently removed.' +
+                    '<br/><span class="text-danger">This action cannot be undone.</span>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, delete it',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+
+                var hf = byIdEndsWith('hfDeleteResourceId');
+                var btn = byIdEndsWith('btnDeleteResource');
+                if (!hf || !btn) return;
+
+                hf.value = resourceId;
+                btn.click();
+            });
         }
 
         function closeUniversalModal() {
@@ -161,6 +193,10 @@
     <asp:UpdatePanel ID="upMain" runat="server" UpdateMode="Conditional">
         <ContentTemplate>
             <asp:Button ID="btnRefreshTable" runat="server" OnClick="btnRefreshTable_Click" style="display:none;" />
+
+            <%-- NEW: delete plumbing --%>
+        <asp:HiddenField ID="hfDeleteResourceId" runat="server" />
+        <asp:Button ID="btnDeleteResource" runat="server" style="display:none;" OnClick="btnDeleteResource_Click" />
 
             <div class="container-fluid px-4 py-4">
                 <!-- Stats Cards -->
@@ -249,7 +285,8 @@
                                         </td>
                                         <td class="text-nowrap">
                                             <button type="button" class="btn btn-link btn-sm text-primary p-0 me-2" onclick='openModal("edit", event, <%# Eval("resource_id") %>)'><i class="fas fa-edit"></i> Edit</button>
-                                            <button type="button" class="btn btn-link btn-sm text-success p-0" onclick='openModal("stock", event, <%# Eval("resource_id") %>)'><i class="fas fa-tasks"></i> Stock</button>
+                                            <button type="button" class="btn btn-link btn-sm text-success p-0 me-2" onclick='openModal("stock", event, <%# Eval("resource_id") %>)'><i class="fas fa-tasks"></i> Stock</button>
+                                            <button type="button" class="btn btn-link btn-sm text-danger p-0" onclick='confirmDelete(event, <%# Eval("resource_id") %>)'><i class="fas fa-trash"></i> Delete</button>
                                         </td>
                                     </tr>
                                     <tr id="detail-<%# Eval("resource_id") %>" style="display:none;" class="detail-row">
