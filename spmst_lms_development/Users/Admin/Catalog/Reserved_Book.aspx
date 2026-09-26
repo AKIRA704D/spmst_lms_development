@@ -31,11 +31,10 @@
             flex-grow: 1;
         }
         body { background: white; overflow: hidden; }
-        .full-height { height: 100vh; overflow: hidden; }
     </style>
 </head>
 <body>
-    <form id="form1" runat="server" class="full-height d-flex flex-column">
+    <form id="form1" runat="server" class="d-flex flex-column">
         <asp:ScriptManager ID="sm1" runat="server" />
 
         <asp:UpdatePanel ID="upReservation" runat="server" UpdateMode="Conditional" CssClass="h-100 d-flex flex-column">

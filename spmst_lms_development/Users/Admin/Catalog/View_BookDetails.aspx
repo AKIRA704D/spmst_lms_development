@@ -31,11 +31,10 @@
         .status-borrowed { color: #dc3545; background-color: #f8d7da; display: inline-block; padding: 0.2rem 0.5rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; }
         .status-damaged { color: #fd7e14; background-color: #fff3e0; display: inline-block; padding: 0.2rem 0.5rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 600; }
         body { background: white; }
-        .full-height { height: 100vh; overflow: hidden; }
     </style>
 </head>
 <body>
-    <form id="form1" runat="server" class="full-height d-flex flex-column">
+    <form id="form1" runat="server" class="d-flex flex-column">
         <!-- Header -->
         <div class="bg-dark text-white p-3 d-flex justify-content-between align-items-center flex-shrink-0">
             <div>

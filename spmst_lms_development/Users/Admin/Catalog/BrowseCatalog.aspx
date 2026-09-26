@@ -58,6 +58,28 @@
             border-radius: 0.75rem;
             padding: 0.5rem;
         }
+
+        /* ============================================
+           2. UNIVERSAL MODAL & IFRAME
+           ============================================ */
+        #universalModal .modal-content {
+            border-radius: 1rem;
+            overflow: hidden;
+            max-height: 90vh;
+        }
+
+        /* modal-body does NOT scroll — the iframe handles it */
+        #universalModal .modal-body {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .modal-iframe {
+            width: 100%;
+            height: 0; /* JS sets it dynamically */
+            border: none;
+            display: block;
+        }
     </style>
 </asp:Content>
 
@@ -173,12 +195,12 @@
         </asp:UpdatePanel>
     </div>
 
-    <!-- Bootstrap 5 Modal with iframe (no close button) -->
+    <!-- Universal modal (same behavior pattern as UserAcc.aspx) -->
     <div class="modal fade" id="universalModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-xl">
-            <div class="modal-content" style="height: 90vh; border-radius: 1rem; overflow: hidden;">
-                <div class="modal-body p-0" style="height: 100%;">
-                    <iframe id="modalIframe" class="w-100 h-100 border-0"></iframe>
+            <div class="modal-content">
+                <div class="modal-body">
+                    <iframe id="modalIframe" class="modal-iframe"></iframe>
                 </div>
             </div>
         </div>
@@ -198,18 +220,67 @@
         }
 
         // ============================================
-        // 2. MODAL HANDLERS (using Bootstrap Modal)
+        // 2. UNIVERSAL MODAL HANDLERS
         // ============================================
         let currentModal = null;
 
-        function openUniversalModal(page, idParam, idValue) {
-            const modalEl = document.getElementById('universalModal');
+        /*
+         * Resize the iframe to the natural content height, capped at 90vh.
+         * Short content -> iframe shrinks to content height.
+         * Tall content  -> iframe is capped at 90vh and scrolls internally.
+         */
+        function resizeModalIframe() {
             const iframe = document.getElementById('modalIframe');
+            if (!iframe || !iframe.getAttribute('src')) return;
+
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!doc || !doc.body) return;
+
+                const natural = Math.max(
+                    doc.documentElement.scrollHeight,
+                    doc.body.scrollHeight,
+                    doc.documentElement.offsetHeight,
+                    doc.body.offsetHeight
+                );
+
+                const maxH = Math.round(window.innerHeight * 0.9);
+                const finalH = Math.min(natural, maxH);
+
+                iframe.style.height = finalH + 'px';
+            } catch (e) {
+                iframe.style.height = '80vh';
+            }
+        }
+
+        window.resizeModalIframe = resizeModalIframe;
+
+        function getUniversalModal() {
+            if (!currentModal) {
+                const modalEl = document.getElementById('universalModal');
+                currentModal = new bootstrap.Modal(modalEl);
+            }
+            return currentModal;
+        }
+
+        function openUniversalModal(page, idParam, idValue) {
+            const iframe = document.getElementById('modalIframe');
+
             if (iframe) {
+                // Reset previous modal height before loading new content.
+                iframe.style.height = '0px';
+
+                // Re-measure after load; repeated timeouts catch late-rendered content.
+                iframe.onload = function () {
+                    setTimeout(resizeModalIframe, 50);
+                    setTimeout(resizeModalIframe, 150);
+                    setTimeout(resizeModalIframe, 300);
+                };
+
                 iframe.src = `${page}?${idParam}=${idValue}`;
             }
-            currentModal = new bootstrap.Modal(modalEl);
-            currentModal.show();
+
+            getUniversalModal().show();
             return false;
         }
 
@@ -224,13 +295,30 @@
         function closeUniversalModal() {
             if (currentModal) {
                 currentModal.hide();
-                const iframe = document.getElementById('modalIframe');
-                if (iframe) iframe.src = '';
+            }
+
+            const iframe = document.getElementById('modalIframe');
+            if (iframe) {
+                iframe.onload = null;
+                iframe.src = '';
+                iframe.style.height = '0px';
             }
         }
 
+        window.closeUniversalModal = closeUniversalModal;
+
         // ============================================
-        // 3. UPDATE PANEL POSTBACK FOCUS
+        // 3. WINDOW RESIZE HANDLING
+        // ============================================
+        window.addEventListener('resize', function () {
+            const iframe = document.getElementById('modalIframe');
+            if (iframe && iframe.getAttribute('src')) {
+                resizeModalIframe();
+            }
+        });
+
+        // ============================================
+        // 4. UPDATE PANEL POSTBACK FOCUS
         // ============================================
         let prm = Sys.WebForms.PageRequestManager.getInstance();
         prm.add_endRequest(function () {
