@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace spmst_lms_development.Users.Patron.FeedReq
+namespace spmst_lms_development.Users.Staff.FeedbackReq
 {
 
 

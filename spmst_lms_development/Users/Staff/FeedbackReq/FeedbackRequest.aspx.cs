@@ -10,7 +10,7 @@ using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-namespace spmst_lms_development.Users.Patron.FeedReq
+namespace spmst_lms_development.Users.Staff.FeedbackReq
 {
     public partial class FeedbackRequest : System.Web.UI.Page
     {
