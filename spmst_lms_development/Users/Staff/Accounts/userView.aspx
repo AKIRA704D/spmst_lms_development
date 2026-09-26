@@ -45,7 +45,7 @@
         }
     </script>
 </head>
-<body class="bg-gray-100/50 overflow-hidden">
+<body class="bg-gray-100/50">
     <div id="loader" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
         <p class="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Fetching Profile...</p>

@@ -205,7 +205,11 @@
             }
 
             iframe.style.height = '0px';
-            iframe.onload = function () { setTimeout(resizeModalIframe, 50); };
+            iframe.onload = function() {
+                setTimeout(resizeModalIframe, 50);
+                setTimeout(resizeModalIframe, 150);
+                setTimeout(resizeModalIframe, 300);
+            };
             iframe.src = url;
 
             currentModal = new bootstrap.Modal(modalEl);

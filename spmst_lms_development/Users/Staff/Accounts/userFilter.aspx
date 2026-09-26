@@ -12,7 +12,6 @@
     <style>
         body {
             background: white;
-            overflow: hidden;
         }
         .filter-header {
             background-color: #002447;
@@ -74,7 +73,7 @@
     </script>
 </head>
 <body>
-    <form id="form1" runat="server" class="h-100 d-flex flex-column">
+    <form id="form1" runat="server" class="d-flex flex-column">
         <asp:ScriptManager ID="ScriptManager1" runat="server" />
 
         <!-- Header with Close Button -->
