@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Book Renewal" Language="C#" MasterPageFile="~/Users/MasterPage/Admin.Master" AutoEventWireup="true" CodeBehind="Book_Renew.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Transactions.Book_Renew" %>
+﻿<%@ Page Title="Book Renewal" Language="C#" MasterPageFile="~/Users/MasterPage/admin.master" AutoEventWireup="true" CodeBehind="Book_Renew.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Transactions.Book_Renew" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -91,16 +91,21 @@
             margin-bottom: 0.5rem;
             font-size: 0.8rem;
         }
+        .hover-bg-light:hover {
+            background-color: #f8f9fa;
+        }
     </style>
 
     <script type="text/javascript">
-        // Reusable scanner (only book barcode, but we also need patron scanner – reuse same logic)
+        // Reusable scanner
         let html5QrScanner = null;
         let isCameraActive = false;
         const scanSound = new Audio('https://Assets.mixkit.co/active_storage/sfx/766/766-preview.mp3');
 
         async function startScanner(target) {
-            scanSound.play().then(() => { scanSound.pause(); scanSound.currentTime = 0; }).catch(e => console.log("Audio prep failed", e));
+            scanSound.play().then(() => { scanSound.pause(); scanSound.currentTime = 0; })
+                .catch(e => console.log("Audio prep failed", e));
+
             window.activeScannerTarget = target;
             const scannerArea = document.getElementById('scanner-area');
             scannerArea.classList.remove('d-none');
@@ -218,8 +223,8 @@
                                     <label class="form-label text-uppercase fw-bold small text-muted">Step 1: Identify Patron</label>
                                     <div class="input-group input-group-lg border rounded-3 overflow-hidden">
                                         <span class="input-group-text bg-white border-0"><i class="fas fa-id-card"></i></span>
-                                        <asp:TextBox ID="txtPatronQR" runat="server" CssClass="form-control border-0 bg-white" placeholder="Scan QR"
-                                            OnTextChanged="txtPatronQR_TextChanged" AutoPostBack="true" />
+                                        <asp:TextBox ID="txtPatronQR" runat="server" CssClass="form-control border-0 bg-white"
+                                            placeholder="Scan QR" OnTextChanged="txtPatronQR_TextChanged" AutoPostBack="true" />
                                         <button class="btn btn-white border-0" type="button" onclick="startScanner('patron')">
                                             <i class="fas fa-camera text-primary"></i>
                                         </button>
@@ -229,7 +234,9 @@
                                 <!-- Patron Info Panel -->
                                 <asp:Panel ID="pnlPatronInfo" runat="server" Visible="false" CssClass="bg-light-blue p-3 rounded-3 mb-4">
                                     <div class="d-flex align-items-center gap-3 mb-2">
-                                        <div class="avatar-circle small bg-primary text-white"><asp:Literal ID="litInitial" runat="server" Text="?" /></div>
+                                        <div class="avatar-circle small bg-primary text-white">
+                                            <asp:Literal ID="litInitial" runat="server" Text="?" />
+                                        </div>
                                         <div>
                                             <h6 class="mb-0 fw-bold"><asp:Literal ID="litPatronName" runat="server" /></h6>
                                             <small class="text-muted"><asp:Literal ID="litPatronDept" runat="server" /></small>
@@ -239,18 +246,21 @@
                                     <!-- Penalties Section -->
                                     <div id="penaltySection" runat="server" visible="false" class="mt-2">
                                         <hr />
-                                        <div class="small fw-bold text-danger mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Unsettled Penalties</div>
+                                        <div class="small fw-bold text-danger mb-1">
+                                            <i class="fas fa-exclamation-triangle me-1"></i> Unsettled Penalties
+                                        </div>
                                         <asp:Repeater ID="rptPenalties" runat="server">
                                             <ItemTemplate>
                                                 <div class="penalty-item">
                                                     <div class="fw-bold"><%# Eval("BookTitle") %></div>
                                                     <div class="small">Acc: <%# Eval("AccessionNumber") %></div>
-                                                    <div class="small text-danger">Penalty: <%# Eval("PenaltyType") %></div>
+                                                    <div class="small text-danger">
+                                                        Penalty: <%# Eval("PenaltyType") %>
+                                                        &nbsp;|&nbsp; Fine: ₱<%# Eval("FineAmount", "{0:N2}") %>
+                                                        &nbsp;|&nbsp; Paid: ₱<%# Eval("AmountPaid", "{0:N2}") %>
+                                                    </div>
                                                 </div>
                                             </ItemTemplate>
-                                            <FooterTemplate>
-                                                <div id="noPenalties" runat="server" visible='<%# ((Repeater)Container.NamingContainer).Items.Count == 0 %>' class="text-muted small">No unsettled penalties.</div>
-                                            </FooterTemplate>
                                         </asp:Repeater>
                                     </div>
                                 </asp:Panel>
@@ -260,9 +270,11 @@
                                     <label class="form-label text-uppercase fw-bold small text-muted">Step 2: Scan Book to Renew</label>
                                     <div class="input-group input-group-lg border rounded-3 overflow-hidden">
                                         <span class="input-group-text bg-white border-0"><i class="fas fa-book"></i></span>
-                                        <asp:TextBox ID="txtBookBarcode" runat="server" CssClass="form-control border-0 bg-white" placeholder="Scan Barcode"
-                                            OnTextChanged="txtBookBarcode_TextChanged" AutoPostBack="true" Enabled="false" />
-                                        <button id="btnBookCam" runat="server" class="btn btn-white border-0" type="button" onclick="startScanner('book')" disabled="disabled">
+                                        <asp:TextBox ID="txtBookBarcode" runat="server" CssClass="form-control border-0 bg-white"
+                                            placeholder="Scan Barcode" OnTextChanged="txtBookBarcode_TextChanged"
+                                            AutoPostBack="true" Enabled="false" />
+                                        <button id="btnBookCam" runat="server" class="btn btn-white border-0" type="button"
+                                            onclick="startScanner('book')" disabled="disabled">
                                             <i class="fas fa-camera text-primary"></i>
                                         </button>
                                     </div>
@@ -274,11 +286,13 @@
                                     <p class="small text-muted mb-0">Author: <asp:Literal ID="litBookAuthor" runat="server" /></p>
                                     <p class="small text-muted mb-0">Section: <asp:Literal ID="litBookSection" runat="server" /></p>
                                     <p class="small text-muted mb-3">Acc no. <asp:Literal ID="litBookAccNo" runat="server" /></p>
+
                                     <div class="due-date-warning">
                                         <i class="fas fa-calendar-alt me-2"></i>
                                         <span class="fw-bold">Current Due Date:</span>
                                         <asp:Literal ID="litDueDate" runat="server" />
                                     </div>
+
                                     <div class="d-flex align-items-center gap-2 mb-3">
                                         <label class="small text-muted">Loan Type:</label>
                                         <asp:DropDownList ID="ddlLoanType" runat="server" CssClass="form-select form-select-sm w-auto shadow-sm" Enabled="false">
@@ -286,9 +300,14 @@
                                             <asp:ListItem Text="LOAN-IN" Value="LOAN-IN" />
                                         </asp:DropDownList>
                                     </div>
+
                                     <div class="d-flex gap-3">
-                                        <asp:Button ID="btnRenew" runat="server" Text="Approve Renewal" CssClass="btn btn-primary w-100 py-2 fw-bold shadow-sm" OnClick="btnRenew_Click" />
-                                        <asp:Button ID="btnDeny" runat="server" Text="Deny Renewal" CssClass="btn btn-outline-danger w-100 py-2 fw-bold" OnClick="btnDeny_Click" Visible="false" />
+                                        <asp:Button ID="btnRenew" runat="server" Text="Approve Renewal"
+                                            CssClass="btn btn-primary w-100 py-2 fw-bold shadow-sm"
+                                            OnClick="btnRenew_Click" />
+                                        <asp:Button ID="btnDeny" runat="server" Text="Deny Renewal"
+                                            CssClass="btn btn-outline-danger w-100 py-2 fw-bold"
+                                            OnClick="btnDeny_Click" Visible="false" />
                                     </div>
                                 </asp:Panel>
                             </ContentTemplate>
@@ -316,9 +335,16 @@
                                         <div class="d-flex gap-3 mb-3 border-bottom pb-2">
                                             <div class="text-primary mt-1"><i class="fas fa-sync-alt"></i></div>
                                             <div style="flex:1;">
-                                                <div class="fw-bold text-dark"><%# Eval("PatronName") %> - <span class="fw-normal text-muted"><%# Eval("PatronID") %></span></div>
-                                                <div class="small text-dark"><%# Eval("BookTitle") %> (<%# Eval("AccessionNumber") %>)</div>
-                                                <div class="small text-muted"><%# Eval("LoanType") %> | <%# Eval("PatronRole") %></div>
+                                                <div class="fw-bold text-dark">
+                                                    <%# Eval("PatronName") %> -
+                                                    <span class="fw-normal text-muted"><%# Eval("PatronID") %></span>
+                                                </div>
+                                                <div class="small text-dark">
+                                                    <%# Eval("BookTitle") %> (<%# Eval("AccessionNumber") %>)
+                                                </div>
+                                                <div class="small text-muted">
+                                                    <%# Eval("LoanType") %> | <%# Eval("PatronRole") %>
+                                                </div>
                                             </div>
                                         </div>
                                     </ItemTemplate>
@@ -331,7 +357,9 @@
                 <!-- Online Renewals Panel -->
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-header bg-white border-0 p-3">
-                        <h6 class="fw-bold text-primary mb-0"><i class="fas fa-laptop-house me-2"></i>Pending Online Renewals</h6>
+                        <h6 class="fw-bold text-primary mb-0">
+                            <i class="fas fa-laptop-house me-2"></i>Pending Online Renewals
+                        </h6>
                     </div>
                     <div class="card-body p-0">
                         <asp:UpdatePanel ID="UPPendingRenewals" runat="server" UpdateMode="Conditional">
@@ -342,11 +370,14 @@
                                 </div>
                                 <asp:Repeater ID="rptPendingRenewals" runat="server">
                                     <ItemTemplate>
-                                        <div class="border-bottom p-3 hover-bg-light" style="cursor:pointer;" onclick="loadRenewal('<%# Eval("user_id") %>', '<%# Eval("accession_number") %>')">
+                                        <div class="border-bottom p-3 hover-bg-light" style="cursor:pointer;"
+                                             onclick="loadRenewal('<%# Eval("user_id") %>', '<%# Eval("accession_number") %>')">
                                             <div class="fw-bold text-dark"><%# Eval("PatronName") %></div>
-                                            <div class="small text-muted"><%# Eval("PatronID") %> | <%# Eval("PatronRole") %></div>
-                                            <div class="small text-dark mt-1"><i class="fas fa-book me-1"></i><%# Eval("BookTitle") %></div>
-                                            <div class="small text-muted">Acc: <%# Eval("AccessionNumber") %></div>
+                                            <div class="small text-muted"><%# Eval("user_id") %> | <%# Eval("PatronRole") %></div>
+                                            <div class="small text-dark mt-1">
+                                                <i class="fas fa-book me-1"></i><%# Eval("BookTitle") %>
+                                            </div>
+                                            <div class="small text-muted">Acc: <%# Eval("accession_number") %></div>
                                         </div>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -360,7 +391,6 @@
 
     <script type="text/javascript">
         function loadRenewal(patronId, accessionNumber) {
-            // Fill patron QR and trigger postback
             var txtPatron = document.getElementById('<%= txtPatronQR.ClientID %>');
             if (txtPatron) {
                 txtPatron.value = patronId;

@@ -1,17 +1,19 @@
 ﻿using MySql.Data.MySqlClient;
+using spmst_lms_development.Services;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Web.UI;
-using System.Collections.Generic;
 
 namespace spmst_lms_development.Users.Staff.Transactions
 {
     public partial class Book_Return : System.Web.UI.Page
     {
-        private readonly string _connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+        private readonly string _connStr =
+            ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
-        // Per-session live feed (avoids leaking between users / app pool restarts)
+        // Per-session live feed
         private List<FeedEntry> FeedItems
         {
             get
@@ -22,7 +24,6 @@ namespace spmst_lms_development.Users.Staff.Transactions
             }
         }
 
-        // Strongly-typed feed item — mirrors columns actually returned
         [Serializable]
         public class FeedEntry
         {
@@ -55,28 +56,24 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
-                // Join path matches the new schema:
-                //   Transactions.user_id  -> Users.user_id
-                //   Users.user_id         -> Students.student_id / Faculty.faculty_id / Staff.staff_id
-                //   Transactions.accession_number -> Item_Copies.accession_number
-                //   Item_Copies.resource_id       -> Library_Resources.resource_id
                 string query = @"
                     SELECT  t.transaction_id,
                             t.user_id,
                             t.accession_number,
+                            t.due_date,
                             r.title,
                             r.author,
                             COALESCE(s.first_name, f.first_name, st.first_name) AS fname,
                             COALESCE(s.last_name,  f.last_name,  st.last_name ) AS lname,
                             COALESCE(s.course, f.institute, st.office_department) AS dept
                     FROM Transactions t
-                    INNER JOIN Item_Copies      c  ON t.accession_number = c.accession_number
-                    INNER JOIN Library_Resources r ON c.resource_id      = r.resource_id
-                    LEFT  JOIN Students  s ON t.user_id = s.student_id
-                    LEFT  JOIN Faculty   f ON t.user_id = f.faculty_id
-                    LEFT  JOIN Staff     st ON t.user_id = st.staff_id
+                    INNER JOIN Item_Copies       c  ON t.accession_number = c.accession_number
+                    INNER JOIN Library_Resources r  ON c.resource_id      = r.resource_id
+                    LEFT  JOIN Students          s  ON t.user_id          = s.student_id
+                    LEFT  JOIN Faculty           f  ON t.user_id          = f.faculty_id
+                    LEFT  JOIN Staff             st ON t.user_id          = st.staff_id
                     WHERE t.accession_number = @acc
-                      AND t.status            = 'Borrowed'
+                      AND t.status           = 'Borrowed'
                       AND t.return_date IS NULL
                     LIMIT 1";
 
@@ -100,6 +97,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             ViewState["CurrentTransID"] = Convert.ToInt32(reader["transaction_id"]);
                             ViewState["CurrentAccession"] = reader["accession_number"].ToString();
                             ViewState["CurrentTitle"] = reader["title"].ToString();
+                            ViewState["CurrentDueDate"] = Convert.ToDateTime(reader["due_date"]);
 
                             pnlReturnInfo.Visible = true;
                         }
@@ -128,17 +126,21 @@ namespace spmst_lms_development.Users.Staff.Transactions
             string condition = ddlCondition.SelectedValue;   // "Good" | "Damage" | "Lost"
             string rawNote = txtReturnNote.Text.Trim();
 
-            // Build a human-readable remark (mirrors the original behaviour)
             string formattedRemarks = string.IsNullOrEmpty(rawNote)
                 ? condition
                 : $"{condition} - {rawNote}";
 
-            // Flags derived from the selected condition — these map directly onto
-            // the ENUM values of Item_Copies.status_condition and the new
-            // Transactions.is_damaged / is_lost columns.
             int isDamaged = condition == "Damage" ? 1 : 0;
             int isLost = condition == "Lost" ? 1 : 0;
             int isAvailable = condition == "Good" ? 1 : 0;
+
+            int transactionId = Convert.ToInt32(ViewState["CurrentTransID"]);
+            string userId = ViewState["CurrentUserID"]?.ToString();
+            string accession = ViewState["CurrentAccession"]?.ToString();
+
+            DateTime dueDate = ViewState["CurrentDueDate"] != null
+                               ? (DateTime)ViewState["CurrentDueDate"]
+                               : DateTime.Today;
 
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
@@ -148,54 +150,84 @@ namespace spmst_lms_development.Users.Staff.Transactions
                     try
                     {
                         // ---------- 1. Update Transactions ----------
-                        //  - return_date          : today
-                        //  - status               : 'Returned'  (valid ENUM value)
-                        //  - remarks              : free text
-                        //  - is_damaged / is_lost : flag columns from the new schema
                         string updateTrans = @"
                             UPDATE Transactions
-                            SET    return_date = @today,
+                               SET return_date = @today,
                                    status      = 'Returned',
                                    remarks     = @remarks,
                                    is_damaged  = @isDamaged,
                                    is_lost     = @isLost
-                            WHERE  transaction_id = @tid";
-
+                             WHERE transaction_id = @tid";
                         MySqlCommand cmdTrans = new MySqlCommand(updateTrans, conn, trans);
-                        cmdTrans.Parameters.AddWithValue("@today", DateTime.Now.ToString("yyyy-MM-dd"));
-                        cmdTrans.Parameters.AddWithValue("@tid", Convert.ToInt32(ViewState["CurrentTransID"]));
+                        cmdTrans.Parameters.AddWithValue("@today", DateTime.Today);
+                        cmdTrans.Parameters.AddWithValue("@tid", transactionId);
                         cmdTrans.Parameters.AddWithValue("@remarks", formattedRemarks);
                         cmdTrans.Parameters.AddWithValue("@isDamaged", isDamaged);
                         cmdTrans.Parameters.AddWithValue("@isLost", isLost);
                         cmdTrans.ExecuteNonQuery();
 
                         // ---------- 2. Update Item_Copies ----------
-                        //  - status_condition : 'Good' | 'Damage' | 'Lost' (ENUM)
-                        //  - is_available     : 1 only when returned in Good condition
-                        //  - remarks          : same free-text field
                         string updateCopy = @"
                             UPDATE Item_Copies
-                            SET    is_available     = @avail,
+                               SET is_available     = @avail,
                                    status_condition = @cond,
                                    remarks          = @remarks
-                            WHERE  accession_number = @acc";
-
+                             WHERE accession_number = @acc";
                         MySqlCommand cmdCopy = new MySqlCommand(updateCopy, conn, trans);
                         cmdCopy.Parameters.AddWithValue("@avail", isAvailable);
                         cmdCopy.Parameters.AddWithValue("@cond", condition);
                         cmdCopy.Parameters.AddWithValue("@remarks", formattedRemarks);
-                        cmdCopy.Parameters.AddWithValue("@acc", ViewState["CurrentAccession"].ToString());
+                        cmdCopy.Parameters.AddWithValue("@acc", accession);
                         cmdCopy.ExecuteNonQuery();
+
+                        // ---------- 3. Create Penalties row (if applicable) ----------
+                        //  All fine logic delegates to the unified FinePolicy.
+                        PenaltyResult penalty = FinePolicy.Calculate(
+                            dueDate: dueDate,
+                            returnDate: DateTime.Today,
+                            isDamaged: isDamaged == 1,
+                            isLost: isLost == 1);
+
+                        if (penalty.HasPenalty)
+                        {
+                            string insertPenalty = @"
+                                INSERT INTO Penalties
+                                    (transaction_id, user_id, accession_number,
+                                     penalty_type, reason, fine_amount, fine_status)
+                                VALUES
+                                    (@tid, @uid, @acc, @ptype, @reason, @amt, @status);
+                                SELECT LAST_INSERT_ID();";
+
+                            MySqlCommand cmdPen = new MySqlCommand(insertPenalty, conn, trans);
+                            cmdPen.Parameters.AddWithValue("@tid", transactionId);
+                            cmdPen.Parameters.AddWithValue("@uid", userId);
+                            cmdPen.Parameters.AddWithValue("@acc", accession);
+                            cmdPen.Parameters.AddWithValue("@ptype", penalty.PenaltyType);
+                            cmdPen.Parameters.AddWithValue("@reason", penalty.Reason);
+                            cmdPen.Parameters.AddWithValue("@amt", penalty.FineAmount);
+                            cmdPen.Parameters.AddWithValue("@status",
+                                PenaltyStatuses.FromAmounts(penalty.FineAmount, 0m));
+
+                            int newPenaltyId = Convert.ToInt32(cmdPen.ExecuteScalar());
+
+                            // Back-reference on the transaction
+                            string linkPenalty =
+                                "UPDATE Transactions SET penalty_id = @pid WHERE transaction_id = @tid";
+                            MySqlCommand cmdLink = new MySqlCommand(linkPenalty, conn, trans);
+                            cmdLink.Parameters.AddWithValue("@pid", newPenaltyId);
+                            cmdLink.Parameters.AddWithValue("@tid", transactionId);
+                            cmdLink.ExecuteNonQuery();
+                        }
 
                         trans.Commit();
 
-                        // ---------- 3. Append to the per-session live feed ----------
+                        // ---------- 4. Append to per-session live feed ----------
                         FeedItems.Insert(0, new FeedEntry
                         {
                             PatronName = litPatronName.Text,
-                            PatronID = ViewState["CurrentUserID"]?.ToString(),
+                            PatronID = userId,
                             BookTitle = ViewState["CurrentTitle"]?.ToString(),
-                            AccessionNumber = ViewState["CurrentAccession"]?.ToString(),
+                            AccessionNumber = accession,
                             Condition = condition
                         });
                         if (FeedItems.Count > 20)
@@ -203,7 +235,20 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
                         ResetForm();
                         BindFeed();
-                        ShowSweetAlert("Success", "Book returned successfully!", "success");
+
+                        // Show fine summary in the success alert when applicable
+                        if (penalty.HasPenalty)
+                        {
+                            ShowSweetAlert("Success",
+                                $"Book returned. Penalty recorded: " +
+                                $"{FinePolicy.DescribeType(penalty.PenaltyType)} — " +
+                                $"{FinePolicy.FormatAmount(penalty.FineAmount)}",
+                                "success");
+                        }
+                        else
+                        {
+                            ShowSweetAlert("Success", "Book returned successfully!", "success");
+                        }
 
                         UPReturn.Update();
                         UPLiveFeed.Update();
@@ -227,6 +272,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
             ViewState["CurrentUserID"] = null;
             ViewState["CurrentAccession"] = null;
             ViewState["CurrentTitle"] = null;
+            ViewState["CurrentDueDate"] = null;
         }
 
         private void BindFeed()

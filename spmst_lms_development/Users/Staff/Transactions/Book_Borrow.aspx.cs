@@ -12,11 +12,12 @@ namespace spmst_lms_development.Users.Staff.Transactions
 {
     public partial class Book_Borrow : System.Web.UI.Page
     {
-        private readonly string _connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+        private readonly string _connStr =
+            ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+
         private readonly string EncryptionKey = "SPAMAST_LMS_SECURE_KEY_2026";
 
-        // Sections that are restricted to LOAN-IN only.
-        // Add new sections here as needed.
+        // Sections restricted to LOAN-IN only.
         private static readonly HashSet<string> LoanInOnlySections =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -29,7 +30,6 @@ namespace spmst_lms_development.Users.Staff.Transactions
         {
             if (!IsPostBack)
             {
-                // Set active tab
                 string currentPage = System.IO.Path.GetFileName(Request.Url.AbsolutePath);
                 if (currentPage.Equals("Book_Borrow.aspx", StringComparison.OrdinalIgnoreCase))
                 {
@@ -42,6 +42,9 @@ namespace spmst_lms_development.Users.Staff.Transactions
             }
         }
 
+        // ============================================================
+        //  STEP 1 : PATRON SCAN
+        // ============================================================
         protected void txtPatronQR_TextChanged(object sender, EventArgs e)
         {
             string scannedText = txtPatronQR.Text.Trim();
@@ -52,16 +55,20 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
-                // Include Staff in the union
                 string query = @"
-            SELECT first_name, last_name, course as dept, 'student' as role FROM Students WHERE student_id = @id
-            UNION
-            SELECT first_name, last_name, institute as dept, 'faculty' as role FROM Faculty WHERE faculty_id = @id
-            UNION
-            SELECT first_name, last_name, office_department as dept, 'staff' as role FROM Staff WHERE staff_id = @id";
+                    SELECT first_name, last_name, course AS dept, 'student' AS role
+                      FROM Students WHERE student_id = @id
+                    UNION
+                    SELECT first_name, last_name, institute AS dept, 'faculty' AS role
+                      FROM Faculty WHERE faculty_id = @id
+                    UNION
+                    SELECT first_name, last_name, office_department AS dept, 'staff' AS role
+                      FROM Staff WHERE staff_id = @id";
+
                 MySqlCommand cmd = new MySqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@id", id);
                 conn.Open();
+
                 using (MySqlDataReader reader = cmd.ExecuteReader())
                 {
                     if (reader.Read())
@@ -90,6 +97,9 @@ namespace spmst_lms_development.Users.Staff.Transactions
             }
         }
 
+        // ============================================================
+        //  STEP 2 : BOOK SCAN
+        // ============================================================
         protected void txtBookBarcode_TextChanged(object sender, EventArgs e)
         {
             string barcode = txtBookBarcode.Text.Trim();
@@ -109,19 +119,22 @@ namespace spmst_lms_development.Users.Staff.Transactions
             {
                 using (MySqlConnection conn = new MySqlConnection(_connStr))
                 {
-                    // Add section to SELECT
                     string query = @"
-                SELECT r.resource_id, r.title, r.author, r.section, c.accession_number, c.is_available,
-                       t.user_id AS active_user, t.status AS active_status
-                FROM Library_Resources r
-                JOIN Item_Copies c ON r.resource_id = c.resource_id
-                LEFT JOIN Transactions t ON c.accession_number = t.accession_number
-                     AND t.status IN ('Reserved', 'Ready', 'Borrowed')
-                WHERE c.accession_number = @acc LIMIT 1";
+                        SELECT r.resource_id, r.title, r.author, r.section,
+                               c.accession_number, c.is_available,
+                               t.user_id AS active_user, t.status AS active_status
+                        FROM Library_Resources r
+                        JOIN Item_Copies c ON r.resource_id = c.resource_id
+                        LEFT JOIN Transactions t
+                               ON c.accession_number = t.accession_number
+                              AND t.status IN ('Reserved','Ready','Borrowed')
+                        WHERE c.accession_number = @acc
+                        LIMIT 1";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@acc", barcode);
                     conn.Open();
+
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -132,7 +145,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             bool isAvailable = Convert.ToInt32(reader["is_available"]) == 1;
                             string section = reader["section"].ToString();
 
-                            // Check availability / reservation (same as before)
+                            // ---- availability / reservation check ----
                             if (activeStatus == "Borrowed")
                             {
                                 ShowToast("This book is currently borrowed.", "error");
@@ -150,29 +163,25 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                     return;
                                 }
                             }
-                            else
+                            else if (!isAvailable)
                             {
-                                if (!isAvailable)
-                                {
-                                    ShowToast("This book is currently unavailable.", "error");
-                                    txtBookBarcode.Text = "";
-                                    txtBookBarcode.Focus();
-                                    return;
-                                }
+                                ShowToast("This book is currently unavailable.", "error");
+                                txtBookBarcode.Text = "";
+                                txtBookBarcode.Focus();
+                                return;
                             }
 
-                            // Show book info
+                            // ---- populate info panel ----
                             pnlBookInfo.Visible = true;
                             litBookTitle.Text = reader["title"].ToString();
                             litBookAuthor.Text = reader["author"].ToString();
                             litBookSection.Text = section;
                             litBookAccNo.Text = reader["accession_number"].ToString();
-                            ViewState["ScannedResourceID"] = resourceId;
 
-                            // Save section for server-side validation later
+                            ViewState["ScannedResourceID"] = resourceId;
                             ViewState["ScannedSection"] = section;
 
-                            // Control loan type dropdown based on section
+                            // ---- loan-type rules by section ----
                             string cleanSection = (section ?? string.Empty).Trim();
                             bool isLoanInOnly = LoanInOnlySections.Contains(cleanSection);
 
@@ -187,20 +196,18 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
                             if (isLoanInOnly)
                             {
-                                // Periodicals, Reference, Thesis => LOAN-IN only
                                 loanOutItem.Enabled = false;
                                 loanInItem.Enabled = true;
                                 ddlLoanType.SelectedValue = "LOAN-IN";
                             }
                             else
                             {
-                                // All other sections => both allowed, default LOAN-OUT
                                 loanOutItem.Enabled = true;
                                 loanInItem.Enabled = true;
                                 ddlLoanType.SelectedValue = "LOAN-OUT";
                             }
 
-                            ShowToast("Book Recognized: " + reader["title"].ToString(), "success");
+                            ShowToast("Book Recognized: " + reader["title"], "success");
                         }
                         else
                         {
@@ -217,6 +224,9 @@ namespace spmst_lms_development.Users.Staff.Transactions
             }
         }
 
+        // ============================================================
+        //  COMPLETE TRANSACTION
+        // ============================================================
         protected void btnComplete_Click(object sender, EventArgs e)
         {
             string studentID = ViewState["DecryptedPatronID"]?.ToString();
@@ -232,7 +242,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 return;
             }
 
-            // Server-side validation for loan type based on section
+            // ---- server-side loan type validation ----
             string scannedSection = ViewState["ScannedSection"]?.ToString() ?? string.Empty;
             bool isLoanInOnly = LoanInOnlySections.Contains(scannedSection.Trim());
 
@@ -241,21 +251,23 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 ShowSweetAlert("Invalid Loan Type", "This section is for LOAN-IN only.", "error");
                 return;
             }
-
             if (!isLoanInOnly && loanType != "LOAN-OUT" && loanType != "LOAN-IN")
             {
                 ShowSweetAlert("Invalid Loan Type", "Invalid loan type selected.", "error");
                 return;
             }
 
+            // ---- due-date computation ----
             DateTime borrowDate = DateTime.Today;
             DateTime dueDate;
             string status = "Borrowed";
 
             if (loanType == "LOAN-OUT")
-                dueDate = (role == "faculty" || role == "staff") ? borrowDate.AddDays(150) : borrowDate.AddDays(3);
+                dueDate = (role == "faculty" || role == "staff")
+                          ? borrowDate.AddDays(150)
+                          : borrowDate.AddDays(3);
             else
-                dueDate = borrowDate;
+                dueDate = borrowDate;   // LOAN-IN : same-day return
 
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
@@ -267,8 +279,13 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         string oldAccessionNumber = null;
                         bool isReservationSwap = false;
 
-                        // Check exact reservation
-                        string checkExact = "SELECT transaction_id FROM Transactions WHERE user_id = @uid AND accession_number = @acc AND status IN ('Reserved', 'Ready') LIMIT 1";
+                        // ---- 1. Exact reservation match? ----
+                        string checkExact = @"
+                            SELECT transaction_id FROM Transactions
+                            WHERE user_id = @uid
+                              AND accession_number = @acc
+                              AND status IN ('Reserved','Ready')
+                            LIMIT 1";
                         MySqlCommand cmdExact = new MySqlCommand(checkExact, conn, trans);
                         cmdExact.Parameters.AddWithValue("@uid", studentID);
                         cmdExact.Parameters.AddWithValue("@acc", barcode);
@@ -276,7 +293,13 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
                         if (exactResId != null)
                         {
-                            string updateTrans = "UPDATE Transactions SET status = @status, borrow_date = @borrowDate, due_date = @dueDate, fine_amount = 0 WHERE transaction_id = @tid";
+                            // Promote the reservation into a loan
+                            string updateTrans = @"
+                                UPDATE Transactions
+                                   SET status      = @status,
+                                       borrow_date = @borrowDate,
+                                       due_date    = @dueDate
+                                 WHERE transaction_id = @tid";
                             MySqlCommand cmdUp = new MySqlCommand(updateTrans, conn, trans);
                             cmdUp.Parameters.AddWithValue("@status", status);
                             cmdUp.Parameters.AddWithValue("@borrowDate", borrowDate);
@@ -286,13 +309,21 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         }
                         else
                         {
-                            string checkDiff = @"SELECT t.transaction_id, t.accession_number FROM Transactions t
-                                                JOIN Item_Copies c ON t.accession_number = c.accession_number
-                                                WHERE t.user_id = @uid AND c.resource_id = @resId AND t.status IN ('Reserved', 'Ready') AND t.accession_number != @acc LIMIT 1";
+                            // ---- 2. Reservation on a different copy of same resource? ----
+                            string checkDiff = @"
+                                SELECT t.transaction_id, t.accession_number
+                                FROM Transactions t
+                                JOIN Item_Copies c ON t.accession_number = c.accession_number
+                                WHERE t.user_id = @uid
+                                  AND c.resource_id = @resId
+                                  AND t.status IN ('Reserved','Ready')
+                                  AND t.accession_number <> @acc
+                                LIMIT 1";
                             MySqlCommand cmdDiff = new MySqlCommand(checkDiff, conn, trans);
                             cmdDiff.Parameters.AddWithValue("@uid", studentID);
                             cmdDiff.Parameters.AddWithValue("@resId", resourceId);
                             cmdDiff.Parameters.AddWithValue("@acc", barcode);
+
                             using (MySqlDataReader reader = cmdDiff.ExecuteReader())
                             {
                                 if (reader.Read())
@@ -302,7 +333,14 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                     isReservationSwap = true;
                                     reader.Close();
 
-                                    string updateDiff = "UPDATE Transactions SET accession_number = @newAcc, status = @status, borrow_date = @borrowDate, due_date = @dueDate, fine_amount = 0 WHERE transaction_id = @tid";
+                                    // Swap the copy on the reservation row
+                                    string updateDiff = @"
+                                        UPDATE Transactions
+                                           SET accession_number = @newAcc,
+                                               status           = @status,
+                                               borrow_date      = @borrowDate,
+                                               due_date         = @dueDate
+                                         WHERE transaction_id = @tid";
                                     MySqlCommand cmdUpDiff = new MySqlCommand(updateDiff, conn, trans);
                                     cmdUpDiff.Parameters.AddWithValue("@newAcc", barcode);
                                     cmdUpDiff.Parameters.AddWithValue("@status", status);
@@ -314,7 +352,13 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                 else
                                 {
                                     reader.Close();
-                                    string insertTrans = "INSERT INTO Transactions (user_id, accession_number, borrow_date, due_date, status, fine_amount) VALUES (@uid, @acc, @borrowDate, @dueDate, @status, 0)";
+
+                                    // ---- 3. Plain new loan ----
+                                    string insertTrans = @"
+                                        INSERT INTO Transactions
+                                            (user_id, accession_number, borrow_date, due_date, status)
+                                        VALUES
+                                            (@uid, @acc, @borrowDate, @dueDate, @status)";
                                     MySqlCommand cmdIn = new MySqlCommand(insertTrans, conn, trans);
                                     cmdIn.Parameters.AddWithValue("@uid", studentID);
                                     cmdIn.Parameters.AddWithValue("@acc", barcode);
@@ -328,10 +372,18 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
                         trans.Commit();
 
-                        string dueDateMessage = loanType == "LOAN-IN" ? "Must be returned today" : $"Due on: {dueDate:MMMM dd, yyyy}";
-                        string successMessage = isReservationSwap ? $"Reservation swapped and {dueDateMessage}" : $"Transaction successful! {dueDateMessage}";
+                        // ---- UX ----
+                        string dueDateMessage = loanType == "LOAN-IN"
+                            ? "Must be returned today"
+                            : $"Due on: {dueDate:MMMM dd, yyyy}";
+                        string successMessage = isReservationSwap
+                            ? $"Reservation swapped and {dueDateMessage}"
+                            : $"Transaction successful! {dueDateMessage}";
+
                         ShowSweetAlert("Success!", successMessage, "success");
                         ResetForm();
+
+                        LoadTodayTransactions();
                         UPCirculation.Update();
                         UPLiveFeed.Update();
                     }
@@ -344,6 +396,9 @@ namespace spmst_lms_development.Users.Staff.Transactions
             }
         }
 
+        // ============================================================
+        //  RESET / FEED / HELPERS
+        // ============================================================
         private void ResetForm()
         {
             pnlPatronInfo.Visible = false;
@@ -353,10 +408,12 @@ namespace spmst_lms_development.Users.Staff.Transactions
             txtBookBarcode.Enabled = false;
             btnBookCam.Disabled = true;
             divBookStep.Attributes["class"] = "mb-4 step-locked";
+
             ViewState["DecryptedPatronID"] = null;
             ViewState["UserRole"] = null;
             ViewState["ScannedResourceID"] = null;
-            ViewState["ScannedSection"] = null;   // clear saved section
+            ViewState["ScannedSection"] = null;
+
             txtPatronQR.Focus();
         }
 
@@ -365,36 +422,38 @@ namespace spmst_lms_development.Users.Staff.Transactions
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
                 string query = @"
-                                SELECT 
-                                    CONCAT(COALESCE(s.first_name, f.first_name, st.first_name), ' ', 
-                                           COALESCE(s.last_name, f.last_name, st.last_name)) AS PatronName,
-                                    t.user_id AS PatronID,
-                                    r.title AS BookTitle,
-                                    c.accession_number AS AccessionNumber,
-                                    CASE WHEN t.due_date = t.borrow_date THEN 'LOAN-IN' ELSE 'LOAN-OUT' END AS LoanType,
-                                    u.role AS PatronRole
-                                FROM Transactions t
-                                JOIN Item_Copies c ON t.accession_number = c.accession_number
-                                JOIN Library_Resources r ON c.resource_id = r.resource_id
-                                JOIN Users u ON t.user_id = u.user_id
-                                LEFT JOIN Students s ON t.user_id = s.student_id
-                                LEFT JOIN Faculty f ON t.user_id = f.faculty_id
-                                LEFT JOIN Staff st ON t.user_id = st.staff_id
-                                WHERE DATE(t.borrow_date) = CURDATE() AND t.status = 'Borrowed'
-                                ORDER BY t.transaction_id DESC LIMIT 50";
+                    SELECT
+                        CONCAT(COALESCE(s.first_name, f.first_name, st.first_name), ' ',
+                               COALESCE(s.last_name,  f.last_name,  st.last_name))  AS PatronName,
+                        t.user_id          AS PatronID,
+                        r.title            AS BookTitle,
+                        c.accession_number AS AccessionNumber,
+                        CASE WHEN t.due_date = t.borrow_date
+                             THEN 'LOAN-IN' ELSE 'LOAN-OUT' END AS LoanType,
+                        u.role             AS PatronRole
+                    FROM Transactions t
+                    JOIN Item_Copies       c ON t.accession_number = c.accession_number
+                    JOIN Library_Resources r ON c.resource_id      = r.resource_id
+                    JOIN Users             u ON t.user_id          = u.user_id
+                    LEFT JOIN Students     s ON t.user_id          = s.student_id
+                    LEFT JOIN Faculty      f ON t.user_id          = f.faculty_id
+                    LEFT JOIN Staff        st ON t.user_id         = st.staff_id
+                    WHERE DATE(t.borrow_date) = CURDATE()
+                      AND t.status = 'Borrowed'
+                    ORDER BY t.transaction_id DESC
+                    LIMIT 50";
+
                 DataTable dt = new DataTable();
                 using (MySqlDataAdapter da = new MySqlDataAdapter(query, conn))
                     da.Fill(dt);
+
                 rptFeed.DataSource = dt;
                 rptFeed.DataBind();
                 divAwaiting.Visible = (dt.Rows.Count == 0);
             }
         }
 
-        private void UpdateLiveFeed()
-        {
-            LoadTodayTransactions();
-        }
+        private void UpdateLiveFeed() { LoadTodayTransactions(); }
 
         private void ShowToast(string message, string icon)
         {
@@ -428,7 +487,9 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 byte[] cipherBytes = Convert.FromBase64String(cipherText);
                 using (Aes encryptor = Aes.Create())
                 {
-                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(EncryptionKey, new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
+                    Rfc2898DeriveBytes pdb = new Rfc2898DeriveBytes(
+                        EncryptionKey,
+                        new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 });
                     encryptor.Key = pdb.GetBytes(32);
                     encryptor.IV = pdb.GetBytes(16);
                     using (MemoryStream ms = new MemoryStream())
@@ -442,10 +503,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                     }
                 }
             }
-            catch
-            {
-                return "";
-            }
+            catch { return ""; }
         }
     }
 }
