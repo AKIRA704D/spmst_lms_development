@@ -1,12 +1,18 @@
-﻿<%@ Page Title="Transaction Import" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="TransactionImports.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Import.TransactionImports" %>
-
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="TransactionImport.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Import.TransactionImport" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
+</asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
-    <div class="container-fluid py-4">
+        <div class="container-fluid py-4">
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <h4 class="mb-3">Batch Import Transactions</h4>
-                <p class="text-muted">Upload a CSV file to bulk add borrow/return transactions. All columns from the Transactions table are supported.</p>
+                <p class="text-muted">
+                    Upload a CSV file to bulk add borrow/return transactions.
+                    Penalty columns (<code>fine_amount</code>, <code>amount_paid</code>, <code>balance</code>,
+                    <code>fine_status</code>, <code>paid_date</code>, <code>penalty_type</code>, <code>reason</code>)
+                    are optional and, when present, will also create a row in <strong>Penalties</strong>.
+                </p>
 
                 <div id="alertPlaceholder" runat="server"></div>
 
@@ -74,53 +80,77 @@
     </div>
 
     <script>
-document.getElementById('<%= btnImport.ClientID %>').addEventListener('click', function(e) {
-    var fileInput = document.getElementById('<%= fuCSVImport.ClientID %>');
-    if (!fileInput.files || fileInput.files.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'No File Selected',
-            text: 'Please select a CSV file to import.',
-            confirmButtonColor: '#002447'
-        });
-        e.preventDefault();
-        return false;
-    }
-});
-
-function downloadSampleCSV() {
-    var headers = [
-        'user_id', 'accession_number', 'borrow_date', 'due_date', 'return_date',
-        'fine_amount', 'amount_paid', 'balance', 'fine_status', 'paid_date',
-        'status', 'is_damaged', 'is_lost', 'remarks'
-    ];
-
-    var sampleRows = [
-        ['2024-0001', 'C001', '2024-01-15', '2024-02-14', '', 0, 0, 0, 'Unpaid', '', 'Borrowed', 0, 0, 'Regular borrowing'],
-        ['FAC-001', 'N001', '2024-02-01', '2024-02-15', '2024-02-10', 0, 0, 0, 'Paid', '2024-02-10', 'Returned', 0, 0, 'Returned on time'],
-        ['2024-0002', 'DVD001', '2024-03-01', '2024-03-08', '', 25.00, 10.00, 15.00, 'Partial', '', 'Overdue', 0, 0, 'Partial payment received']
-    ];
-
-    var csvContent = headers.join(',') + '\n';
-    sampleRows.forEach(function(row) {
-        var quotedRow = row.map(function(field) {
-            if (typeof field === 'string' && (field.indexOf(',') > -1 || field.indexOf('"') > -1)) {
-                return '"' + field.replace(/"/g, '""') + '"';
+        document.getElementById('<%= btnImport.ClientID %>').addEventListener('click', function (e) {
+            var fileInput = document.getElementById('<%= fuCSVImport.ClientID %>');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No File Selected',
+                    text: 'Please select a CSV file to import.',
+                    confirmButtonColor: '#002447'
+                });
+                e.preventDefault();
+                return false;
             }
-            return field;
         });
-        csvContent += quotedRow.join(',') + '\n';
-    });
 
-    var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    var link = document.createElement('a');
-    var url = URL.createObjectURL(blob);
-    link.href = url;
-    link.setAttribute('download', 'sample_transaction_import.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+        function downloadSampleCSV() {
+            // Matches SPAMAST_LMSv2 schema:
+            //   Transactions: user_id, accession_number, borrow_date, due_date, return_date,
+            //                 status, is_damaged, is_lost, remarks
+            //   Penalties:    penalty_type, reason, fine_amount, amount_paid, balance,
+            //                 fine_status, paid_date   (optional — creates a Penalties row)
+            var headers = [
+                'user_id', 'accession_number', 'borrow_date', 'due_date', 'return_date',
+                'status', 'is_damaged', 'is_lost', 'remarks',
+                'penalty_type', 'reason', 'fine_amount', 'amount_paid', 'balance',
+                'fine_status', 'paid_date'
+            ];
+
+            var sampleRows = [
+                // Simple borrow, no penalty
+                ['2024-0001', 'C001', '2024-01-15', '2024-02-14', '',
+                    'Borrowed', 0, 0, 'Regular borrowing',
+                    '', '', '', '', '', '', ''],
+
+                // Returned on time, no penalty
+                ['FAC-001', 'N001', '2024-02-01', '2024-02-15', '2024-02-10',
+                    'Returned', 0, 0, 'Returned on time',
+                    '', '', '', '', '', '', ''],
+
+                // Overdue with partial payment — creates a Penalties row
+                ['2024-0002', 'DVD001', '2024-03-01', '2024-03-08', '',
+                    'Borrowed', 0, 0, 'Partial payment received',
+                    'Overdue', 'Late return fine', 25.00, 10.00, 15.00,
+                    'Partial', '2024-03-20'],
+
+                // Lost item — penalty fully paid
+                ['2024-0003', 'C002', '2024-01-05', '2024-01-19', '2024-02-01',
+                    'Returned', 0, 1, 'Item reported lost and paid',
+                    'Lost', 'Lost book replacement', 500.00, 500.00, 0.00,
+                    'Paid', '2024-02-01']
+            ];
+
+            var csvContent = headers.join(',') + '\n';
+            sampleRows.forEach(function (row) {
+                var quotedRow = row.map(function (field) {
+                    if (typeof field === 'string' && (field.indexOf(',') > -1 || field.indexOf('"') > -1)) {
+                        return '"' + field.replace(/"/g, '""') + '"';
+                    }
+                    return field;
+                });
+                csvContent += quotedRow.join(',') + '\n';
+            });
+
+            var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            var link = document.createElement('a');
+            var url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute('download', 'sample_transaction_import.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     </script>
 </asp:Content>

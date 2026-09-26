@@ -11,7 +11,7 @@ namespace spmst_lms_development.Users.Staff.Import
 {
 
 
-    public partial class TransactionImports
+    public partial class TransactionImport
     {
 
         /// <summary>

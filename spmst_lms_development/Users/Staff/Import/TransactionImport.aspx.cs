@@ -1,25 +1,38 @@
-﻿using System;
+﻿using CsvHelper;
+using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Web;
+using System.Web.UI;
 using System.Web.UI.WebControls;
-using CsvHelper;
-using MySql.Data.MySqlClient;
 
 namespace spmst_lms_development.Users.Staff.Import
 {
-    public partial class TransactionImports : System.Web.UI.Page
+    public partial class TransactionImport : System.Web.UI.Page
     {
-        // Allowed enum values (must match Transactions table in SPAMAST_LMSv2).
-        private static readonly HashSet<string> ValidFineStatus =
-            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Unpaid", "Partial", "Paid" };
+        // ---- Allowed enum values (must match SPAMAST_LMSv2 schema) ----
 
+        // Transactions.status ENUM
         private static readonly HashSet<string> ValidLoanStatus =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "Borrowed", "Returned", "Overdue", "Reserved", "Ready", "Cancelled" };
+            { "Borrowed", "Returned", "Reserved", "Ready", "Cancelled", "Renewal", "Renewed" };
+
+        // Penalties.penalty_type ENUM
+        private static readonly HashSet<string> ValidPenaltyType =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Overdue", "Damaged", "Lost", "Overdue_Damaged", "Overdue_Lost",
+                "Damaged_Lost", "Overdue_Damaged_Lost", "Other"
+            };
+
+        // Penalties.fine_status ENUM
+        private static readonly HashSet<string> ValidFineStatus =
+            new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Unpaid", "Partial", "Paid" };
 
         // Accepted date formats for CSV parsing.
         private static readonly string[] DateFormats =
@@ -132,7 +145,7 @@ namespace spmst_lms_development.Users.Staff.Import
                         continue;
                     }
 
-                    // Foreign-key pre-checks (gives friendlier messages than raw FK errors).
+                    // Foreign-key pre-checks (friendlier messages than raw FK errors).
                     if (!UserExists(conn, userId))
                     {
                         resultRow["result"] = "Skipped - user_id not found";
@@ -149,7 +162,7 @@ namespace spmst_lms_development.Users.Staff.Import
                     MySqlTransaction tx = conn.BeginTransaction();
                     try
                     {
-                        InsertTransaction(conn, tx, row);
+                        InsertTransactionAndPenalty(conn, tx, row);
                         tx.Commit();
 
                         successCount++;
@@ -207,40 +220,31 @@ namespace spmst_lms_development.Users.Staff.Import
             }
         }
 
-        private void InsertTransaction(MySqlConnection conn, MySqlTransaction tx, Dictionary<string, string> row)
+        /// <summary>
+        /// Inserts a row into Transactions (schema: no fine columns) and,
+        /// if any penalty-related column is present, also inserts a matching
+        /// row into Penalties (source of truth for fines).
+        /// </summary>
+        private void InsertTransactionAndPenalty(MySqlConnection conn, MySqlTransaction tx, Dictionary<string, string> row)
         {
-            const string sql = @"
+            // ---- 1. Transactions ----
+            const string txnSql = @"
                 INSERT INTO Transactions
                     (user_id, accession_number, borrow_date, due_date, return_date,
-                     fine_amount, amount_paid, balance, fine_status, paid_date,
                      status, is_damaged, is_lost, remarks)
                 VALUES
                     (@user_id, @accession_number, @borrow_date, @due_date, @return_date,
-                     @fine_amount, @amount_paid, @balance, @fine_status, @paid_date,
-                     @status, @is_damaged, @is_lost, @remarks);";
+                     @status, @is_damaged, @is_lost, @remarks);
+                SELECT LAST_INSERT_ID();";
 
-            using (var cmd = new MySqlCommand(sql, conn, tx))
+            int transactionId;
+            using (var cmd = new MySqlCommand(txnSql, conn, tx))
             {
                 cmd.Parameters.AddWithValue("@user_id", GetValue(row, "user_id"));
                 cmd.Parameters.AddWithValue("@accession_number", GetValue(row, "accession_number"));
                 cmd.Parameters.AddWithValue("@borrow_date", ParseRequiredDate(row, "borrow_date"));
                 cmd.Parameters.AddWithValue("@due_date", ParseRequiredDate(row, "due_date"));
                 cmd.Parameters.AddWithValue("@return_date", ParseOptionalDate(row, "return_date"));
-
-                decimal fineAmount = ParseDecimalOrDefault(row, "fine_amount", 0m);
-                decimal amountPaid = ParseDecimalOrDefault(row, "amount_paid", 0m);
-                decimal balance = ParseDecimalOrDefault(row, "balance", fineAmount - amountPaid);
-                if (balance < 0) balance = 0m;
-
-                cmd.Parameters.AddWithValue("@fine_amount", fineAmount);
-                cmd.Parameters.AddWithValue("@amount_paid", amountPaid);
-                cmd.Parameters.AddWithValue("@balance", balance);
-
-                string fineStatus = GetValue(row, "fine_status");
-                cmd.Parameters.AddWithValue("@fine_status",
-                    ValidFineStatus.Contains(fineStatus) ? fineStatus : "Unpaid");
-
-                cmd.Parameters.AddWithValue("@paid_date", ParseOptionalDate(row, "paid_date"));
 
                 string status = GetValue(row, "status");
                 cmd.Parameters.AddWithValue("@status",
@@ -250,6 +254,86 @@ namespace spmst_lms_development.Users.Staff.Import
                 cmd.Parameters.AddWithValue("@is_lost", ParseBoolToInt(row, "is_lost"));
 
                 AddParameter(cmd, "@remarks", row, "remarks");
+
+                transactionId = Convert.ToInt32(cmd.ExecuteScalar());
+            }
+
+            // ---- 2. Penalties (optional) ----
+            InsertPenaltyIfNeeded(conn, tx, transactionId, row);
+        }
+
+        private void InsertPenaltyIfNeeded(MySqlConnection conn, MySqlTransaction tx, int transactionId, Dictionary<string, string> row)
+        {
+            string fineAmountRaw = GetValue(row, "fine_amount");
+            string amountPaidRaw = GetValue(row, "amount_paid");
+            string balanceRaw = GetValue(row, "balance");
+            string fineStatusRaw = GetValue(row, "fine_status");
+            string paidDateRaw = GetValue(row, "paid_date");
+            string penaltyTypeRaw = GetValue(row, "penalty_type");
+            string reasonRaw = GetValue(row, "reason");
+
+            bool hasPenalty =
+                !string.IsNullOrEmpty(fineAmountRaw) ||
+                !string.IsNullOrEmpty(amountPaidRaw) ||
+                !string.IsNullOrEmpty(balanceRaw) ||
+                !string.IsNullOrEmpty(fineStatusRaw) ||
+                !string.IsNullOrEmpty(paidDateRaw) ||
+                !string.IsNullOrEmpty(penaltyTypeRaw) ||
+                !string.IsNullOrEmpty(reasonRaw);
+
+            if (!hasPenalty) return;
+
+            decimal amountPaid = ParseDecimalOrDefault(row, "amount_paid", 0m);
+
+            // fine_amount: prefer explicit value, otherwise derive from legacy "balance" column.
+            decimal fineAmount;
+            if (!string.IsNullOrEmpty(fineAmountRaw))
+                fineAmount = ParseDecimalOrDefault(row, "fine_amount", 0m);
+            else if (!string.IsNullOrEmpty(balanceRaw))
+                fineAmount = amountPaid + ParseDecimalOrDefault(row, "balance", 0m);
+            else
+                fineAmount = 0m;
+
+            if (fineAmount < 0) fineAmount = 0m;
+
+            // fine_status: use provided value if valid, otherwise derive from amounts.
+            string fineStatus = GetValue(row, "fine_status");
+            if (!ValidFineStatus.Contains(fineStatus))
+            {
+                if (amountPaid <= 0) fineStatus = "Unpaid";
+                else if (amountPaid >= fineAmount) fineStatus = "Paid";
+                else fineStatus = "Partial";
+            }
+
+            // penalty_type: use provided value if valid, otherwise "Other".
+            string penaltyType = GetValue(row, "penalty_type");
+            if (!ValidPenaltyType.Contains(penaltyType))
+                penaltyType = "Other";
+
+            // reason is NOT NULL in schema.
+            string reason = GetValue(row, "reason");
+            if (string.IsNullOrEmpty(reason))
+                reason = "Imported penalty";
+
+            const string sql = @"
+                INSERT INTO Penalties
+                    (transaction_id, user_id, accession_number, penalty_type, reason,
+                     fine_amount, amount_paid, fine_status, paid_date)
+                VALUES
+                    (@transaction_id, @user_id, @accession_number, @penalty_type, @reason,
+                     @fine_amount, @amount_paid, @fine_status, @paid_date);";
+
+            using (var cmd = new MySqlCommand(sql, conn, tx))
+            {
+                cmd.Parameters.AddWithValue("@transaction_id", transactionId);
+                cmd.Parameters.AddWithValue("@user_id", GetValue(row, "user_id"));
+                cmd.Parameters.AddWithValue("@accession_number", GetValue(row, "accession_number"));
+                cmd.Parameters.AddWithValue("@penalty_type", penaltyType);
+                cmd.Parameters.AddWithValue("@reason", reason);
+                cmd.Parameters.AddWithValue("@fine_amount", fineAmount);
+                cmd.Parameters.AddWithValue("@amount_paid", amountPaid);
+                cmd.Parameters.AddWithValue("@fine_status", fineStatus);
+                cmd.Parameters.AddWithValue("@paid_date", ParseOptionalDate(row, "paid_date"));
 
                 cmd.ExecuteNonQuery();
             }
@@ -269,7 +353,7 @@ namespace spmst_lms_development.Users.Staff.Import
             table.Columns.Add("result", typeof(string));
             return table;
         }
- 
+
         protected string GetStatusBadgeClass(string status)
         {
             if (string.IsNullOrEmpty(status)) return "bg-secondary";
