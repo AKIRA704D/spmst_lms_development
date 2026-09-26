@@ -719,7 +719,7 @@
 
                     <!-- Book Imports -->
                     <asp:HyperLink ID="lnkTransactionImports" runat="server"
-                        NavigateUrl="~/Users/Staff/Import/TransactionImports.aspx" CssClass="nav-menu-item">
+                        NavigateUrl="~/Users/Staff/Import/TransactionImport.aspx" CssClass="nav-menu-item">
                         <i class="fa-solid fa-file-import"></i><span>Transaction Imports</span>
                     </asp:HyperLink>
 
@@ -728,7 +728,7 @@
 
                     <!-- Feedback & Request -->
                     <asp:HyperLink ID="lnkFeedbackRequest" runat="server"
-                        NavigateUrl="~/Users/Patron/FeedReq/FeedbackRequest.aspx" CssClass="nav-menu-item">
+                        NavigateUrl="~/Users/Staff/FeedbackReq/FeedbackRequest.aspx" CssClass="nav-menu-item">
                         <i class="fa-solid fa-comment-dots"></i><span>Feedback &amp; Request</span>
                     </asp:HyperLink>
 
