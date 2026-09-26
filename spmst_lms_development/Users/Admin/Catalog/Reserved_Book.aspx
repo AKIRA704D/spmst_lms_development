@@ -60,7 +60,7 @@
                             </div>
                         </div>
                         <div class="alert alert-warning small">
-                            <i class="fas fa-exclamation-triangle me-2"></i> This reservation is valid for <strong>TODAY only</strong>. Please pick up the book before the library closes.
+                            <i class="fas fa-exclamation-triangle me-2"></i> This reservation is valid for <strong>1 HOUR only</strong>. Please pick up the book before the it expires.
                         </div>
                         <asp:Button ID="btnContinue" runat="server" Text="Continue" CssClass="btn btn-primary w-100 py-2" OnClick="Next_Click" />
                     </asp:Panel>
@@ -75,7 +75,7 @@
                         <div class="form-check mb-3">
                             <asp:CheckBox ID="chkTerms" runat="server" CssClass="form-check-input" />
                             <label class="form-check-label small" for="chkTerms">
-                                I agree to pick up this book <strong>today</strong> before closing time.
+                                I agree to pick up this book <strong>within 1 hour</strong> before it expires.
                             </label>
                         </div>
                         <div class="d-flex gap-2">
