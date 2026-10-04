@@ -71,7 +71,6 @@ namespace spmst_lms_development.Users.Staff.Accounts
                 else if (role.Equals("staff", StringComparison.OrdinalIgnoreCase) ||
                          role.Equals("admin", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Admins are stored in the Staff table (they share the same staff_id column).
                     query = @"SELECT staff_id AS user_id,
                      first_name, middle_name, last_name, extension_name,
                      gender, mobile_number, email,
@@ -105,8 +104,9 @@ namespace spmst_lms_development.Users.Staff.Accounts
                         litFullName.Text = BuildFullName(last, first, middle, ext).ToUpper();
                         litRole.Text = role.ToUpper();
                         litUserID.Text = userId;
+                        litUserIDDetail.Text = userId;
 
-                        // Avatar: real photo if profile_path resolves, otherwise first+last initial.
+                        // Avatar: real photo if profile_path resolves, otherwise initials.
                         string initials = BuildInitials(first, last);
 
                         string resolved = ResolveProfileImage(Get(dr, "profile_path"));
@@ -114,14 +114,16 @@ namespace spmst_lms_development.Users.Staff.Accounts
                         if (!string.IsNullOrEmpty(resolved))
                         {
                             string safeSrc = Server.HtmlEncode(resolved);
+                            string safeAlt = Server.HtmlEncode(initials);
+                            string safeInitials = initials.Replace("'", "\\'");
+
                             litAvatar.Text =
-                                $"<img src=\"{safeSrc}\" alt=\"{initials}\" " +
-                                $"class=\"w-full h-full object-cover\" " +
-                                $"onerror=\"this.outerHTML='{initials}'\" />";
+                                $"<img src=\"{safeSrc}\" alt=\"{safeAlt}\" " +
+                                $"onerror=\"this.outerHTML='{safeInitials}'\" />";
                         }
                         else
                         {
-                            litAvatar.Text = initials;
+                            litAvatar.Text = Server.HtmlEncode(initials);
                         }
 
                         // Contact block — identical columns across all three tables.
@@ -162,7 +164,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
                     }
                 }
 
-                // Account status lives on the Users table, not the role table.
+                // Account status lives on the Users table.
                 using (var cmdStatus = new MySqlCommand("SELECT is_active FROM Users WHERE user_id = @id", conn))
                 {
                     cmdStatus.Parameters.AddWithValue("@id", userId);
@@ -175,18 +177,15 @@ namespace spmst_lms_development.Users.Staff.Accounts
                     {
                         case 1:
                             litStatus.Text = "ACTIVE";
-                            statusBadge.Attributes["class"] =
-                                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-green-100 text-green-700";
+                            statusBadge.Attributes["class"] = "status-badge active";
                             break;
                         case 2:
                             litStatus.Text = "DEACTIVATED";
-                            statusBadge.Attributes["class"] =
-                                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-red-100 text-red-700";
+                            statusBadge.Attributes["class"] = "status-badge deactivated";
                             break;
                         default:
                             litStatus.Text = "INACTIVE";
-                            statusBadge.Attributes["class"] =
-                                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-yellow-100 text-yellow-700";
+                            statusBadge.Attributes["class"] = "status-badge inactive";
                             break;
                     }
                 }
@@ -224,10 +223,12 @@ namespace spmst_lms_development.Users.Staff.Accounts
                         {
                             rptHistory.DataSource = dt;
                             rptHistory.DataBind();
+                            phHistory.Visible = true;
                             phNoHistory.Visible = false;
                         }
                         else
                         {
+                            phHistory.Visible = false;
                             phNoHistory.Visible = true;
                         }
                     }
@@ -269,7 +270,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
             return sb.ToString();
         }
 
-        /// <summary>Two-letter placeholder from the first and last names (falls back to one or '?').</summary>
+        /// <summary>Two-letter placeholder from the first and last names.</summary>
         private static string BuildInitials(string first, string last)
         {
             char f = !string.IsNullOrEmpty(first) ? char.ToUpper(first[0]) : '?';
@@ -297,22 +298,18 @@ namespace spmst_lms_development.Users.Staff.Accounts
             }
 
             // Anything without "~/" or "/" is treated as app-root-relative.
-            // This is what fixes "Assets/Covers/default-cover.jpg".
             if (!raw.StartsWith("~/") && !raw.StartsWith("/"))
                 raw = "~/" + raw;
 
-            // For app-relative paths, make sure the file actually exists.
-            if (raw.StartsWith("~/"))
+            // Make sure the file actually exists on disk.
+            try
             {
-                try
-                {
-                    if (!System.IO.File.Exists(Server.MapPath(raw)))
-                        return null;
-                }
-                catch
-                {
+                if (!System.IO.File.Exists(Server.MapPath(raw)))
                     return null;
-                }
+            }
+            catch
+            {
+                return null;
             }
 
             return ResolveUrl(raw);

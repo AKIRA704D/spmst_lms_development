@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="userNew.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Accounts.userNew" %>
+﻿﻿﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="userNew.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Accounts.userNew" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -65,7 +65,6 @@
             font-size: 3rem; color: #adb5bd;
         }
 
-        /* Visually hidden, but the input remains in the form and WILL be submitted */
         .visually-hidden-input {
             position: absolute;
             width: 1px; height: 1px;
@@ -76,26 +75,26 @@
             border: 0;
         }
 
+        /* Loading overlay — kept local to the iframe viewport.
+           backdrop-filter removed to avoid iframe-compositor edge cases. */
         .loading-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            z-index: 9999; display: none;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+            display: none;
             align-items: center; justify-content: center;
         }
         .loading-box {
             background: white; border-radius: 1rem; padding: 1.5rem;
-            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
     </style>
 </head>
 <body>
     <form id="form1" runat="server" enctype="multipart/form-data">
 
-        <!-- Server -> client result channel (JSON) -->
-        <asp:HiddenField ID="hfResult" runat="server" ClientIDMode="Static" />
-
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="loading-overlay">
+        <!-- Loading Overlay (default hidden) -->
+        <div id="loadingOverlay" class="loading-overlay" style="display:none;">
             <div class="loading-box">
                 <div class="spinner-border text-primary mb-3" role="status"></div>
                 <p class="mb-0 fw-bold text-dark">Saving Record...</p>
@@ -113,7 +112,7 @@
                     <small class="text-secondary">LMSA | Account Creation Portal</small>
                 </div>
             </div>
-            <button type="button" class="btn-close btn-close-white" onclick="closeAndRefresh()" aria-label="Close"></button>
+            <button type="button" class="btn-close btn-close-white" onclick="closeModal()" aria-label="Close"></button>
         </div>
 
         <!-- Body -->
@@ -169,7 +168,6 @@
                                 <i class="fas fa-trash me-1"></i> Remove
                             </button>
 
-                            <!-- NOT d-none. Kept in form flow so it submits. -->
                             <asp:FileUpload ID="fuProfile" runat="server" ClientIDMode="Static"
                                 CssClass="visually-hidden-input" accept="image/*"
                                 onchange="previewProfile(this)" />
@@ -222,6 +220,14 @@
                         <label class="form-label fw-bold small text-uppercase">Mobile Number</label>
                         <asp:TextBox ID="txtMobile" runat="server" CssClass="form-control"
                             placeholder="0900-000-0000" maxlength="13" oninput="maskMobile(this)" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-1">
+                    <div class="col-12">
+                        <label class="form-label fw-bold small text-uppercase">Address</label>
+                        <asp:TextBox ID="txtAddress" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="2"
+                                     placeholder="Street, Barangay, City/Municipality, Province" />
                     </div>
                 </div>
 
@@ -282,7 +288,7 @@
 
         <!-- Footer (sticky) -->
         <div class="bg-white border-top p-3 d-flex justify-content-end gap-3 sticky-footer">
-            <button type="button" class="btn btn-outline-secondary px-4" onclick="closeAndRefresh()">Cancel</button>
+            <button type="button" class="btn btn-outline-secondary px-4" onclick="closeModal()">Cancel</button>
             <asp:LinkButton ID="btnSave" runat="server" CssClass="btn btn-custom-primary text-white px-5"
                 OnClick="BtnSave_Click" OnClientClick="showLoading();">
                 <i class="fas fa-save me-2"></i> Save Patron Account
@@ -318,7 +324,7 @@
             input.value = input.value.toLowerCase();
             const val = input.value;
             if (val !== "" && !val.endsWith("@spamast.edu.ph") && !val.endsWith("@gmail.com")) {
-                Swal.fire({
+                getSwal().fire({
                     icon: 'warning', title: 'Invalid Email Domain',
                     text: 'Please use @spamast.edu.ph or @gmail.com',
                     confirmButtonColor: '#002447'
@@ -327,25 +333,36 @@
             }
         }
 
+        /* ---------- Swal helper (parent-aware, safe) ---------- */
+        function getSwal() {
+            try {
+                if (window.parent && window.parent !== window && window.parent.Swal)
+                    return window.parent.Swal;
+            } catch (e) { /* ignore cross-origin */ }
+            return window.Swal;
+        }
+
         /* ---------- Profile photo preview ---------- */
         const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
-        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
         function previewProfile(input) {
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
+            const nameLower = (file.name || '').toLowerCase();
+            const extOk = ALLOWED_EXTENSIONS.some(ext => nameLower.endsWith(ext));
 
-            if (!ALLOWED_TYPES.includes(file.type)) {
-                Swal.fire({
+            if (!extOk) {
+                getSwal().fire({
                     icon: 'warning', title: 'Invalid Format',
-                    text: 'Please choose a JPG, PNG, GIF or WEBP image.',
+                    text: 'Please choose a JPG, JPEG, PNG, GIF or WEBP image.',
                     confirmButtonColor: '#002447'
                 });
                 input.value = '';
                 return;
             }
             if (file.size > MAX_PHOTO_BYTES) {
-                Swal.fire({
+                getSwal().fire({
                     icon: 'warning', title: 'File Too Large',
                     text: 'Maximum profile photo size is 5 MB.',
                     confirmButtonColor: '#002447'
@@ -414,68 +431,27 @@
             notifyParentResize();
         }
 
-        function closeAndRefresh() {
+        /* ---------- Modal close (mirrors userUpdate convention) ---------- */
+        function closeModal() {
             try {
-                if (window.parent && window.parent !== window) {
-                    if (typeof window.parent.closeUniversalModal === 'function') {
-                        window.parent.closeUniversalModal();
-                    }
-                    if (typeof window.parent.refreshParentTable === 'function') {
-                        window.parent.refreshParentTable();
-                    } else {
-                        window.parent.location.reload();
-                    }
+                if (window.parent && window.parent !== window &&
+                    typeof window.parent.closeUniversalModal === 'function') {
+                    window.parent.closeUniversalModal();
                 } else {
                     window.location.href = 'AccManage.aspx';
                 }
             } catch (e) {
-                try { window.parent.location.reload(); } catch (_) { /* ignore */ }
+                try { window.location.href = 'AccManage.aspx'; } catch (_) { /* ignore */ }
             }
         }
 
-        /* ---------- Page init (safe against readyState) ---------- */
+        /* ---------- Init: hide overlay immediately ---------- */
         function pageInit() {
-            // 1. Always hide the overlay on a fresh load
             var overlay = document.getElementById('loadingOverlay');
             if (overlay) overlay.style.display = 'none';
 
-            // 2. Sync the role panels with the current dropdown value
             var ddl = document.getElementById('ddlCategory');
             if (ddl) togglePanels(ddl.value);
-
-            // 3. Show result from the server if present
-            var hf = document.getElementById('hfResult');
-            if (!hf || !hf.value) return;
-
-            var result;
-            try { result = JSON.parse(hf.value); } catch (e) { return; }
-            if (!result || !result.type) return;
-
-            if (result.type === 'success') {
-                Swal.fire({
-                    title: result.title || 'Success!',
-                    text: result.message || '',
-                    icon: 'success',
-                    confirmButtonColor: '#002447',
-                    confirmButtonText: 'OK'
-                }).then(function () {
-                    closeAndRefresh();
-                });
-            } else if (result.type === 'error') {
-                Swal.fire({
-                    title: result.title || 'Error',
-                    text: result.message || '',
-                    icon: 'error',
-                    confirmButtonColor: '#002447'
-                });
-            } else if (result.type === 'warning') {
-                Swal.fire({
-                    title: result.title || 'Validation Error',
-                    text: result.message || '',
-                    icon: 'warning',
-                    confirmButtonColor: '#002447'
-                });
-            }
         }
 
         if (document.readyState === 'loading') {

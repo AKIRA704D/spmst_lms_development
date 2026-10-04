@@ -4,7 +4,6 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web;
-using System.Web.Script.Serialization;
 using System.Web.UI;
 
 namespace spmst_lms_development.Users.Staff.Accounts
@@ -19,7 +18,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Explicit – guarantees the form is multipart even if markup is edited later
+            // Guarantees multipart even if markup is edited later.
             form1.Enctype = "multipart/form-data";
 
             if (!IsPostBack)
@@ -89,7 +88,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
                 {
                     try
                     {
-                        // 1. Patron row
+                        // 1. Role-specific patron row
                         string insertPatronSql = GetPatronInsertSql(role);
                         using (MySqlCommand cmd = new MySqlCommand(insertPatronSql, conn, trans))
                         {
@@ -155,28 +154,30 @@ namespace spmst_lms_development.Users.Staff.Accounts
 
         private string SaveProfilePhoto(string userId)
         {
-            // Try the control first, then the raw request as a fallback
             HttpPostedFile file = null;
+
             try
             {
                 if (fuProfile != null && fuProfile.HasFile)
                     file = fuProfile.PostedFile;
             }
-            catch { /* fall through to Request.Files */ }
+            catch { /* fall through */ }
 
-            if (file == null && Request.Files.Count > 0)
+            if (file == null || file.ContentLength <= 0)
             {
-                // FileUpload renders name="fuProfile"; look it up both by name and by control UniqueID
-                file = Request.Files["fuProfile"];
-                if (file == null && fuProfile != null)
-                    file = Request.Files[fuProfile.UniqueID];
+                if (Request.Files.Count > 0)
+                {
+                    file = Request.Files["fuProfile"];
+                    if (file == null && fuProfile != null)
+                        file = Request.Files[fuProfile.UniqueID];
+                }
             }
 
             if (file == null || file.ContentLength <= 0)
                 return null;
 
             string originalName = file.FileName ?? string.Empty;
-            string ext = Path.GetExtension(originalName)?.ToLowerInvariant() ?? string.Empty;
+            string ext = (Path.GetExtension(originalName) ?? string.Empty).ToLowerInvariant();
 
             if (!AllowedExtensions.Contains(ext))
                 throw new Exception("Invalid image format. Allowed: JPG, JPEG, PNG, GIF, WEBP.");
@@ -188,7 +189,9 @@ namespace spmst_lms_development.Users.Staff.Accounts
             if (!Directory.Exists(physicalFolder))
                 Directory.CreateDirectory(physicalFolder);
 
-            string safeId = string.Join("_", userId.Split(Path.GetInvalidFileNameChars()));
+            string safeId = string.Join("_", (userId ?? "user").Split(Path.GetInvalidFileNameChars()));
+            if (string.IsNullOrEmpty(safeId)) safeId = "user";
+
             string fileName = $"{safeId}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
             string physicalPath = Path.Combine(physicalFolder, fileName);
 
@@ -202,7 +205,11 @@ namespace spmst_lms_development.Users.Staff.Accounts
             if (string.IsNullOrEmpty(virtualPath)) return;
             try
             {
-                string physical = Server.MapPath(virtualPath);
+                string virt = virtualPath.Trim();
+                if (!virt.StartsWith("~/"))
+                    virt = "~/" + virt.TrimStart('~', '/');
+
+                string physical = Server.MapPath(virt);
                 if (File.Exists(physical)) File.Delete(physical);
             }
             catch { /* best-effort */ }
@@ -222,23 +229,23 @@ namespace spmst_lms_development.Users.Staff.Accounts
             if (role == "student")
                 return @"INSERT INTO Students 
                          (student_id, first_name, middle_name, last_name, extension_name, 
-                          gender, mobile_number, email, institute, course, section, year_level, profile_path) 
+                          gender, mobile_number, email, institute, course, section, year_level, address, profile_path) 
                          VALUES 
-                         (@id, @fname, @mname, @lname, @ext, @gender, @mobile, @email, @inst, @course, @sec, @year, @profilePath)";
+                         (@id, @fname, @mname, @lname, @ext, @gender, @mobile, @email, @inst, @course, @sec, @year, @address, @profilePath)";
 
             if (role == "faculty")
                 return @"INSERT INTO Faculty 
                          (faculty_id, first_name, middle_name, last_name, extension_name, 
-                          gender, mobile_number, email, institute, profile_path) 
+                          gender, mobile_number, email, institute, address, profile_path) 
                          VALUES 
-                         (@id, @fname, @mname, @lname, @ext, @gender, @mobile, @email, @inst, @profilePath)";
+                         (@id, @fname, @mname, @lname, @ext, @gender, @mobile, @email, @inst, @address, @profilePath)";
 
             int isHead = (txtOffice.Text.Trim() == "Head Office") ? 1 : 0;
             return $@"INSERT INTO Staff 
                       (staff_id, first_name, middle_name, last_name, extension_name, 
-                       gender, mobile_number, email, office_department, is_head_librarian, profile_path) 
+                       gender, mobile_number, email, office_department, is_head_librarian, address, profile_path) 
                       VALUES 
-                      (@id, @fname, @mname, @lname, @ext, @gender, @mobile, @email, @office, {isHead}, @profilePath)";
+                      (@id, @fname, @mname, @lname, @ext, @gender, @mobile, @email, @office, {isHead}, @address, @profilePath)";
         }
 
         private void AddPatronParameters(MySqlCommand cmd, string role, string profilePath)
@@ -251,6 +258,10 @@ namespace spmst_lms_development.Users.Staff.Accounts
             cmd.Parameters.AddWithValue("@gender", ddlGender.SelectedValue);
             cmd.Parameters.AddWithValue("@mobile", txtMobile.Text.Trim());
             cmd.Parameters.AddWithValue("@email", txtEmail.Text.Trim());
+
+            string addr = txtAddress.Text.Trim();
+            cmd.Parameters.AddWithValue("@address",
+                string.IsNullOrEmpty(addr) ? (object)DBNull.Value : addr);
 
             if (role == "student")
             {
@@ -273,13 +284,85 @@ namespace spmst_lms_development.Users.Staff.Accounts
         }
 
         // =============================================================
-        //  RESULT CHANNEL
+        //  RESULT CHANNEL (uses ScriptManager like userUpdate, so the
+        //  parent modal closure is triggered immediately and reliably)
         // =============================================================
 
         private void SetResult(string type, string title, string message)
         {
-            var payload = new { type = type, title = title, message = message };
-            hfResult.Value = new JavaScriptSerializer().Serialize(payload);
+            string icon = "error";
+            if (type == "success") icon = "success";
+            else if (type == "warning") icon = "warning";
+
+            string titleJs = JsString(title);
+            string messageJs = JsString(message);
+
+            string script;
+
+            if (type == "success")
+            {
+                // Mirrors userUpdate's success path: parent Swal -> refresh -> close.
+                script = $@"
+(function() {{
+    var sw = (window.parent && window.parent.Swal) ? window.parent.Swal : (window.Swal || null);
+    if (!sw) {{ alert({titleJs} + ': ' + {messageJs}); return; }}
+    sw.fire({{
+        title: {titleJs},
+        text: {messageJs},
+        icon: 'success',
+        confirmButtonColor: '#002447',
+        confirmButtonText: 'OK'
+    }}).then(function() {{
+        try {{
+            if (window.parent && typeof window.parent.refreshParentTable === 'function')
+                window.parent.refreshParentTable();
+        }} catch (e) {{}}
+        setTimeout(function() {{
+            try {{
+                if (window.parent && typeof window.parent.closeUniversalModal === 'function')
+                    window.parent.closeUniversalModal();
+            }} catch (e) {{}}
+        }}, 150);
+    }});
+}})();";
+            }
+            else
+            {
+                script = $@"
+(function() {{
+    var sw = (window.parent && window.parent.Swal) ? window.parent.Swal : (window.Swal || null);
+    if (!sw) {{ alert({titleJs} + ': ' + {messageJs}); return; }}
+    sw.fire({{
+        title: {titleJs},
+        text: {messageJs},
+        icon: '{icon}',
+        confirmButtonColor: '#002447'
+    }});
+}})();";
+            }
+
+            ScriptManager.RegisterStartupScript(this, GetType(), "userNewResult", script, true);
+        }
+
+        /// <summary>Minimal JS single-quoted string literal encoder.</summary>
+        private static string JsString(string s)
+        {
+            if (s == null) return "''";
+            var sb = new System.Text.StringBuilder("'");
+            foreach (char c in s)
+            {
+                switch (c)
+                {
+                    case '\\': sb.Append("\\\\"); break;
+                    case '\'': sb.Append("\\'"); break;
+                    case '\n': sb.Append("\\n"); break;
+                    case '\r': sb.Append("\\r"); break;
+                    case '\t': sb.Append("\\t"); break;
+                    default: sb.Append(c); break;
+                }
+            }
+            sb.Append("'");
+            return sb.ToString();
         }
 
         private string DescribeDuplicate(MySqlException ex)
@@ -320,6 +403,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
             txtExt.Text = "";
             ddlGender.SelectedIndex = 0;
             txtMobile.Text = "";
+            txtAddress.Text = "";
             txtInst.Text = "";
             txtCourse.Text = "";
             txtSec.Text = "";

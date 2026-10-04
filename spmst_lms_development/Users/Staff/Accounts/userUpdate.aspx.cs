@@ -1,8 +1,12 @@
 ﻿using ClosedXML.Excel;
 using MySql.Data.MySqlClient;
+using spmst_lms_development.Users.Patron;
 using System;
 using System.Configuration;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Web;
 using System.Web.UI;
 
 namespace spmst_lms_development.Users.Staff.Accounts
@@ -12,16 +16,31 @@ namespace spmst_lms_development.Users.Staff.Accounts
         private readonly string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
         private string currentUser = "";
 
-        // Persisted so it survives postback (needed by GetChanges)
+        // ---- Profile photo constants (mirrors userNew) ----
+        private const string ProfileFolderVirtual = "~/Assets/Profile/";
+        private const int MaxPhotoBytes = 5 * 1024 * 1024;
+        private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+        // Persisted so it survives postback
         private string OriginalData
         {
             get { return ViewState["OriginalData"]?.ToString() ?? ""; }
             set { ViewState["OriginalData"] = value; }
         }
 
+        // The profile_path currently stored in the DB for this patron
+        private string CurrentProfilePath
+        {
+            get { return ViewState["CurrentProfilePath"]?.ToString() ?? ""; }
+            set { ViewState["CurrentProfilePath"] = value; }
+        }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             currentUser = Session["UserID"]?.ToString() ?? "SYSTEM";
+
+            // Guarantee multipart for the photo upload
+            form1.Enctype = "multipart/form-data";
 
             if (!IsPostBack)
             {
@@ -116,7 +135,6 @@ namespace spmst_lms_development.Users.Staff.Accounts
                             txtLName.Text = dr["last_name"].ToString();
                             txtEmail.Text = dr["email"].ToString();
 
-                            // ---- Personal fields exist on ALL three tables ----
                             txtMName.Text = dr["middle_name"].ToString();
                             txtExt.Text = dr["extension_name"].ToString();
 
@@ -124,14 +142,45 @@ namespace spmst_lms_development.Users.Staff.Accounts
                             if (!string.IsNullOrEmpty(gender))
                             {
                                 var li = ddlGender.Items.FindByValue(gender);
-                                if (li != null) ddlGender.ClearSelection();
-                                if (li != null) li.Selected = true;
+                                if (li != null)
+                                {
+                                    ddlGender.ClearSelection();
+                                    li.Selected = true;
+                                }
                             }
 
                             txtMobile.Text = FormatMobile(dr["mobile_number"].ToString());
 
-                            // ---- Address exists on all three tables ----
-                            txtAddress.Text = dr["address"].ToString();
+                            // Address
+                            txtAddress.Text = dr["address"] != DBNull.Value ? dr["address"].ToString() : "";
+
+                            // ---------- PROFILE PHOTO ----------
+                            // Raw value from DB (may be stale / may point to a missing file).
+                            string profilePath = (dr["profile_path"] != DBNull.Value)
+                                ? dr["profile_path"].ToString()
+                                : "";
+                            CurrentProfilePath = profilePath ?? "";
+
+                            // Use the same resolution strategy as userView.
+                            string resolved = ResolveProfileImage(profilePath);
+
+                            if (!string.IsNullOrEmpty(resolved))
+                            {
+                                profilePreview.Src = resolved;
+                                profilePreview.Style["display"] = "block";
+                                profilePlaceholder.Style["display"] = "none";
+                            }
+                            else
+                            {
+                                profilePreview.Style["display"] = "none";
+                                profilePlaceholder.Style["display"] = "block";
+                            }
+
+                            // Show Remove whenever the DB has a path — even if the
+                            // physical file is missing, the user may want to clear it.
+                            btnRemovePhoto.Style["display"] =
+                                string.IsNullOrEmpty(CurrentProfilePath) ? "none" : "inline-block";
+                            // --------------------------------------
 
                             if (role == "student")
                             {
@@ -180,6 +229,122 @@ namespace spmst_lms_development.Users.Staff.Accounts
             }
         }
 
+        // =============================================================
+        //  PROFILE PHOTO HELPERS
+        // =============================================================
+
+        /// <summary>
+        /// Normalises a stored DB path into a "~/"-prefixed virtual path.
+        /// Used only for physical file IO (save/delete/compare), NOT for display.
+        /// </summary>
+        private string NormalizeProfilePath(string raw)
+        {
+            if (string.IsNullOrEmpty(raw)) return "";
+            string p = raw.Trim().Replace('\\', '/');
+            if (p.StartsWith("~/")) return p;
+            if (p.StartsWith("/")) return "~" + p;
+            return "~/" + p;
+        }
+
+        /// <summary>
+        /// Same resolution strategy as userView.aspx.cs:
+        ///   1. Trim + normalise slashes.
+        ///   2. Pass absolute URLs through untouched.
+        ///   3. Prepend "~/" if the path is app-relative but has no prefix.
+        ///   4. Verify the physical file exists via Server.MapPath + File.Exists.
+        ///   5. Return ResolveUrl(...) if the file exists, else null.
+        /// Returns null for NULL/empty/whitespace or a missing physical file.
+        /// </summary>
+        private string ResolveProfileImage(string profilePath)
+        {
+            if (string.IsNullOrWhiteSpace(profilePath)) return null;
+
+            string raw = profilePath.Trim().Replace('\\', '/');
+
+            if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                return raw;
+
+            if (!raw.StartsWith("~/") && !raw.StartsWith("/"))
+                raw = "~/" + raw;
+
+            try
+            {
+                if (!File.Exists(Server.MapPath(raw)))
+                    return null;
+            }
+            catch
+            {
+                return null;
+            }
+
+            return ResolveUrl(raw);
+        }
+
+        private string SaveProfilePhoto(string userId)
+        {
+            HttpPostedFile file = null;
+
+            try
+            {
+                if (fuProfile != null && fuProfile.HasFile)
+                    file = fuProfile.PostedFile;
+            }
+            catch { /* fall through */ }
+
+            if (file == null || file.ContentLength <= 0)
+            {
+                if (Request.Files.Count > 0)
+                {
+                    file = Request.Files["fuProfile"];
+                    if (file == null && fuProfile != null)
+                        file = Request.Files[fuProfile.UniqueID];
+                }
+            }
+
+            if (file == null || file.ContentLength <= 0)
+                return null;
+
+            string originalName = file.FileName ?? string.Empty;
+            string ext = (Path.GetExtension(originalName) ?? string.Empty).ToLowerInvariant();
+
+            if (!AllowedExtensions.Contains(ext))
+                throw new Exception("Invalid image format. Allowed: JPG, JPEG, PNG, GIF, WEBP.");
+
+            if (file.ContentLength > MaxPhotoBytes)
+                throw new Exception("Profile photo must be 5 MB or smaller.");
+
+            string physicalFolder = Server.MapPath(ProfileFolderVirtual);
+            if (!Directory.Exists(physicalFolder))
+                Directory.CreateDirectory(physicalFolder);
+
+            string safeId = string.Join("_", (userId ?? "user").Split(Path.GetInvalidFileNameChars()));
+            if (string.IsNullOrEmpty(safeId)) safeId = "user";
+
+            string fileName = $"{safeId}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+            string physicalPath = Path.Combine(physicalFolder, fileName);
+
+            file.SaveAs(physicalPath);
+
+            return ProfileFolderVirtual + fileName;
+        }
+
+        private void DeleteProfilePhoto(string virtualPath)
+        {
+            if (string.IsNullOrEmpty(virtualPath)) return;
+            try
+            {
+                string virt = NormalizeProfilePath(virtualPath);
+                string physical = Server.MapPath(virt);
+                if (File.Exists(physical)) File.Delete(physical);
+            }
+            catch { /* best-effort */ }
+        }
+
+        // =============================================================
+        //  UPDATE
+        // =============================================================
+
         protected void BtnUpdate_Click(object sender, EventArgs e)
         {
             string userId = txtID.Text.Trim();
@@ -194,6 +359,37 @@ namespace spmst_lms_development.Users.Staff.Accounts
                 return;
             }
 
+            // ---------- Determine the photo action ----------
+            string existingProfilePath = CurrentProfilePath ?? "";
+            string finalProfilePath = existingProfilePath;   // default = keep unchanged
+            string newSavedFile = null;                      // physical file we created (if any)
+
+            bool newFileSelected = (fuProfile != null && fuProfile.HasFile);
+            bool removeRequested = string.Equals(hfRemovePhoto.Value, "1", StringComparison.Ordinal);
+
+            if (newFileSelected)
+            {
+                try
+                {
+                    newSavedFile = SaveProfilePhoto(userId);
+                    if (string.IsNullOrEmpty(newSavedFile))
+                    {
+                        ShowPopup("The selected file could not be read. Please try again.");
+                        return;
+                    }
+                    finalProfilePath = newSavedFile;
+                }
+                catch (Exception ex)
+                {
+                    ShowPopup(ex.Message);
+                    return;
+                }
+            }
+            else if (removeRequested)
+            {
+                finalProfilePath = null;
+            }
+
             using (MySqlConnection conn = new MySqlConnection(connStr))
             {
                 conn.Open();
@@ -206,18 +402,22 @@ namespace spmst_lms_development.Users.Staff.Accounts
                         {
                             updateSql = @"UPDATE Students SET first_name=@fname, middle_name=@mname, last_name=@lname, extension_name=@ext,
                                           gender=@gender, mobile_number=@mobile, email=@email, institute=@inst, course=@course,
-                                          section=@sec, year_level=@year, address=@address WHERE student_id=@id";
+                                          section=@sec, year_level=@year, address=@address, profile_path=@profilePath
+                                          WHERE student_id=@id";
                         }
                         else if (role == "faculty")
                         {
                             updateSql = @"UPDATE Faculty SET first_name=@fname, middle_name=@mname, last_name=@lname, extension_name=@ext,
-                                          gender=@gender, mobile_number=@mobile, email=@email, institute=@inst, address=@address WHERE faculty_id=@id";
+                                          gender=@gender, mobile_number=@mobile, email=@email, institute=@inst, address=@address,
+                                          profile_path=@profilePath
+                                          WHERE faculty_id=@id";
                         }
                         else
                         {
                             updateSql = @"UPDATE Staff SET first_name=@fname, middle_name=@mname, last_name=@lname, extension_name=@ext,
                                           gender=@gender, mobile_number=@mobile, email=@email, office_department=@office,
-                                          is_head_librarian=@head, address=@address WHERE staff_id=@id";
+                                          is_head_librarian=@head, address=@address, profile_path=@profilePath
+                                          WHERE staff_id=@id";
                         }
 
                         using (MySqlCommand cmd = new MySqlCommand(updateSql, conn, trans))
@@ -232,6 +432,9 @@ namespace spmst_lms_development.Users.Staff.Accounts
                             string rawMobile = Regex.Replace(txtMobile.Text.Trim(), @"[^\d]", "");
                             cmd.Parameters.AddWithValue("@mobile", rawMobile);
                             cmd.Parameters.AddWithValue("@address", txtAddress.Text.Trim());
+
+                            cmd.Parameters.AddWithValue("@profilePath",
+                                string.IsNullOrEmpty(finalProfilePath) ? (object)DBNull.Value : finalProfilePath);
 
                             if (role == "student")
                             {
@@ -264,7 +467,28 @@ namespace spmst_lms_development.Users.Staff.Accounts
 
                         trans.Commit();
 
-                        // (Optional) capture change summary for logging:
+                        // ---- Post-commit: clean up the OLD physical photo ----
+                        if (!string.IsNullOrEmpty(existingProfilePath))
+                        {
+                            string oldVirt = NormalizeProfilePath(existingProfilePath);
+                            string newVirt = string.IsNullOrEmpty(finalProfilePath)
+                                ? ""
+                                : NormalizeProfilePath(finalProfilePath);
+
+                            if (newFileSelected)
+                            {
+                                if (!string.Equals(oldVirt, newVirt, StringComparison.OrdinalIgnoreCase))
+                                    DeleteProfilePhoto(existingProfilePath);
+                            }
+                            else if (removeRequested)
+                            {
+                                DeleteProfilePhoto(existingProfilePath);
+                            }
+                        }
+
+                        // Keep server-side state in sync (for repeat saves without reload)
+                        CurrentProfilePath = finalProfilePath ?? "";
+
                         string changes = GetChanges(role);
 
                         string successScript = $@"
@@ -284,6 +508,12 @@ namespace spmst_lms_development.Users.Staff.Accounts
                     catch (Exception ex)
                     {
                         trans.Rollback();
+
+                        // If the DB update failed, remove the NEW file we just saved
+                        // (the OLD file stays untouched)
+                        if (!string.IsNullOrEmpty(newSavedFile))
+                            DeleteProfilePhoto(newSavedFile);
+
                         ShowPopup("Update Failed: " + ex.Message);
                     }
                 }
@@ -292,15 +522,16 @@ namespace spmst_lms_development.Users.Staff.Accounts
 
         private void ShowPopup(string message)
         {
-            string cleanMsg = message.Replace("'", "\\'");
+            string cleanMsg = message.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\r", "").Replace("\n", "\\n");
             string script = $"window.parent.Swal.fire({{ icon: 'error', title: 'Update Notice', text: '{cleanMsg}', confirmButtonColor: '#002447' }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "alert", script, true);
         }
 
         private void ShowErrorAndClose(string message)
         {
+            string cleanMsg = message.Replace("\\", "\\\\").Replace("'", "\\'").Replace("\r", "").Replace("\n", "\\n");
             string script = $@"
-                Swal.fire({{ icon: 'error', title: 'Error', text: '{message}', confirmButtonColor: '#002447' }}).then(function() {{
+                Swal.fire({{ icon: 'error', title: 'Error', text: '{cleanMsg}', confirmButtonColor: '#002447' }}).then(function() {{
                     window.parent.closeUniversalModal();
                 }});";
             ScriptManager.RegisterStartupScript(this, GetType(), "closeError", script, true);

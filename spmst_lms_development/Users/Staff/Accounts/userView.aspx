@@ -3,217 +3,229 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>User Details</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Patron Profile | LMSA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-    [v-cloak] { display: none; }
+        html, body { margin: 0; padding: 0; background: transparent; }
 
-    .loading-shimmer {
-        background: linear-gradient(90deg, #f0f0f0 25%, #f7f7f7 50%, #f0f0f0 75%);
-        background-size: 200% 100%;
-        animation: shimmer 1.5s infinite;
-    }
-    @keyframes shimmer {
-        0%   { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-    }
+        .form-shell { display: flex; flex-direction: column; min-height: 100vh; }
 
-    .status-badge {
-        font-size: 9px;
-        font-weight: 700;
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
+        .header-bar {
+            position: sticky; top: 0; z-index: 20;
+            background-color: #002447 !important;
+        }
+        .header-bar small { color: #8fb0d0; }
 
-    .status-returned { background-color: #d1fae5; color: #065f46; }
-    .status-overdue  { background-color: #fee2e2; color: #991b1b; }
-    .status-borrowed { background-color: #dbeafe; color: #1e40af; }
-    .status-default  { background-color: #f3f4f6; color: #374151; }
-</style>
+        .footer-bar {
+            position: sticky; bottom: 0; z-index: 20;
+            background: #fff;
+        }
+
+        .form-section {
+            border-left: 4px solid #ffc107;
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-section h6 {
+            font-size: 0.7rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #002447; margin: 0;
+        }
+
+        .btn-custom-primary { background-color: #002447; border: none; color: #fff; }
+        .btn-custom-primary:hover { background-color: #001a33; color: #fff; }
+
+        /* ---------- Profile hero ---------- */
+        .profile-hero {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 6px 22px rgba(0, 36, 71, 0.08);
+            padding: 1.75rem;
+            border-left: 4px solid #ffc107;
+            display: flex;
+            align-items: center;
+            gap: 1.75rem;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-photo-wrapper {
+            width: 130px; height: 130px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #002447;
+            background: #f8f9fa;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 18px rgba(0, 36, 71, 0.18);
+            flex-shrink: 0;
+            color: #002447;
+            font-size: 2.75rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .profile-photo-wrapper img {
+            width: 100%; height: 100%;
+            object-fit: cover; display: block;
+        }
+
+        .profile-meta { flex: 1; min-width: 220px; }
+        .profile-name {
+            font-size: 1.55rem; font-weight: 800;
+            color: #002447; margin: 0 0 0.6rem 0;
+            text-transform: uppercase; line-height: 1.15;
+            word-break: break-word;
+        }
+
+        .badge-role {
+            display: inline-flex; align-items: center;
+            background: #002447; color: #fff;
+            font-size: 0.68rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 0.35rem 0.75rem; border-radius: 999px;
+        }
+        .badge-id {
+            display: inline-flex; align-items: center;
+            background: #fff8e1; color: #8a6d00;
+            border: 1px solid #ffe082;
+            font-size: 0.68rem; font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 0.35rem 0.75rem; border-radius: 999px;
+        }
+        .status-badge {
+            display: inline-flex; align-items: center;
+            font-size: 0.68rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 0.35rem 0.75rem; border-radius: 999px;
+        }
+        .status-badge.active      { background: #d1fae5; color: #065f46; }
+        .status-badge.deactivated { background: #fee2e2; color: #991b1b; }
+        .status-badge.inactive    { background: #fef3c7; color: #92400e; }
+
+        /* ---------- Info cards ---------- */
+        .info-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1.35rem 1.5rem;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+            margin-bottom: 1.75rem;
+        }
+        .info-label {
+            display: block;
+            font-size: 0.65rem; font-weight: 800;
+            color: #adb5bd; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 0.3rem;
+        }
+        .info-value {
+            color: #1f2937; font-weight: 600;
+            font-size: 0.92rem; word-break: break-word;
+            display: inline-block;
+        }
+        .info-value.text-uppercase { text-transform: uppercase; }
+        .info-value.text-capitalize { text-transform: capitalize; }
+        .info-value.info-value-email { color: #002447; }
+
+        /* ---------- Borrowing history ---------- */
+        .history-table {
+            width: 100%; border-collapse: collapse;
+            background: #fff; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+        }
+        .history-table thead th {
+            background: #002447; color: #fff;
+            font-size: 0.65rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 0.9rem 1rem; text-align: left;
+            white-space: nowrap;
+        }
+        .history-table thead th.text-center { text-align: center; }
+        .history-table tbody td {
+            padding: 0.9rem 1rem; font-size: 0.85rem;
+            color: #495057; border-bottom: 1px solid #f1f3f5;
+            vertical-align: middle;
+        }
+        .history-table tbody tr:last-child td { border-bottom: none; }
+        .history-table tbody tr:hover { background: #f8f9fa; }
+
+        .book-title {
+            font-weight: 700; color: #002447;
+            text-transform: uppercase; font-size: 0.8rem;
+            line-height: 1.25; margin: 0;
+        }
+        .book-isbn {
+            font-size: 0.68rem; color: #adb5bd;
+            font-style: italic; margin: 0.15rem 0 0 0;
+        }
+
+        .status-pill {
+            display: inline-block;
+            font-size: 0.65rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 0.3rem 0.7rem; border-radius: 999px;
+            background: #f3f4f6; color: #374151;
+        }
+        .status-pill.returned { background: #d1fae5; color: #065f46; }
+        .status-pill.overdue  { background: #fee2e2; color: #991b1b; }
+        .status-pill.borrowed { background: #dbeafe; color: #1e40af; }
+        .status-pill.renewed  { background: #ede9fe; color: #5b21b6; }
+        .status-pill.renewal  { background: #fef3c7; color: #92400e; }
+        .status-pill.reserved { background: #cffafe; color: #155e75; }
+        .status-pill.ready    { background: #d1fae5; color: #065f46; }
+        .status-pill.cancelled{ background: #f3f4f6; color: #374151; }
+
+        .empty-state {
+            padding: 2.75rem 1rem; text-align: center;
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+            color: #adb5bd;
+        }
+        .empty-state i {
+            font-size: 2.5rem; color: #dee2e6;
+            display: block; margin-bottom: 0.75rem;
+        }
+        .empty-state p {
+            font-size: 0.72rem; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin: 0;
+        }
+
+        /* ---------- Loader ---------- */
+        #loader {
+            position: fixed; inset: 0; z-index: 50;
+            background: #fff;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        #loader .spinner-border { color: #002447 !important; }
+        #loader p {
+            margin-top: 1rem;
+            font-size: 0.7rem; font-weight: 800;
+            color: #adb5bd;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        #mainContent { opacity: 0; transition: opacity 0.35s ease; }
+        #mainContent.visible { opacity: 1; }
+    </style>
     <script>
         function getStatusClass(status) {
-            if (!status) return 'status-default';
-            switch (status.toLowerCase()) {
-                case 'returned': return 'status-returned';
-                case 'overdue': return 'status-overdue';
-                case 'borrowed': return 'status-borrowed';
-                default: return 'status-default';
+            if (!status) return '';
+            switch (String(status).toLowerCase()) {
+                case 'returned': return 'returned';
+                case 'overdue': return 'overdue';
+                case 'borrowed': return 'borrowed';
+                case 'renewed': return 'renewed';
+                case 'renewal': return 'renewal';
+                case 'reserved': return 'reserved';
+                case 'ready': return 'ready';
+                case 'cancelled': return 'cancelled';
+                default: return '';
             }
         }
-    </script>
-</head>
-<body class="bg-gray-100/50">
-    <div id="loader" class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
-        <p class="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Fetching Profile...</p>
-    </div>
 
-    <form id="form1" runat="server" class="w-full flex flex-col">
-        <div class="px-6 py-5 bg-[#002447] text-white flex justify-between items-center sticky top-0 z-10">
-            <div>
-                <h2 class="text-lg font-bold uppercase tracking-tight">Patron Profile</h2>
-                <p class="text-[10px] text-blue-200 uppercase tracking-widest font-semibold">View authenticated user details</p>
-            </div>
-            <button type="button" onclick="window.parent.closeUniversalModal()" class="text-white hover:text-gray-300">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-        </div>
-
-        <div class="p-6 flex-grow space-y-6 opacity-0 transition-opacity duration-500" id="mainContent">
-            <!-- User Profile -->
-            <div class="flex items-center gap-5 pb-6 border-b border-gray-100">
-                <div class="w-20 h-20 bg-blue-50 rounded-full overflow-hidden flex items-center justify-center text-[#002447] text-3xl font-bold ring-4 ring-blue-50">
-                    <asp:Literal ID="litAvatar" runat="server"></asp:Literal>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-800 uppercase leading-tight">
-                        <asp:Literal ID="litFullName" runat="server"></asp:Literal>
-                    </h2>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded uppercase tracking-wider">
-                            <asp:Literal ID="litRole" runat="server"></asp:Literal>
-                        </span>
-                        <span id="statusBadge" runat="server" class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                            <asp:Literal ID="litStatus" runat="server"></asp:Literal>
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Identity & Affiliation -->
-            <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-widest border-b border-gray-100 pb-2">Identity & Affiliation</label>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">ID Number</span>
-                    <span class="text-gray-700 font-semibold tracking-wide text-sm">
-                        <asp:Literal ID="litUserID" runat="server"></asp:Literal></span>
-                </div>
-
-                <asp:PlaceHolder ID="phAcademicInfo" runat="server" Visible="false">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Institute</span>
-                        <span class="text-gray-700 font-semibold uppercase text-sm">
-                            <asp:Literal ID="litInstitute" runat="server"></asp:Literal></span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Course & Section</span>
-                        <span class="text-gray-700 font-semibold uppercase text-sm">
-                            <asp:Literal ID="litCourse" runat="server"></asp:Literal>
-                            -
-                            <asp:Literal ID="litSection" runat="server"></asp:Literal>
-                        </span>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Year Level</span>
-                        <span class="text-gray-700 font-semibold uppercase text-sm">
-                            <asp:Literal ID="litYear" runat="server"></asp:Literal></span>
-                    </div>
-                </asp:PlaceHolder>
-
-                <asp:PlaceHolder ID="phStaffHeader" runat="server" Visible="false">
-                    <div class="flex flex-col col-span-3">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Office / Department</span>
-                        <span class="text-gray-700 font-semibold uppercase text-sm">
-                            <asp:Literal ID="litDept" runat="server"></asp:Literal></span>
-                    </div>
-                </asp:PlaceHolder>
-            </div>
-
-            <!-- User Contact Information -->
-            <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-widest border-b border-gray-100 pb-2">Contact Information</label>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Gender</span>
-                    <span class="text-gray-700 font-medium capitalize text-sm">
-                        <asp:Literal ID="litGender" runat="server"></asp:Literal></span>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Mobile Number</span>
-                    <span class="text-gray-700 font-medium text-sm">
-                        <asp:Literal ID="litContact" runat="server"></asp:Literal></span>
-                </div>
-                <div class="flex flex-col">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Institutional Email</span>
-                    <span class="text-[#002447] font-medium text-sm underline underline-offset-4">
-                        <asp:Literal ID="litEmail" runat="server"></asp:Literal></span>
-                </div>
-                <div class="flex flex-col md:col-span-3">
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Address</span>
-                    <span class="text-gray-700 font-medium text-sm">
-                        <asp:Literal ID="litAddress" runat="server"></asp:Literal></span>
-                </div>
-            </div>
-
-            <!-- User Recent Borrowing History -->
-            <label class="block text-[11px] font-bold text-blue-900 uppercase tracking-widest border-b border-gray-100 pb-2 mt-8">Recent Borrowing History</label>
-
-            <div class="overflow-x-auto mt-4 rounded-xl border border-gray-100">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-gray-50 border-b border-gray-100">
-                            <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Book Title</th>
-                            <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Borrowed</th>
-                            <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Due Date</th>
-                            <th class="px-4 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm">
-                        <asp:Repeater ID="rptHistory" runat="server">
-                            <ItemTemplate>
-                                <tr class="border-b border-gray-50 hover:bg-blue-50/30 transition-colors">
-                                    <td class="px-4 py-3">
-                                        <p class="font-bold text-gray-700 uppercase leading-tight"><%# Eval("BookTitle") %></p>
-                                        <p class="text-[10px] text-gray-400 italic font-medium"><%# Eval("ISBN") %></p>
-                                    </td>
-                                    <td class="px-4 py-3 text-center text-gray-600 font-medium">
-                                        <%# Convert.ToDateTime(Eval("DateBorrowed")).ToString("MMM dd, yyyy") %>
-                                    </td>
-                                    <td class="px-4 py-3 text-center text-gray-600 font-medium">
-                                        <%# Convert.ToDateTime(Eval("DueDate")).ToString("MMM dd, yyyy") %>
-                                    </td>
-                                    <td class="px-4 py-3 text-center">
-                                        <span class='status-badge' data-status='<%# Eval("Status") %>'>
-                                            <%# Eval("Status") %>
-                                        </span>
-                                    </td>
-                                </tr>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </tbody>
-                </table>
-            </div>
-
-            <asp:PlaceHolder ID="phNoHistory" runat="server" Visible="false">
-                <div class="p-10 text-center flex flex-col items-center">
-                    <i class="fa-solid fa-book-open text-gray-200 text-4xl mb-3"></i>
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">No transaction records found</p>
-                </div>
-            </asp:PlaceHolder>
-        </div>
-
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between sticky bottom-0">
-            <div class="flex items-center text-green-600 italic text-[10px] tracking-tight">
-                <i class="fas fa-shield-alt mr-2"></i>
-                AUTHENTICATED PROFILE &bull; LMSA SYSTEM
-            </div>
-            <div class="flex gap-2">
-                <button type="button" onclick="window.parent.closeUniversalModal()"
-                    class="px-8 py-2.5 bg-[#002447] text-white rounded-lg text-xs font-bold uppercase tracking-widest cursor-pointer hover:bg-slate-800 transition-colors">
-                    Close View
-                </button>
-            </div>
-        </div>
-    </form>
-
-    <script>
-        // Apply status badge classes after repeater binding
         function applyStatusBadges() {
-            document.querySelectorAll('.status-badge').forEach(function (el) {
+            document.querySelectorAll('.status-pill[data-status]').forEach(function (el) {
                 el.classList.add(getStatusClass(el.getAttribute('data-status')));
             });
         }
@@ -224,30 +236,197 @@
                     typeof window.parent.resizeModalIframe === 'function') {
                     window.parent.resizeModalIframe();
                 }
-            } catch (e) { /* cross-origin – ignore */ }
+            } catch (e) { /* ignore */ }
         }
 
         window.addEventListener('load', function () {
             setTimeout(function () {
                 var loader = document.getElementById('loader');
                 var main = document.getElementById('mainContent');
-                if (loader) loader.classList.add('hidden');
-                if (main) main.classList.remove('opacity-0');
-                applyStatusBadges();
-                notifyParentResize();   // re-measure once content is actually painted
-            }, 300);
-        });
-
-        // Re-measure if fonts/layout shift after paint
-        window.addEventListener('resize', notifyParentResize);
-
-        var prm = Sys.WebForms.PageRequestManager.getInstance();
-        if (prm) {
-            prm.add_endRequest(function () {
+                if (loader) loader.style.display = 'none';
+                if (main) main.classList.add('visible');
                 applyStatusBadges();
                 notifyParentResize();
-            });
-        }
+            }, 200);
+        });
+
+        window.addEventListener('resize', notifyParentResize);
     </script>
+</head>
+<body>
+    <div id="loader">
+        <div class="spinner-border" role="status" style="width:3rem; height:3rem;"></div>
+        <p>Fetching Profile...</p>
+    </div>
+
+    <form id="form1" runat="server" class="form-shell">
+        <!-- ============ HEADER ============ -->
+        <div class="header-bar text-white px-4 py-3 d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center" style="width:40px; height:40px;">
+                    <i class="fas fa-id-card text-dark"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">Patron Profile</h4>
+                    <small>View authenticated user details</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" onclick="window.parent.closeUniversalModal()" aria-label="Close"></button>
+        </div>
+
+        <!-- ============ CONTENT ============ -->
+        <div class="p-4 flex-grow-1" style="background:#f5f7fb;">
+            <div class="container-fluid px-0">
+                <div id="mainContent">
+
+                    <!-- Profile Hero -->
+                    <div class="profile-hero">
+                        <div class="profile-photo-wrapper">
+                            <asp:Literal ID="litAvatar" runat="server"></asp:Literal>
+                        </div>
+                        <div class="profile-meta">
+                            <h2 class="profile-name">
+                                <asp:Literal ID="litFullName" runat="server"></asp:Literal>
+                            </h2>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="badge-role">
+                                    <i class="fas fa-user-tag me-1"></i><asp:Literal ID="litRole" runat="server"></asp:Literal>
+                                </span>
+                                <span id="statusBadge" runat="server" class="status-badge">
+                                    <asp:Literal ID="litStatus" runat="server"></asp:Literal>
+                                </span>
+                                <span class="badge-id">
+                                    <i class="fas fa-id-badge me-1"></i><asp:Literal ID="litUserID" runat="server"></asp:Literal>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. Identity & Affiliation -->
+                    <div class="form-section">
+                        <h6><i class="fas fa-id-card me-2"></i>Identity &amp; Affiliation</h6>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="row g-4">
+                            <div class="col-md-4">
+                                <span class="info-label">ID Number</span>
+                                <span class="info-value"><asp:Literal ID="litUserIDDetail" runat="server"></asp:Literal></span>
+                            </div>
+
+                            <asp:PlaceHolder ID="phAcademicInfo" runat="server" Visible="false">
+                                <div class="col-md-4">
+                                    <span class="info-label">Institute</span>
+                                    <span class="info-value text-uppercase"><asp:Literal ID="litInstitute" runat="server"></asp:Literal></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="info-label">Course &amp; Section</span>
+                                    <span class="info-value text-uppercase">
+                                        <asp:Literal ID="litCourse" runat="server"></asp:Literal>
+                                        &nbsp;-&nbsp;
+                                        <asp:Literal ID="litSection" runat="server"></asp:Literal>
+                                    </span>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="info-label">Year Level</span>
+                                    <span class="info-value text-uppercase"><asp:Literal ID="litYear" runat="server"></asp:Literal></span>
+                                </div>
+                            </asp:PlaceHolder>
+
+                            <asp:PlaceHolder ID="phStaffHeader" runat="server" Visible="false">
+                                <div class="col-md-8">
+                                    <span class="info-label">Office / Department</span>
+                                    <span class="info-value text-uppercase"><asp:Literal ID="litDept" runat="server"></asp:Literal></span>
+                                </div>
+                            </asp:PlaceHolder>
+                        </div>
+                    </div>
+
+                    <!-- 2. Contact Information -->
+                    <div class="form-section">
+                        <h6><i class="fas fa-address-book me-2"></i>Contact Information</h6>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="row g-4">
+                            <div class="col-md-3">
+                                <span class="info-label">Gender</span>
+                                <span class="info-value text-capitalize"><asp:Literal ID="litGender" runat="server"></asp:Literal></span>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="info-label">Mobile Number</span>
+                                <span class="info-value"><asp:Literal ID="litContact" runat="server"></asp:Literal></span>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="info-label">Institutional Email</span>
+                                <span class="info-value info-value-email">
+                                    <i class="fas fa-envelope me-1" style="font-size:0.75rem;"></i><asp:Literal ID="litEmail" runat="server"></asp:Literal>
+                                </span>
+                            </div>
+                            <div class="col-12">
+                                <span class="info-label">Address</span>
+                                <span class="info-value"><asp:Literal ID="litAddress" runat="server"></asp:Literal></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Recent Borrowing History -->
+                    <div class="form-section">
+                        <h6><i class="fas fa-history me-2"></i>Recent Borrowing History</h6>
+                    </div>
+
+                    <asp:PlaceHolder ID="phHistory" runat="server">
+                        <div class="table-responsive">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Book Title</th>
+                                        <th class="text-center">Borrowed</th>
+                                        <th class="text-center">Due Date</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <asp:Repeater ID="rptHistory" runat="server">
+                                        <ItemTemplate>
+                                            <tr>
+                                                <td>
+                                                    <p class="book-title"><%# Eval("BookTitle") %></p>
+                                                    <p class="book-isbn"><%# Eval("ISBN") %></p>
+                                                </td>
+                                                <td class="text-center"><%# Convert.ToDateTime(Eval("DateBorrowed")).ToString("MMM dd, yyyy") %></td>
+                                                <td class="text-center"><%# Convert.ToDateTime(Eval("DueDate")).ToString("MMM dd, yyyy") %></td>
+                                                <td class="text-center">
+                                                    <span class="status-pill" data-status='<%# Eval("Status") %>'><%# Eval("Status") %></span>
+                                                </td>
+                                            </tr>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </tbody>
+                            </table>
+                        </div>
+                    </asp:PlaceHolder>
+
+                    <asp:PlaceHolder ID="phNoHistory" runat="server" Visible="false">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-book-open"></i>
+                            <p>No transaction records found</p>
+                        </div>
+                    </asp:PlaceHolder>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ FOOTER ============ -->
+        <div class="footer-bar border-top p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div style="color:#198754; font-size:0.7rem; font-style:italic; font-weight:600; letter-spacing:0.3px;">
+                <i class="fas fa-shield-alt me-2"></i>AUTHENTICATED PROFILE &bull; LMSA SYSTEM
+            </div>
+            <button type="button" class="btn btn-custom-primary px-4" onclick="window.parent.closeUniversalModal()">
+                <i class="fas fa-times me-2"></i>Close View
+            </button>
+        </div>
+    </form>
 </body>
 </html>

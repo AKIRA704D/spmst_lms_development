@@ -13,9 +13,9 @@
         .table th, .table td { vertical-align: middle; white-space: nowrap; }
         .table th { background-color: #f8f9fa; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .badge-active { background-color: #d1e7dd; color: #0f5132; }
-        .badge-inactive { background-color: #f8d7da; color: #842029; }
-        .badge-deactivated { background-color: #e2e3e5; color: #41464b; }
+        .badge-active { background: #d1fae5; color: #065f46; }
+        .badge-inactive { background: #fef3c7; color: #92400e; }
+        .badge-deactivated { background: #fee2e2; color: #991b1b; }
 
         .action-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin: 0 5px; transition: 0.2s; }
         .action-btn.view:hover { color: #0d6efd; }

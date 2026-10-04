@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="userUpdate.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Accounts.userUpdate" %>
+﻿﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="userUpdate.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Accounts.userUpdate" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,23 +8,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* ------------------------------------------------------------------
-           Let the page flow to its natural content height.
-           The parent measures document.body.scrollHeight and sizes the iframe.
-           Header/Footer use position:sticky so they pin *only* when the
-           parent caps the iframe at 90vh (i.e. content is taller than 90vh).
-           ------------------------------------------------------------------ */
         html, body {
             margin: 0;
             padding: 0;
             background: transparent;
-            /* no overflow:hidden, no height:100% — content drives height */
         }
 
         .form-shell {
             display: flex;
             flex-direction: column;
-            /* no max-height, no min-height — let it be content-sized */
         }
 
         .header-bar {
@@ -62,10 +54,36 @@
             box-shadow: 0 0 0 0.2rem rgba(255,193,7,0.25);
         }
         textarea.form-control { resize: vertical; min-height: 72px; }
+
+        /* ---- Profile photo styles (added) ---- */
+        .profile-photo-wrapper {
+            width: 130px; height: 130px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #002447;
+            background: #f8f9fa;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .profile-photo-wrapper img {
+            width: 100%; height: 100%; object-fit: cover; display: none;
+        }
+        .profile-photo-wrapper .placeholder-icon {
+            font-size: 3rem; color: #adb5bd;
+        }
+        .visually-hidden-input {
+            position: absolute;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
     </style>
 </head>
 <body>
-    <form id="form1" runat="server" class="form-shell">
+    <form id="form1" runat="server" class="form-shell" enctype="multipart/form-data">
         <!-- Header (sticky) -->
         <div class="header-bar bg-dark text-white px-4 py-3 d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
@@ -80,10 +98,10 @@
             <button type="button" class="btn-close btn-close-white" onclick="window.parent.closeUniversalModal()" aria-label="Close"></button>
         </div>
 
-        <!-- Content (flows naturally — no overflow, no max-height) -->
+        <!-- Content (flows naturally) -->
         <div class="p-4" style="background: #f5f7fb;">
             <div class="container-fluid px-0">
-                <!-- Account Identification -->
+                <!-- 1. Account Identification -->
                 <div class="form-section">
                     <h6><i class="fas fa-id-card me-2"></i> 1. Account Identification</h6>
                 </div>
@@ -102,9 +120,46 @@
                     </div>
                 </div>
 
-                <!-- Personal Profile -->
+                <!-- 2. Profile Photo (NEW) -->
                 <div class="form-section">
-                    <h6><i class="fas fa-user me-2"></i> 2. Personal Profile</h6>
+                    <h6><i class="fas fa-camera me-2"></i> 2. Profile Photo</h6>
+                </div>
+                <div class="row g-3 mb-4 align-items-center">
+                    <div class="col-auto">
+                        <div class="profile-photo-wrapper">
+                            <img id="profilePreview" runat="server" clientidmode="Static" alt="Profile preview" style="display:none;" />
+                            <i id="profilePlaceholder" runat="server" clientidmode="Static" class="fas fa-user placeholder-icon"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label class="form-label fw-bold small text-uppercase">Change Photo</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <label for="fuProfile" class="btn btn-sm btn-outline-secondary mb-0">
+                                <i class="fas fa-upload me-1"></i> Choose File
+                            </label>
+                            <button type="button" id="btnRemovePhoto" runat="server" clientidmode="Static"
+                                    class="btn btn-sm btn-outline-danger" style="display:none;"
+                                    onclick="removeProfilePhoto(); return false;">
+                                <i class="fas fa-trash me-1"></i> Remove
+                            </button>
+
+                            <asp:FileUpload ID="fuProfile" runat="server" ClientIDMode="Static"
+                                CssClass="visually-hidden-input" accept="image/*"
+                                onchange="previewProfile(this)" />
+
+                            <!-- Hidden flag: 0 = no change / replace; 1 = remove existing photo -->
+                            <asp:HiddenField ID="hfRemovePhoto" runat="server" ClientIDMode="Static" Value="0" />
+                        </div>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            JPG, JPEG, PNG, GIF or WEBP. Maximum size: 5 MB.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- 3. Personal Profile -->
+                <div class="form-section">
+                    <h6><i class="fas fa-user me-2"></i> 3. Personal Profile</h6>
                 </div>
                 <div class="row g-3 mb-3">
                     <div class="col-md-3">
@@ -145,9 +200,9 @@
                     </div>
                 </div>
 
-                <!-- Affiliation Details -->
+                <!-- 4. Affiliation Details -->
                 <div class="form-section mt-4">
-                    <h6><i class="fas fa-building me-2"></i> 3. Affiliation Details</h6>
+                    <h6><i class="fas fa-building me-2"></i> 4. Affiliation Details</h6>
                 </div>
                 <div class="row g-3">
                     <asp:Panel ID="pnlStudent" runat="server" Visible="false">
@@ -238,6 +293,75 @@
                 });
                 input.value = "";
             }
+        }
+
+        /* ---------- Profile photo preview / remove (NEW) ---------- */
+        const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+        const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
+        function notifyParentResize() {
+            try {
+                if (window.parent && window.parent !== window &&
+                    typeof window.parent.resizeModalIframe === 'function') {
+                    window.parent.resizeModalIframe();
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        function previewProfile(input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const nameLower = (file.name || '').toLowerCase();
+            const extOk = ALLOWED_EXTENSIONS.some(ext => nameLower.endsWith(ext));
+
+            if (!extOk) {
+                Swal.fire({
+                    icon: 'warning', title: 'Invalid Format',
+                    text: 'Please choose a JPG, JPEG, PNG, GIF or WEBP image.',
+                    confirmButtonColor: '#002447'
+                });
+                input.value = '';
+                return;
+            }
+            if (file.size > MAX_PHOTO_BYTES) {
+                Swal.fire({
+                    icon: 'warning', title: 'File Too Large',
+                    text: 'Maximum profile photo size is 5 MB.',
+                    confirmButtonColor: '#002447'
+                });
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.getElementById('profilePreview');
+                img.src = e.target.result;
+                img.style.display = 'block';
+                document.getElementById('profilePlaceholder').style.display = 'none';
+                document.getElementById('btnRemovePhoto').style.display = 'inline-block';
+                // A new file has been chosen — this is a replace, not a remove.
+                document.getElementById('hfRemovePhoto').value = '0';
+                notifyParentResize();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeProfilePhoto() {
+            // Clear the FileUpload so a previously-chosen file isn't submitted
+            var fu = document.getElementById('fuProfile');
+            if (fu) fu.value = '';
+
+            // Hide preview
+            const img = document.getElementById('profilePreview');
+            img.src = '';
+            img.style.display = 'none';
+            document.getElementById('profilePlaceholder').style.display = 'block';
+            document.getElementById('btnRemovePhoto').style.display = 'none';
+
+            // Mark that the existing DB photo should be removed
+            document.getElementById('hfRemovePhoto').value = '1';
+            notifyParentResize();
         }
 
         // Tell the parent to re-measure after the page renders.

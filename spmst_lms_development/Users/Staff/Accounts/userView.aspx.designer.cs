@@ -78,6 +78,15 @@ namespace spmst_lms_development.Users.Staff.Accounts
         protected global::System.Web.UI.WebControls.Literal litUserID;
 
         /// <summary>
+        /// litUserIDDetail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litUserIDDetail;
+
+        /// <summary>
         /// phAcademicInfo control.
         /// </summary>
         /// <remarks>
@@ -175,6 +184,15 @@ namespace spmst_lms_development.Users.Staff.Accounts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litAddress;
+
+        /// <summary>
+        /// phHistory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phHistory;
 
         /// <summary>
         /// rptHistory control.
