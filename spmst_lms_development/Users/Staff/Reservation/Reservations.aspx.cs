@@ -5,6 +5,7 @@ using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using spmst_lms_development.Assets.Helper;
+using spmst_lms_development.Assets.Helper.Reservations;
 
 namespace spmst_lms_development.Users.Staff.Reservation
 {
@@ -176,20 +177,24 @@ namespace spmst_lms_development.Users.Staff.Reservation
                         {
                             trans.Commit();
 
-                            // In-app notification (existing)
-                            InsertNotification(userId, bookTitle);
-
-                            // ✨ SMS notification (NEW)
                             int txnId = Convert.ToInt32(transId);
-                            SmsResult sms = ReservationSmsService.SendReadySms(userId, bookTitle, txnId);
 
-                            string msg = string.Format(
-                                "Book marked as Ready. Patron notified about '{0}'.", bookTitle);
+                            // ===== Three-way notification (SMS + Email + In-App) =====
+                            var nr = ReservationNotificationService.SendReservationReadyNotifications(txnId);
 
-                            if (!sms.Success)
-                                msg += " (SMS not sent: " + sms.Error + ")";
+                            bool anyOk =
+                                nr.Sms.Status == "Success" ||
+                                nr.Email.Status == "Success" ||
+                                nr.Push.Status == "Success";
 
-                            ShowSweetAlert("Success", msg, sms.Success ? "success" : "warning");
+                            string summary = string.Format(
+                                "SMS: {0} | Email: {1} | In-App: {2}",
+                                nr.Sms.Status, nr.Email.Status, nr.Push.Status);
+
+                            ShowSweetAlert(
+                                anyOk ? "Success" : "Warning",
+                                "Book marked as Ready. " + summary,
+                                anyOk ? "success" : "warning");
                         }
                         else
                         {
