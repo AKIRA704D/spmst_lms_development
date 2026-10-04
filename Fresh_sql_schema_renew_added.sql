@@ -111,7 +111,13 @@ CREATE TABLE Item_Copies (
     binding_type VARCHAR(50),
     campus VARCHAR(100) DEFAULT 'Malita Campus',
     specific_location VARCHAR(100) DEFAULT 'Circulation Desk',
-    status_condition ENUM('Good', 'Damage', 'Lost', 'Reserved') DEFAULT 'Good',
+    status_condition ENUM(
+						'Good', 
+						'Damage', 
+						'Lost', 
+						'Combination', -- more than 1 penalty (for specifics view Penalties table)
+						'Reserved')    -- online reservation (on hold for 1 hour)
+						DEFAULT 'Good',
     is_available TINYINT NOT NULL DEFAULT 1 COMMENT '0=false, 1=true',
     remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -134,9 +140,9 @@ CREATE TABLE Transactions (
     status            ENUM(
                           'Borrowed',
                           'Returned',
-                          'Reserved',
-                          'Ready',
-                          'Cancelled',
+                          'Reserved',	-- patron submitted, awaiting response
+                          'Ready',		-- ready for pickup (on hold for 1 hour)
+                          'Cancelled',	-- patron cancelled existing reservation
                           'Renewal',    -- patron submitted, awaiting staff
                           'Renewed'     -- closed by an approved renewal
                       ) DEFAULT 'Borrowed',
@@ -165,7 +171,7 @@ CREATE TABLE Penalties (
     transaction_id    INT NOT NULL,
     user_id           VARCHAR(20) NOT NULL,
     accession_number  VARCHAR(50) NULL,
-    penalty_type      ENUM(
+    penalty_type      ENUM(					-- specific penalties (individual or combination)
                           'Overdue',
                           'Damaged',
                           'Lost',
@@ -367,6 +373,33 @@ CREATE TABLE IF NOT EXISTS library_terms (
     CONSTRAINT fk_terms_uploaded_by FOREIGN KEY (uploaded_by) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
+-- =============================================================
+-- Penalty_Notification_Log
+-- Purpose: idempotent ledger for penalty notifications so the
+-- same SMS/Email/In-app notification is not sent twice for the
+-- same penalty + channel + outstanding balance.
+-- A change in balance (partial payment) is treated as a new event.
+-- =============================================================
+CREATE TABLE IF NOT EXISTS Penalty_Notification_Log (
+    notification_log_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    penalty_id          INT NOT NULL,
+    transaction_id      INT NOT NULL,
+    channel             ENUM('SMS','Email','Push') NOT NULL,
+    balance_at_send     DECIMAL(10,2) NOT NULL,
+    status              ENUM('Sent','Failed') NOT NULL,
+    attempt_count       INT NOT NULL DEFAULT 1,
+    recipient_masked    VARCHAR(100) NULL,
+    message_id          VARCHAR(100) NULL,
+    error_details       VARCHAR(500) NULL,
+    created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_pnl_penalty_channel_balance (penalty_id, channel, balance_at_send),
+    INDEX idx_pnl_txn (transaction_id),
+    INDEX idx_pnl_status (status),
+    CONSTRAINT fk_pnl_penalty
+        FOREIGN KEY (penalty_id) REFERENCES Penalties(penalty_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- ----------------------------------------------------------------------------
 -- DELIMETER for auto updates in the database
 -- ----------------------------------------------------------------------------
@@ -379,7 +412,7 @@ ON SCHEDULE EVERY 1 MINUTE
 DO
 BEGIN
     UPDATE Transactions t
-    INNER JOIN item_copies ic ON t.accession_number = ic_accession_number
+    INNER JOIN item_copies ic ON t.accession_number = ic.accession_number
     SET t.status = 'Cancelled',
 		ic.is_available = 1
     WHERE status = 'Ready'
@@ -389,4 +422,4 @@ END$$
 DELIMITER ;
 
 -- DROP EVENT IF EXISTS auto_cancel_ready_transactions;
--- show events from spamast_lmsv3 ;
+show events from spamast_lmsv3 ;

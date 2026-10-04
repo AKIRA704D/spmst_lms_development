@@ -5,7 +5,10 @@ using System.Data;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Web.Hosting;
 using System.Web.UI;
+using spmst_lms_development.Assets.Helper;
+using spmst_lms_development.Assets.Helper.Notifications;
 
 namespace spmst_lms_development.Users.Staff.Transactions
 {
@@ -298,6 +301,28 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         cmdRen.ExecuteNonQuery();
 
                         trans.Commit();
+
+                        // ===== 5: if the OLD transaction had an outstanding penalty, notify =====
+                        int oldTxnSnapshot = tid;
+                        HostingEnvironment.QueueBackgroundWorkItem(ct =>
+                        {
+                            try
+                            {
+                                PenaltyService.SyncPenalties();     // recompute (overdue days may have advanced)
+
+                                var oldRec = PenaltyService.GetPenaltyRecord(oldTxnSnapshot);
+                                if (oldRec != null && oldRec.Balance > 0)
+                                {
+                                    PenaltyNotificationService.SendPenaltyNotifications(oldTxnSnapshot);
+                                }
+                                // else: nothing to notify — patron renewed on time
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Trace.TraceError(
+                                    "[Book_Renew] BG penalty notify failed txn=" + oldTxnSnapshot + ": " + ex.Message);
+                            }
+                        });
 
                         UpdateLiveFeed($"{patronName} renewed '{bookTitle}'",
                                        barcode, patronId, role, "LOAN-OUT");

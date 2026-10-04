@@ -1,9 +1,11 @@
 ﻿using MySql.Data.MySqlClient;
+using spmst_lms_development.Assets.Helper.Notifications;
 using spmst_lms_development.Services;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Web.Hosting;
 using System.Web.UI;
 
 namespace spmst_lms_development.Users.Staff.Transactions
@@ -235,6 +237,24 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
                         ResetForm();
                         BindFeed();
+
+                        // ===== 5: queue penalty notification in background =====
+                        if (penalty.HasPenalty)
+                        {
+                            int txnSnapshot = transactionId;
+                            HostingEnvironment.QueueBackgroundWorkItem(ct =>
+                            {
+                                try
+                                {
+                                    PenaltyNotificationService.SendPenaltyNotifications(txnSnapshot);
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Trace.TraceError(
+                                        "[Book_Return] BG penalty notify failed txn=" + txnSnapshot + ": " + ex.Message);
+                                }
+                            });
+                        }
 
                         // Show fine summary in the success alert when applicable
                         if (penalty.HasPenalty)

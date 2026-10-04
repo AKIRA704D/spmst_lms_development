@@ -221,6 +221,12 @@
     <Compile Include="Assets\Helper\InputHelper.cs" />
     <Compile Include="Assets\Helper\logs_Audit.cs" />
     <Compile Include="Assets\Helper\NotificationHelper.cs" />
+    <Compile Include="Assets\Helper\Notifications\PatronContactResolver.cs" />
+    <Compile Include="Assets\Helper\Notifications\PenaltyEmailService.cs" />
+    <Compile Include="Assets\Helper\Notifications\PenaltyNotificationLog.cs" />
+    <Compile Include="Assets\Helper\Notifications\PenaltyNotificationService.cs" />
+    <Compile Include="Assets\Helper\Notifications\PenaltyPushService.cs" />
+    <Compile Include="Assets\Helper\Notifications\PenaltySmsService.cs" />
     <Compile Include="Assets\Helper\ProfileHelper.cs" />
     <Compile Include="Assets\Helper\ReservationSmsService.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />

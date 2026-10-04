@@ -1,6 +1,9 @@
-﻿using System.Web;
+﻿using spmst_lms_development.Assets.Helper;
+using spmst_lms_development.Assets.Helper.Notifications;
+using System;
+using System.Web;
+using System.Web.Hosting;
 using System.Web.Services;
-using spmst_lms_development.Assets.Helper;
 
 namespace spmst_lms_development.Users.Staff.Penalties
 {
@@ -40,6 +43,32 @@ namespace spmst_lms_development.Users.Staff.Penalties
                 notes,
                 receivedBy,
                 out error);
+
+            // ===== 1: notify patron of the new outstanding balance (partial payment) =====
+            if (success)
+            {
+                int txnSnapshot = transactionId;
+                HostingEnvironment.QueueBackgroundWorkItem(ct =>
+                {
+                    try
+                    {
+                        var rec = PenaltyService.GetPenaltyRecord(txnSnapshot);
+
+                        // Fully paid → nothing to notify (orchestrator would skip anyway).
+                        // Partial payment → new balance → new notification event fires.
+                        if (rec != null && rec.Balance > 0)
+                        {
+                            PenaltyNotificationService.SendPenaltyNotifications(txnSnapshot);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Trace.TraceError(
+                            "[SettlePay] BG penalty notify failed txn=" + txnSnapshot + ": " + ex.Message);
+                    }
+                });
+            }
+
 
             return success ? (object)true : error;
         }
