@@ -306,12 +306,6 @@ CREATE TABLE Audit_Logs (
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
-insert into staff ( staff_id, first_name, middle_name, last_name, extension_name, gender, mobile_number, email, office_department, is_head_librarian, address, profile_path, created_at, updated_at)
-values ('2023-114000', 'Mary Claire', 'Lumansoc', 'Fernandez', '', 'Female', '09569135784', 'mc.fernandez@spamast.edu.ph', 'Head Office', '1', 'Poblacion, Malita, Davao Occidental', 'Assets/Profile/2023-113941_20260923095546365.jpg', current_date(), current_date());
-
-insert into users ( user_id, email, password_hash, role, is_active, last_login, archived_at, archived_reason, created_at, updated_at)
-values ('2023-114000', 'mc.fernandez@spamast.edu.ph', '', 'admin', '0', current_date(), null, null, current_date(), current_date());
-
 -- ----------------------------------------------------------------------------
 -- 11. Contact information (single-row settings table)
 -- ----------------------------------------------------------------------------
@@ -400,26 +394,6 @@ CREATE TABLE IF NOT EXISTS Penalty_Notification_Log (
         FOREIGN KEY (penalty_id) REFERENCES Penalties(penalty_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- ----------------------------------------------------------------------------
--- DELIMETER for auto updates in the database
--- ----------------------------------------------------------------------------
-SET GLOBAL event_scheduler = ON;
+-- insert into staff ( staff_id, first_name, middle_name, last_name, extension_name, gender, mobile_number, email, office_department, is_head_librarian, address, profile_path, created_at, updated_at)
+-- values ('2023-114000', 'Mary Claire', 'Lumansoc', 'Fernandez', '', 'Female', '09569135784', 'mc.fernandez@spamast.edu.ph', 'Head Office', '1', 'Poblacion, Malita, Davao Occidental', 'Assets/Profile/2023-113941_20260923095546365.jpg', current_date(), current_date());
 
-DELIMITER $$
-
-CREATE EVENT IF NOT EXISTS auto_cancel_ready_transactions
-ON SCHEDULE EVERY 1 MINUTE
-DO
-BEGIN
-    UPDATE Transactions t
-    INNER JOIN item_copies ic ON t.accession_number = ic.accession_number
-    SET t.status = 'Cancelled',
-		ic.is_available = 1
-    WHERE status = 'Ready'
-      AND updated_at <= NOW() - INTERVAL 1 HOUR;
-END$$
-
-DELIMITER ;
-
--- DROP EVENT IF EXISTS auto_cancel_ready_transactions;
-show events from spamast_lmsv3 ;
