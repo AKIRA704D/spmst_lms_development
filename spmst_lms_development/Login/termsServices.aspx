@@ -280,8 +280,8 @@
                     <p class="content-subtitle">Review the library's terms and conditions.</p>
 
                     <!-- PDF Viewer Panel (shown if PDF exists) -->
-                    <asp:Panel ID="pnlPdf" runat="server" Visible="true" style="display: flex; flex: 1; min-height: 0;">
-                        <iframe id="pdfFrame" runat="server" class="pdf-iframe" src=""></iframe>
+                    <asp:Panel ID="pnlPdf" runat="server" Visible="true">
+                        <iframe id="pdfFrame" runat="server" class="pdf-iframe"></iframe>
                     </asp:Panel>
 
                     <!-- Fallback Panel (shown if PDF is missing) -->

@@ -199,7 +199,6 @@ namespace spmst_lms_development.Users.Patron
 
         private void LoadLibraryStatus(string userId)
         {
-            // --- Same constants used in Penalties.aspx.cs ---
             const decimal DAILY_RATE = 50.00m;
             const decimal DAMAGE_FEE = 100.00m;
             const decimal LOST_FEE = 200.00m;
@@ -208,19 +207,33 @@ namespace spmst_lms_development.Users.Patron
             decimal totalBalance = 0;
             bool hasPenalties = false;
 
-            // Pull return_date, status, and status_condition so we can compute live
+            // -----------------------------------------------------------------
+            // UPDATED QUERY (matches Fresh_sql_schema_renew_added.sql)
+            //   - Fines now come from Penalties (LEFT JOIN on transaction_id).
+            //   - Transaction status list matches the new ENUM.
+            //   - Damage/Lost flags read from Transactions, not just Item_Copies.
+            // -----------------------------------------------------------------
             string query = @"
-        SELECT 
-            t.transaction_id, t.due_date, t.return_date, t.status,
-            t.fine_amount  AS db_fine_amount,
-            t.amount_paid  AS db_amount_paid,
+        SELECT
+            t.transaction_id,
+            t.due_date,
+            t.return_date,
+            t.status,
+            t.is_damaged,
+            t.is_lost,
+            p.fine_amount   AS db_fine_amount,
+            p.amount_paid   AS db_amount_paid,
+            p.penalty_type,
+            p.reason        AS penalty_reason,
+            p.fine_status,
             ic.status_condition,
             r.title
         FROM Transactions t
-        INNER JOIN Item_Copies ic       ON t.accession_number = ic.accession_number
-        INNER JOIN Library_Resources r  ON ic.resource_id     = r.resource_id
+        INNER JOIN Item_Copies      ic ON t.accession_number = ic.accession_number
+        INNER JOIN Library_Resources r ON ic.resource_id     = r.resource_id
+        LEFT  JOIN Penalties         p ON p.transaction_id   = t.transaction_id
         WHERE TRIM(t.user_id) = TRIM(@userId)
-          AND t.status IN ('Borrowed', 'Overdue', 'Returned')
+          AND t.status IN ('Borrowed', 'Returned', 'Renewal', 'Renewed')
         ORDER BY t.due_date ASC";
 
             using (MySqlConnection conn = new MySqlConnection(connStr))
@@ -235,9 +248,15 @@ namespace spmst_lms_development.Users.Patron
                         {
                             string transStatus = reader["status"].ToString();
                             string bookCondition = reader["status_condition"]?.ToString() ?? "";
+
+                            bool isDamaged = reader["is_damaged"] != DBNull.Value
+                                             && Convert.ToInt32(reader["is_damaged"]) == 1;
+                            bool isLost = reader["is_lost"] != DBNull.Value
+                                             && Convert.ToInt32(reader["is_lost"]) == 1;
+
                             DateTime dbDueDate = Convert.ToDateTime(reader["due_date"]).Date;
 
-                            // If the book was returned, stop counting overdue at the return date.
+                            // Stop counting overdue days at the return date if the item came back.
                             DateTime calculationEndDate =
                                 (transStatus == "Returned" && reader["return_date"] != DBNull.Value)
                                     ? Convert.ToDateTime(reader["return_date"]).Date
@@ -246,7 +265,7 @@ namespace spmst_lms_development.Users.Patron
                             decimal calculatedFine = 0;
                             List<string> penaltyLabels = new List<string>();
 
-                            // 1) Overdue fine
+                            // 1) Derived overdue fine
                             if (calculationEndDate > dbDueDate)
                             {
                                 int overdueDays = (calculationEndDate - dbDueDate).Days;
@@ -257,19 +276,16 @@ namespace spmst_lms_development.Users.Patron
                                 }
                             }
 
-                            // 2) Damage / Lost fees (only meaningful once returned or overdue)
-                            if (transStatus == "Returned" || transStatus == "Overdue")
+                            // 2) Damage / Lost fees (from Transactions flags OR current copy condition)
+                            if (isDamaged || bookCondition == "Damage")
                             {
-                                if (bookCondition == "Damage")
-                                {
-                                    calculatedFine += DAMAGE_FEE;
-                                    penaltyLabels.Add("Damaged");
-                                }
-                                else if (bookCondition == "Lost")
-                                {
-                                    calculatedFine += LOST_FEE;
-                                    penaltyLabels.Add("Lost");
-                                }
+                                calculatedFine += DAMAGE_FEE;
+                                penaltyLabels.Add("Damaged");
+                            }
+                            else if (isLost || bookCondition == "Lost")
+                            {
+                                calculatedFine += LOST_FEE;
+                                penaltyLabels.Add("Lost");
                             }
 
                             decimal dbFineAmount = reader["db_fine_amount"] != DBNull.Value
@@ -277,12 +293,10 @@ namespace spmst_lms_development.Users.Patron
                             decimal dbAmountPaid = reader["db_amount_paid"] != DBNull.Value
                                 ? Convert.ToDecimal(reader["db_amount_paid"]) : 0m;
 
-                            // Same safety net as Penalties page:
-                            // take whichever is larger – the calculated total or the stored total.
+                            // Safety net: prefer whichever is larger (calculated vs. stored penalty record)
                             decimal totalFine = Math.Max(calculatedFine, dbFineAmount);
                             decimal currentBalance = totalFine - dbAmountPaid;
 
-                            // Only show rows that still owe something
                             if (currentBalance > 0)
                             {
                                 if (!hasPenalties)
@@ -292,21 +306,22 @@ namespace spmst_lms_development.Users.Patron
                                 }
 
                                 string title = reader["title"]?.ToString() ?? "Unknown Item";
+
                                 string reason = penaltyLabels.Count > 0
                                     ? string.Join(" + ", penaltyLabels)
-                                    : "Penalty";
+                                    : (reader["penalty_reason"]?.ToString() ?? "Penalty");
 
                                 totalBalance += currentBalance;
 
                                 html.Append("<li class='mb-2 p-2 border-bottom'>");
                                 html.Append($"<div><strong>{HttpUtility.HtmlEncode(title)}</strong></div>");
                                 html.Append(
-                                    $"<div class='small text-muted'>" +
+                                    "<div class='small text-muted'>" +
                                     $"Due: {dbDueDate:MMM dd, yyyy} | " +
                                     $"Fine: ₱{totalFine:F2} | " +
                                     $"Paid: ₱{dbAmountPaid:F2} | " +
                                     $"Balance: ₱{currentBalance:F2}" +
-                                    $"</div>");
+                                    "</div>");
                                 html.Append($"<div class='small text-danger fw-semibold'>{HttpUtility.HtmlEncode(reason)}</div>");
                                 html.Append("</li>");
                             }

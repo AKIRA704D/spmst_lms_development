@@ -434,7 +434,7 @@
                         '<div class="lmsa-rank-row">' +
                         '  <span class="lmsa-rank-badge ' + rankClass(s.rank) + '"><i class="fa-solid ' + sectionIcon(s.section) + '"></i></span>' +
                         '  <div class="lmsa-rank-info">' +
-                        '    <div class="lmsa-rank-label"><span>' + lmsaEscape(s.section) + '</span><small>' + s.borrowCount + ' borrow' + (s.borrowCount === 1 ? '' : 's') + ' · ' + s.resourceCount + ' titles</small></div>' +
+                        '    <div class="lmsa-rank-label"><span>' + lmsaEscape(s.section) + '</span><small>' + s.borrowCount + ' borrow' + (s.borrowCount === 1 ? '' : 's') + ' &bull; ' + s.resourceCount + ' titles</small></div>' +
                         '    <div class="lmsa-bar-track"><div class="lmsa-bar-fill" style="width:' + pct + '%"></div></div>' +
                         '  </div>' +
                         '</div>';

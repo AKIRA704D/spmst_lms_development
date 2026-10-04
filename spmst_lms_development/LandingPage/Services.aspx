@@ -120,7 +120,7 @@
             lmsaApi('services').then(function (res) {
                 var grid = document.getElementById('servicesGrid');
                 if (!res.success || !res.data || res.data.length === 0) {
-                    grid.innerHTML = '<div class="lmsa-empty" style="grid-column:1/-1;"><i class="fa-solid fa-hand-holding-heart"></i>Service listings haven\'t been published yet — check back soon.</div>';
+                    grid.innerHTML = '<div class="lmsa-empty" style="grid-column:1/-1;"><i class="fa-solid fa-hand-holding-heart"></i>Service listings haven\'t been published yet - check back soon.</div>';
                     return;
                 }
                 grid.innerHTML = res.data.map(serviceCardHtml).join('');

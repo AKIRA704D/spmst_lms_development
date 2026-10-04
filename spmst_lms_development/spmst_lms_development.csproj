@@ -110,6 +110,7 @@
     <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
@@ -178,7 +179,7 @@
     <Content Include="Users\MasterPage\admin.Master" />
     <Content Include="Users\Patron\Dashboard\PatronDash.aspx" />
     <Content Include="Users\Patron\FeedReq\Feedback.aspx" />
-    <Content Include="Users\Patron\FeedReq\FeedbackRequest.aspx" />
+    <Content Include="Users\Staff\FeedbackReq\FeedbackRequest.aspx" />
     <Content Include="Users\Patron\History\History.aspx" />
     <Content Include="Users\Patron\Notifications\Notifications.aspx" />
     <Content Include="Users\Patron\patronDash.aspx" />
@@ -189,7 +190,7 @@
     <Content Include="Users\Staff\Accounts\userView.aspx" />
     <Content Include="Users\Staff\Dashboard\CirDash.aspx" />
     <Content Include="Users\Staff\Dashboard\MgtDash.aspx" />
-    <Content Include="Users\Staff\Import\TransactionImports.aspx" />
+    <Content Include="Users\Staff\Import\TransactionImport.aspx" />
     <Content Include="Users\Staff\Import\UserImports.aspx" />
     <Content Include="Users\Staff\Inventory\bookFilter.aspx" />
     <Content Include="Users\Staff\Inventory\bookImport.aspx" />
@@ -221,7 +222,9 @@
     <Compile Include="Assets\Helper\logs_Audit.cs" />
     <Compile Include="Assets\Helper\NotificationHelper.cs" />
     <Compile Include="Assets\Helper\ProfileHelper.cs" />
+    <Compile Include="Assets\Helper\ReservationSmsService.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />
+    <Compile Include="Assets\Helper\SmsHelper.cs" />
     <Compile Include="LandingPage\AboutContact.aspx.cs">
       <DependentUpon>AboutContact.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -245,6 +248,10 @@
     </Compile>
     <Compile Include="LandingPage\LandingPage.master.designer.cs">
       <DependentUpon>LandingPage.Master</DependentUpon>
+    </Compile>
+    <Compile Include="Services\FinePolicy.cs" />
+    <Compile Include="SmsTick.ashx.cs">
+      <DependentUpon>SmsTick.ashx</DependentUpon>
     </Compile>
     <Compile Include="Users\Admin\Settings\LibrarySettings.aspx.cs">
       <DependentUpon>LibrarySettings.aspx</DependentUpon>
@@ -419,11 +426,11 @@
     <Compile Include="Users\Patron\FeedReq\Feedback.aspx.designer.cs">
       <DependentUpon>Feedback.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Users\Patron\FeedReq\FeedbackRequest.aspx.cs">
+    <Compile Include="Users\Staff\FeedbackReq\FeedbackRequest.aspx.cs">
       <DependentUpon>FeedbackRequest.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Users\Patron\FeedReq\FeedbackRequest.aspx.designer.cs">
+    <Compile Include="Users\Staff\FeedbackReq\FeedbackRequest.aspx.designer.cs">
       <DependentUpon>FeedbackRequest.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Patron\History\History.aspx.cs">
@@ -496,12 +503,12 @@
     <Compile Include="Users\Staff\Dashboard\MgtDash.aspx.designer.cs">
       <DependentUpon>MgtDash.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Users\Staff\Import\TransactionImports.aspx.cs">
-      <DependentUpon>TransactionImports.aspx</DependentUpon>
+    <Compile Include="Users\Staff\Import\TransactionImport.aspx.cs">
+      <DependentUpon>TransactionImport.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Users\Staff\Import\TransactionImports.aspx.designer.cs">
-      <DependentUpon>TransactionImports.aspx</DependentUpon>
+    <Compile Include="Users\Staff\Import\TransactionImport.aspx.designer.cs">
+      <DependentUpon>TransactionImport.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Import\UserImports.aspx.cs">
       <DependentUpon>UserImports.aspx</DependentUpon>
@@ -637,6 +644,7 @@
     <Content Include="Users\Admin\Settings\LibrarySettingsData.ashx" />
     <Content Include="LandingPage\LandingData.ashx" />
     <None Include="packages.config" />
+    <Content Include="SmsTick.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

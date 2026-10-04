@@ -135,7 +135,7 @@
                         <div class="ic"><i class="fa-solid fa-clock"></i></div>
                         <div>
                             <h4>Library Hours</h4>
-                            <p id="cHours">Monday – Friday: 8:00 AM – 5:00 PM<br />Saturday: 8:00 AM – 12:00 NN<br />Sunday &amp; Holidays: Closed</p>
+                            <p id="cHours">Monday - Friday: 8:00 AM - 5:00 PM<br />Saturday: 8:00 AM - 12:00 NN<br />Sunday &amp; Holidays: Closed</p>
                         </div>
                     </div>
                     <div class="lmsa-contact-row">
@@ -239,8 +239,8 @@
                 email: 'library@spamast.edu.ph',
                 facebookLabel: 'SPAMAST Library',
                 facebookUrl: 'https://www.facebook.com/SPAMASTLibrary',
-                hoursWeekdays: 'Monday – Friday: 8:00 AM – 5:00 PM',
-                hoursSaturday: 'Saturday: 8:00 AM – 12:00 NN',
+                hoursWeekdays: 'Monday - Friday: 8:00 AM - 5:00 PM',
+                hoursSaturday: 'Saturday: 8:00 AM - 12:00 NN',
                 hoursSunday: 'Sunday & Holidays: Closed'
             };
 
