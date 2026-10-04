@@ -394,6 +394,4 @@ CREATE TABLE IF NOT EXISTS Penalty_Notification_Log (
         FOREIGN KEY (penalty_id) REFERENCES Penalties(penalty_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- insert into staff ( staff_id, first_name, middle_name, last_name, extension_name, gender, mobile_number, email, office_department, is_head_librarian, address, profile_path, created_at, updated_at)
--- values ('2023-114000', 'Mary Claire', 'Lumansoc', 'Fernandez', '', 'Female', '09569135784', 'mc.fernandez@spamast.edu.ph', 'Head Office', '1', 'Poblacion, Malita, Davao Occidental', 'Assets/Profile/2023-113941_20260923095546365.jpg', current_date(), current_date());
 

@@ -125,7 +125,28 @@ namespace spmst_lms_development.Users.Staff.Import
                         continue;
                     }
 
+                    // Role must agree with the head-librarian flag (the trigger derives Users.role from it)
+                    string headRaw = GetValue(row, "is_head_librarian");
+                    bool headFlag = headRaw == "1"
+                        || headRaw.Equals("true", StringComparison.OrdinalIgnoreCase)
+                        || headRaw.Equals("yes", StringComparison.OrdinalIgnoreCase);
+
+                    if (role == "admin" && !headFlag)
+                    {
+                        resultRow["status"] = "Skipped - admin requires is_head_librarian = 1";
+                        resultsTable.Rows.Add(resultRow);
+                        continue;
+                    }
+                    if (role == "staff" && headFlag)
+                    {
+                        resultRow["status"] = "Skipped - head librarian must use role admin";
+                        resultsTable.Rows.Add(resultRow);
+                        continue;
+                    }
+
                     if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
+
+                        if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
                     {
                         resultRow["status"] = "Skipped - missing first/last name";
                         resultsTable.Rows.Add(resultRow);
@@ -151,9 +172,7 @@ namespace spmst_lms_development.Users.Staff.Import
                     try
                     {
                         // Insert the role-specific person record first,
-                        // then the matching Users account.
-                        InsertPersonRecord(conn, tx, row, userId, role);
-                        InsertUser(conn, tx, row, userId, email, role);
+                        InsertPersonRecord(conn, tx, row, userId, role);                    
                         tx.Commit();
 
                         successCount++;
@@ -304,14 +323,11 @@ namespace spmst_lms_development.Users.Staff.Import
                 if (string.IsNullOrEmpty(office)) office = "Circulation Area";
 
                 int isHead = 0;
-                string isHeadRaw = GetValue(row, "is_head_librarian");
-                if (!string.IsNullOrEmpty(isHeadRaw))
-                {
-                    if (isHeadRaw == "1"
-                        || isHeadRaw.Equals("true", StringComparison.OrdinalIgnoreCase)
-                        || isHeadRaw.Equals("yes", StringComparison.OrdinalIgnoreCase))
-                        isHead = 1;
-                }
+                string headRaw = GetValue(row, "is_head_librarian");
+                if (headRaw == "1"
+                    || headRaw.Equals("true", StringComparison.OrdinalIgnoreCase)
+                    || headRaw.Equals("yes", StringComparison.OrdinalIgnoreCase))
+                    isHead = 1;
 
                 using (var cmd = new MySqlCommand(sql, conn, tx))
                 {
@@ -332,36 +348,7 @@ namespace spmst_lms_development.Users.Staff.Import
             }
         }
 
-        private void InsertUser(MySqlConnection conn, MySqlTransaction tx,
-                                Dictionary<string, string> row, string userId, string email, string role)
-        {
-            const string sql = @"
-                INSERT INTO Users (user_id, email, password_hash, role, is_active)
-                VALUES (@user_id, @email, NULL, @role, @is_active);";
-
-            int isActive = 0; // default = pending
-            string isActiveRaw = GetValue(row, "is_active");
-            if (!string.IsNullOrEmpty(isActiveRaw))
-            {
-                if (isActiveRaw.Equals("true", StringComparison.OrdinalIgnoreCase)
-                    || isActiveRaw.Equals("yes", StringComparison.OrdinalIgnoreCase))
-                    isActive = 1;
-                else if (isActiveRaw.Equals("false", StringComparison.OrdinalIgnoreCase)
-                    || isActiveRaw.Equals("no", StringComparison.OrdinalIgnoreCase))
-                    isActive = 2;
-                else if (int.TryParse(isActiveRaw, out int parsed))
-                    isActive = parsed;
-            }
-
-            using (var cmd = new MySqlCommand(sql, conn, tx))
-            {
-                cmd.Parameters.AddWithValue("@user_id", userId);
-                cmd.Parameters.AddWithValue("@email", email);
-                cmd.Parameters.AddWithValue("@role", role);
-                cmd.Parameters.AddWithValue("@is_active", isActive);
-                cmd.ExecuteNonQuery();
-            }
-        }
+       
 
         // ---------- Helpers ----------
 

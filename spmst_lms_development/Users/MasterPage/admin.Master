@@ -1006,12 +1006,24 @@
 
         document.addEventListener('DOMContentLoaded', function () {
 
-            // ---------- Submenu toggles (pure UI, authorization stays server-side) ----------
-            document.querySelectorAll('.nav-submenu-toggle').forEach(function (btn) {
-                btn.addEventListener('click', function () {
+            // ---------- Submenu toggles (accordion — only one open at a time) ----------
+            document.querySelectorAll('.nav-submenu-toggle').forEach(function(btn) {
+                btn.addEventListener('click', function() {
                     const parent = this.parentElement;
-                    const isOpen = parent.classList.toggle('open');
-                    this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    const willOpen = !parent.classList.contains('open');
+
+                    // Close every other submenu first.
+                    document.querySelectorAll('.nav-submenu.open').forEach(function(other) {
+                        if (other !== parent) {
+                            other.classList.remove('open');
+                            const otherToggle = other.querySelector('.nav-submenu-toggle');
+                            if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+
+                    // Toggle the clicked one.
+                    parent.classList.toggle('open', willOpen);
+                    this.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
                 });
             });
 
@@ -1029,6 +1041,15 @@
 
                     const parentSub = link.closest('.nav-submenu');
                     if (parentSub) {
+                        // Close every other submenu before opening the active one.
+                        document.querySelectorAll('.nav-submenu.open').forEach(function(other) {
+                            if (other !== parentSub) {
+                                other.classList.remove('open');
+                                const otherToggle = other.querySelector('.nav-submenu-toggle');
+                                if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+
                         parentSub.classList.add('open');
                         const toggle = parentSub.querySelector('.nav-submenu-toggle');
                         if (toggle) toggle.setAttribute('aria-expanded', 'true');

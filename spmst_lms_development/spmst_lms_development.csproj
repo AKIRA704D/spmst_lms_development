@@ -232,6 +232,11 @@
     <Compile Include="Assets\Helper\Notifications\PenaltySmsService.cs" />
     <Compile Include="Assets\Helper\ProfileHelper.cs" />
     <Compile Include="Assets\Helper\ReservationSmsService.cs" />
+    <Compile Include="Assets\Helper\Reservations\ReservationNoticeEmailService.cs" />
+    <Compile Include="Assets\Helper\Reservations\ReservationNoticePushService.cs" />
+    <Compile Include="Assets\Helper\Reservations\ReservationNoticeSmsService.cs" />
+    <Compile Include="Assets\Helper\Reservations\ReservationNotificationLog.cs" />
+    <Compile Include="Assets\Helper\Reservations\ReservationNotificationService.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />
     <Compile Include="Assets\Helper\SmsHelper.cs" />
     <Compile Include="LandingPage\AboutContact.aspx.cs">
