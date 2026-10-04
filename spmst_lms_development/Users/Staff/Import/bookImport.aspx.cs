@@ -10,7 +10,7 @@ using System.Web.UI.WebControls;
 using CsvHelper;
 using MySql.Data.MySqlClient;
 
-namespace spmst_lms_development.Users.Staff.Inventory
+namespace spmst_lms_development.Users.Staff.Import
 {
     public partial class bookImport : System.Web.UI.Page
     {

@@ -7,8 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - LMSA</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
@@ -19,9 +18,9 @@
            ========================================================================== */
         :root {
             --sidebar-width: 270px;
-            --sidebar-bg: #1e293b; /* Slate 800 */
-            --sidebar-hover: #334155; /* Slate 700 */
-            --sidebar-active: #0ea5e9; /* Sky Blue accent highlight */
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-active: #0ea5e9;
             --top-navbar-height: 65px;
         }
 
@@ -29,11 +28,10 @@
             margin: 0;
             padding: 0;
             height: 100vh;
-            background-color: #f8fafc; /* Cool grey background for workspace content */
+            background-color: #f8fafc;
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
         }
 
-        /* Master Grid Container Layout */
         .lms-wrapper {
             display: flex;
             width: 100vw;
@@ -42,15 +40,12 @@
             position: relative;
         }
 
-        /* Mobile Utility Header Top Nav (Sticky Fix) */
         .mobile-top-nav {
-            display: none; /* Hidden by default on Desktop layout structures */
+            display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+            top: 0; left: 0; right: 0;
             height: var(--top-navbar-height);
-            background-color: #0f172a; /* Deep dark slate */
+            background-color: #0f172a;
             color: #ffffff;
             z-index: 1040;
             padding: 0 20px;
@@ -74,11 +69,10 @@
             box-shadow: 4px 0 15px rgba(15, 23, 42, 0.08);
         }
 
-        /* Fixed Brand Top Header */
         .sidebar-brand-header {
             height: 75px;
             padding: 15px 20px;
-            background-color: #0f172a; /* Darker accent breakout */
+            background-color: #0f172a;
             display: flex;
             align-items: center;
             border-bottom: 1px solid #334155;
@@ -92,9 +86,7 @@
             transition: transform 0.3s ease;
         }
 
-        .brand-text-wrapper {
-            line-height: 1.2;
-        }
+        .brand-text-wrapper { line-height: 1.2; }
 
         .brand-title {
             font-size: 1rem;
@@ -109,37 +101,29 @@
             font-weight: 500;
         }
 
-        /* Independently Scrollable Center Navigation Links Layout */
         .sidebar-menu-scroller {
             flex: 1;
             overflow-y: auto;
             padding: 20px 0;
         }
 
-            /* Custom Clean Scrollbar for Menu Scroller Container */
-            .sidebar-menu-scroller::-webkit-scrollbar {
-                width: 5px;
-            }
-
-            .sidebar-menu-scroller::-webkit-scrollbar-track {
-                background: transparent;
-            }
-
-            .sidebar-menu-scroller::-webkit-scrollbar-thumb {
-                background: #475569;
-                border-radius: 10px;
-            }
+        .sidebar-menu-scroller::-webkit-scrollbar { width: 5px; }
+        .sidebar-menu-scroller::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-menu-scroller::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 10px;
+        }
 
         .menu-category-label {
             font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 1.2px;
             color: #D4AF37;
-            padding: 10px 24px 5px 24px;
+            padding: 14px 24px 5px 24px;
             font-weight: 700;
         }
 
-        /* Core Sidebar Nav Links */
+        /* ---- Leaf links ---- */
         .nav-menu-item {
             display: flex;
             align-items: center;
@@ -153,37 +137,101 @@
             margin-bottom: 2px;
         }
 
-            .nav-menu-item i {
-                width: 24px;
-                font-size: 1.1rem;
-                margin-right: 12px;
-                color: #94a3b8;
-                transition: color 0.2s ease;
-            }
+        .nav-menu-item i {
+            width: 24px;
+            font-size: 1.1rem;
+            margin-right: 12px;
+            color: #94a3b8;
+            transition: color 0.2s ease;
+        }
 
-            .nav-menu-item:hover {
-                background-color: var(--sidebar-hover);
-                color: #ffffff;
-            }
+        .nav-menu-item:hover {
+            background-color: var(--sidebar-hover);
+            color: #ffffff;
+        }
 
-                .nav-menu-item:hover i {
-                    color: #ffffff;
-                }
+        .nav-menu-item:hover i { color: #ffffff; }
 
-            /* Active Page Class State */
-            .nav-menu-item.active {
-                background-color: #1e293b;
-                color: var(--sidebar-active);
-                border-left-color: var(--sidebar-active);
-                font-weight: 600;
-                background: linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0%, rgba(30, 41, 59, 0) 100%);
-            }
+        .nav-menu-item.active {
+            background-color: #1e293b;
+            color: var(--sidebar-active);
+            border-left-color: var(--sidebar-active);
+            font-weight: 600;
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.1) 0%, rgba(30, 41, 59, 0) 100%);
+        }
 
-                .nav-menu-item.active i {
-                    color: var(--sidebar-active);
-                }
+        .nav-menu-item.active i { color: var(--sidebar-active); }
 
-        /* Fixed Structural Sidebar Footer */
+        /* ==========================================================================
+           SIDEBAR SUBMENU SYSTEM
+           ========================================================================== */
+        .nav-submenu { margin: 2px 0; }
+
+        .nav-submenu-toggle {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 11px 24px;
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            font-size: 0.92rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-submenu-toggle:hover,
+        .nav-submenu-toggle:focus {
+            background-color: var(--sidebar-hover);
+            color: #ffffff;
+            outline: none;
+        }
+
+        .nav-submenu-toggle > i:first-child {
+            width: 24px;
+            font-size: 1.05rem;
+            margin-right: 12px;
+            color: #94a3b8;
+            transition: color 0.2s ease;
+        }
+
+        .nav-submenu-toggle:hover > i:first-child { color: #ffffff; }
+
+        .nav-submenu-toggle .nav-submenu-chevron {
+            margin-left: auto;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            transition: transform 0.25s ease, color 0.2s ease;
+        }
+
+        .nav-submenu.open > .nav-submenu-toggle {
+            color: #ffffff;
+            background-color: rgba(51, 65, 85, 0.55);
+        }
+
+        .nav-submenu.open > .nav-submenu-toggle .nav-submenu-chevron {
+            transform: rotate(180deg);
+            color: #ffffff;
+        }
+
+        .nav-submenu-list {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background-color: rgba(15, 23, 42, 0.35);
+        }
+
+        .nav-submenu.open > .nav-submenu-list { max-height: 1000px; }
+
+        .nav-submenu-list .nav-menu-item {
+            padding-left: 46px;
+            font-size: 0.86rem;
+        }
+
+        /* ---- Sidebar footer ---- */
         .sidebar-user-footer {
             background-color: #0f172a;
             padding: 15px 18px;
@@ -197,8 +245,8 @@
         .user-profile-avatar-initials {
             width: 42px;
             height: 42px;
-            background-color: #38bdf8; /* Sky Blue accent circle container background */
-            color: #0f172a; /* High-contrast deep slate text color */
+            background-color: #38bdf8;
+            color: #0f172a;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -230,7 +278,7 @@
 
         .user-email {
             font-size: 0.72rem;
-            color: #94a3b8; /* Muted Slate text */
+            color: #94a3b8;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -239,7 +287,7 @@
 
         .user-role {
             font-size: 0.72rem;
-            color: #0ea5e9; /* Light blue accent marker */
+            color: #0ea5e9;
             font-weight: 600;
             margin: 0;
             text-transform: uppercase;
@@ -257,12 +305,10 @@
             flex-shrink: 0;
         }
 
-            .btn-sidebar-logout:hover {
-                color: #ef4444;
-            }
+        .btn-sidebar-logout:hover { color: #ef4444; }
 
         /* ==========================================================================
-           MAIN CONTENT WORKSPACE CANVAS CONTAINER
+           MAIN CONTENT WORKSPACE
            ========================================================================== */
         .main-workspace-canvas {
             flex: 1;
@@ -273,7 +319,6 @@
             overflow: hidden;
         }
 
-        /* Sticky Desktop Header Framework */
         .desktop-header {
             height: var(--top-navbar-height);
             background-color: #ffffff;
@@ -306,10 +351,7 @@
             gap: 20px;
         }
 
-        .header-datetime-block {
-            text-align: right;
-            line-height: 1.3;
-        }
+        .header-datetime-block { text-align: right; line-height: 1.3; }
 
         .header-date-string {
             font-size: 0.88rem;
@@ -323,6 +365,7 @@
             color: #64748b;
         }
 
+        /* ---- Bell button (shared by desktop + mobile) ---- */
         .btn-notification-bell {
             background: none;
             border: none;
@@ -337,26 +380,17 @@
             justify-content: center;
         }
 
-            .btn-notification-bell:hover {
-                color: #0f172a;
-            }
+        .btn-notification-bell:hover { color: #0f172a; }
 
-        .mobile-logo-Img {
-            height: 32px;
-            width: auto;
-        }
+        .mobile-logo-Img { height: 32px; width: auto; }
 
-        /* NEW: Custom styling attributes for the updated mobile layout items */
         .mobile-action-cluster {
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .mobile-datetime-block {
-            text-align: right;
-            line-height: 1.2;
-        }
+        .mobile-datetime-block { text-align: right; line-height: 1.2; }
 
         .mobile-date-string {
             font-size: 0.75rem;
@@ -382,10 +416,9 @@
             justify-content: center;
         }
 
-            .mobile-bell-btn:hover, .mobile-bell-btn:focus {
-                color: #ffffff;
-            }
+        .mobile-bell-btn:hover, .mobile-bell-btn:focus { color: #ffffff; }
 
+        /* ---- Mobile avatar (photo when available, initials fallback) ---- */
         .mobile-avatar-initials {
             width: 32px;
             height: 32px;
@@ -397,6 +430,40 @@
             justify-content: center;
             font-weight: 700;
             font-size: 0.8rem;
+        }
+
+        .mobile-avatar-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+            background-color: #0f172a;
+        }
+
+        .header-avatar-image {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            border: 2px solid #e0f2fe;
+            box-shadow: 0 0 0 2px rgba(3, 105, 161, 0.15);
+            background-color: #ffffff;
+        }
+
+        .footer-avatar-image {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            flex-shrink: 0;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+            background-color: #0f172a;
         }
 
         .notification-count-badge {
@@ -414,11 +481,14 @@
 
         .notification-item-link {
             white-space: normal !important;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
         }
 
-        .notification-timestamp {
-            font-size: 0.72rem;
-        }
+        .notification-item-link:hover { background-color: #f8fafc; }
+
+        .notification-timestamp { font-size: 0.72rem; }
 
         .header-avatar-initials {
             width: 36px;
@@ -443,32 +513,50 @@
             transition: color 0.2s;
         }
 
-            .btn-header-logout:hover {
-                color: #ef4444;
-            }
+        .btn-header-logout:hover { color: #ef4444; }
 
-        /* Scrollable layout logic under the header */
         .workspace-scrollable-content {
             padding: 30px;
             flex: 1;
             overflow-y: auto;
         }
 
-        /* Dimming Overlay Backdrop Layer for Mobile View Drawer Mode toggling */
         .sidebar-backdrop {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background-color: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(4px);
             z-index: 1035;
         }
 
         /* ==========================================================================
-           RESPONSIVE VIEWPORT MEDIA BREAKPOINT ADAPTATION RULES
+           NOTIFICATION BELL RING ANIMATION
+           ========================================================================== */
+        @keyframes bellRing {
+            0%, 100% { transform: rotate(0deg); }
+            10%      { transform: rotate(13deg); }
+            20%      { transform: rotate(-11deg); }
+            30%      { transform: rotate(9deg); }
+            40%      { transform: rotate(-7deg); }
+            50%      { transform: rotate(5deg); }
+            60%      { transform: rotate(-3deg); }
+            70%      { transform: rotate(0deg); }
+        }
+
+        .bell-ringing i.fa-bell {
+            animation: bellRing 2s ease-in-out infinite;
+            transform-origin: 50% 3px;
+            display: inline-block;
+            will-change: transform;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bell-ringing i.fa-bell { animation: none; }
+        }
+
+        /* ==========================================================================
+           RESPONSIVE BREAKPOINTS
            ========================================================================== */
         @media (max-width: 991.98px) {
             .mobile-top-nav {
@@ -477,48 +565,35 @@
                 justify-content: space-between;
             }
 
-            .desktop-header {
-                display: none; /* Hide desktop specific header block on mobile devices */
-            }
+            .desktop-header { display: none; }
 
-            /* Shift the sidebar cleanly off-screen */
             .lms-sidebar {
                 position: fixed;
-                top: 0;
-                bottom: 0;
-                left: 0;
+                top: 0; bottom: 0; left: 0;
                 height: 100vh;
                 transform: translateX(-100%);
             }
 
-            /* Main Workspace canvas absorbs full viewport height with mobile header offsets */
             .main-workspace-canvas {
                 height: calc(100vh - var(--top-navbar-height));
                 margin-top: var(--top-navbar-height);
                 width: 100%;
             }
 
-            .workspace-scrollable-content {
-                padding: 20px 15px;
-            }
+            .workspace-scrollable-content { padding: 20px 15px; }
 
-            /* Toggle Drawer State when Active */
-            .lms-sidebar.drawer-open {
-                transform: translateX(0);
-            }
-
-            .sidebar-backdrop.show-backdrop {
-                display: block;
-            }
+            .lms-sidebar.drawer-open { transform: translateX(0); }
+            .sidebar-backdrop.show-backdrop { display: block; }
         }
     </style>
 </head>
 <body>
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
-
+       
         <div class="lms-wrapper">
 
+            <!-- ============================= MOBILE TOP NAV ============================= -->
             <header class="mobile-top-nav">
                 <div class="d-flex align-items-center gap-2">
                     <button type="button" class="btn btn-dark border-secondary px-2 py-1" onclick="toggleSidebarDrawer()">
@@ -528,7 +603,6 @@
                 </div>
 
                 <% 
-                    // Inline database notification logic lookup for the mobile layout pipeline
                     string currentSessionUserId = spmst_lms_development.sessionHelper.UserID;
                     string masterConnString = System.Configuration.ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
                     var dbNotifications = spmst_lms_development.NotificationHelper.GetUnreadNotificationsForUser(currentSessionUserId, masterConnString);
@@ -544,8 +618,7 @@
                         <button type="button" class="mobile-bell-btn" data-bs-toggle="dropdown" aria-expanded="false"
                             title="System Alerts & Notifications">
                             <i class="fa-regular fa-bell"></i>
-                            <% if (dbNotifications != null && dbNotifications.Count > 0)
-                                { %>
+                            <% if (dbNotifications != null && dbNotifications.Count > 0) { %>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count-badge">
                                 <%= dbNotifications.Count %>
                             </span>
@@ -555,8 +628,7 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0 notification-dropdown-menu">
                             <li class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
                                 <span class="fw-bold text-dark">Notifications</span>
-                                <span class="badge bg-secondary-subtle text-secondary"><%= dbNotifications?.Count ?? 0 %>
-                                    New</span>
+                                <span class="badge bg-secondary-subtle text-secondary"><%= dbNotifications?.Count ?? 0 %> New</span>
                             </li>
                             <% 
                                 if (dbNotifications != null && dbNotifications.Count > 0)
@@ -566,7 +638,7 @@
                             %>
                             <li>
                                 <a class="dropdown-item p-3 border-bottom d-flex flex-column gap-1 notification-item-link"
-                                    href="#">
+                                   href='<%= ResolveUrl("~/Users/Patron/Notifications/Notifications.aspx") %>'>
                                     <div class="d-flex justify-content-between align-items-start gap-2">
                                         <strong class="text-dark"><%= HttpUtility.HtmlEncode(item.Title) %></strong>
                                         <small class="text-muted text-nowrap notification-timestamp"><%= item.CreatedAt.ToString("g") %></small>
@@ -590,15 +662,23 @@
                         </ul>
                     </div>
 
-                    <div class="mobile-avatar-initials" title="Current Active Profile Initials">
-                        <%= spmst_lms_development.sessionHelper.GetInitials() %>
-                    </div>
+                    <!-- Mobile avatar: photo when available, initials fallback -->
+                    <%
+                        string mobileProfileUrl = GetResolvedProfileImageUrl();
+                    %>
+                    <% if (!string.IsNullOrEmpty(mobileProfileUrl)) { %>
+                        <img src="<%= mobileProfileUrl %>" alt="Profile" class="mobile-avatar-image" />
+                    <% } else { %>
+                        <div class="mobile-avatar-initials" title="Current Active Profile Initials">
+                            <%= spmst_lms_development.sessionHelper.GetInitials() %>
+                        </div>
+                    <% } %>
                 </div>
             </header>
 
-            <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebarDrawer()">
-            </div>
+            <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleSidebarDrawer()"></div>
 
+            <!-- ============================= SIDEBAR ============================= -->
             <nav id="lmsSidebar" class="lms-sidebar">
 
                 <div class="sidebar-brand-header">
@@ -614,165 +694,213 @@
                     <!-- ============ CORE OPERATIONS ============ -->
                     <div id="navGroupCoreOps" runat="server" class="menu-category-label">Core Operations</div>
 
-                    <!-- Dashboards (one per audience) -->
-                    <asp:HyperLink ID="lnkAdminDashboard" runat="server"
-                        NavigateUrl="~/Users/Admin/Dashboard/adminDashC.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
-                    </asp:HyperLink>
+                    <div id="subGroupDashboards" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-gauge-high"></i>
+                            <span>Dashboards</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkAdminDashboard" runat="server"
+                                NavigateUrl="~/Users/Admin/Dashboard/adminDashC.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-chart-pie"></i><span>Admin Dashboard</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkPatronDashboard" runat="server"
+                                NavigateUrl="~/Users/Patron/Dashboard/patronDash.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-chart-pie"></i><span>Patron Dashboard</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkMgtDashboard" runat="server"
+                                NavigateUrl="~/Users/Staff/Dashboard/MgtDash.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-chart-pie"></i><span>Management Dashboard</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkCirDashboard" runat="server"
+                                NavigateUrl="~/Users/Staff/Dashboard/CirDash.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-chart-pie"></i><span>Circulation Dashboard</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <asp:HyperLink ID="lnkPatronDashboard" runat="server"
-                        NavigateUrl="~/Users/Patron/Dashboard/patronDash.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
-                    </asp:HyperLink>
+                    <div id="subGroupCirculation" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-handshake"></i>
+                            <span>Circulation / Transactions</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkBookBorrow" runat="server"
+                                NavigateUrl="~/Users/Staff/Transactions/Book_Borrow.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-handshake"></i><span>Book Borrow</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkToPickUp" runat="server"
+                                NavigateUrl="~/Users/Patron/Reservations/ToPickUp.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-calendar-days"></i><span>To Pick Up</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkReservations" runat="server"
+                                NavigateUrl="~/Users/Staff/Reservation/Reservations.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-calendar-days"></i><span>Reservations</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkPenalties" runat="server"
+                                NavigateUrl="~/Users/Staff/Penalties/Penalties.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-calendar-days"></i><span>Penalties</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkAttendance" runat="server"
+                                NavigateUrl="~/Users/Staff/Attendance/AttendanceMonitor.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-calendar-days"></i><span>Attendance Monitor</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <asp:HyperLink ID="lnkMgtDashboard" runat="server"
-                        NavigateUrl="~/Users/Staff/Dashboard/MgtDash.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
-                    </asp:HyperLink>
-
-                    <asp:HyperLink ID="lnkCirDashboard" runat="server"
-                        NavigateUrl="~/Users/Staff/Dashboard/CirDash.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-chart-pie"></i><span>Dashboard</span>
-                    </asp:HyperLink>
-
-                    <!-- Circulation / Loans -->
-                    <asp:HyperLink ID="lnkBookBorrow" runat="server"
-                        NavigateUrl="~/Users/Staff/Transactions/Book_Borrow.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-handshake"></i><span>Circulation / Loans</span>
-                    </asp:HyperLink>
-
-                    <!-- Catalog -->
-                    <asp:HyperLink ID="lnkCatalog" runat="server"
-                        NavigateUrl="~/Users/Admin/Catalog/BrowseCatalog.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-book"></i><span>Catalog</span>
-                    </asp:HyperLink>
-
-                    <!-- To Pick Up -->
-                    <asp:HyperLink ID="lnkToPickUp" runat="server"
-                        NavigateUrl="~/Users/Patron/Reservations/ToPickUp.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-calendar-days"></i><span>To Pick Up</span>
-                    </asp:HyperLink>
-
-                    <!-- Reservations -->
-                    <asp:HyperLink ID="lnkReservations" runat="server"
-                        NavigateUrl="~/Users/Staff/Reservation/Reservations.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-calendar-days"></i><span>Reservations</span>
-                    </asp:HyperLink>
-
-                    <!-- Penalties -->
-                    <asp:HyperLink ID="lnkPenalties" runat="server"
-                        NavigateUrl="~/Users/Staff/Penalties/Penalties.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-calendar-days"></i><span>Penalties</span>
-                    </asp:HyperLink>
-
-                    <!-- Attendance Monitor -->
-                    <asp:HyperLink ID="lnkAttendance" runat="server"
-                        NavigateUrl="~/Users/Staff/Attendance/AttendanceMonitor.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-calendar-days"></i><span>Attendance Monitor</span>
-                    </asp:HyperLink>
-
+                    <div id="subGroupCatalog" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-book"></i>
+                            <span>Catalog</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkCatalog" runat="server"
+                                NavigateUrl="~/Users/Admin/Catalog/BrowseCatalog.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-book"></i><span>Browse Catalog</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
                     <!-- ============ MANAGEMENT ============ -->
                     <div id="navGroupManagement" runat="server" class="menu-category-label">Management</div>
 
-                    <!-- Book Inventory -->
-                    <asp:HyperLink ID="lnkInventory" runat="server"
-                        NavigateUrl="~/Users/Staff/Inventory/bookInventory.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-book"></i><span>Book Inventory</span>
-                    </asp:HyperLink>
+                    <div id="subGroupLibrary" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                            <span>Library</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkInventory" runat="server"
+                                NavigateUrl="~/Users/Staff/Inventory/bookInventory.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-book"></i><span>Book Inventory</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkLibrarySettings" runat="server"
+                                NavigateUrl="~/Users/Admin/Settings/LibrarySettings.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-gear"></i><span>Library Settings</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkBookImports" runat="server"
+                                NavigateUrl="~/Users/Staff/Import/bookImport.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-file-import"></i><span>Book Imports</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <!-- Accounts -->
-                    <asp:HyperLink ID="lnkAccounts" runat="server"
-                        NavigateUrl="~/Users/Staff/Accounts/UserAcc.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-tags"></i><span>Accounts</span>
-                    </asp:HyperLink>
+                    <div id="subGroupUsers" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-users"></i>
+                            <span>Users</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkAccounts" runat="server"
+                                NavigateUrl="~/Users/Staff/Accounts/UserAcc.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-tags"></i><span>Accounts</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkUserImports" runat="server"
+                                NavigateUrl="~/Users/Staff/Import/UserImports.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-file-import"></i><span>User Imports</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkProfile" runat="server"
+                                NavigateUrl="~/Users/Patron/Profile/Profile.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-person"></i><span>Profile</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <!-- Profile -->
-                    <asp:HyperLink ID="lnkProfile" runat="server"
-                        NavigateUrl="~/Users/Patron/Profile/Profile.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-person"></i><span>Profile</span>
-                    </asp:HyperLink>
+                    <div id="subGroupTransactions" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-right-left"></i>
+                            <span>Transactions</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkTransactionImports" runat="server"
+                                NavigateUrl="~/Users/Staff/Import/TransactionImport.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-file-import"></i><span>Transaction Imports</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <!-- Notifications -->
-                    <asp:HyperLink ID="lnkNotifications" runat="server"
-                        NavigateUrl="~/Users/Patron/Notifications/Notifications.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-bell"></i><span>Notifications</span>
-                    </asp:HyperLink>
-
-                    <!-- Library Settings -->
-                    <asp:HyperLink ID="lnkLibrarySettings" runat="server"
-                        NavigateUrl="~/Users/Admin/Settings/LibrarySettings.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-gear"></i><span>Library Settings</span>
-                    </asp:HyperLink>
-
-                    <!-- User Imports -->
-                    <asp:HyperLink ID="lnkUserImports" runat="server"
-                        NavigateUrl="~/Users/Staff/Import/UserImports.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-file-import"></i><span>User Imports</span>
-                    </asp:HyperLink>
-
-                    <!-- Book Imports -->
-                    <asp:HyperLink ID="lnkBookImports" runat="server"
-                        NavigateUrl="~/Users/Staff/Import/BookImports.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-file-import"></i><span>Book Imports</span>
-                    </asp:HyperLink>
-
-                    <!-- Book Imports -->
-                    <asp:HyperLink ID="lnkTransactionImports" runat="server"
-                        NavigateUrl="~/Users/Staff/Import/TransactionImport.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-file-import"></i><span>Transaction Imports</span>
-                    </asp:HyperLink>
+                    <div id="subGroupNotifications" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-bell"></i>
+                            <span>Notifications</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkNotifications" runat="server"
+                                NavigateUrl="~/Users/Patron/Notifications/Notifications.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-bell"></i><span>Notifications</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
                     <!-- ============ SYSTEM REGISTRY ============ -->
                     <div id="navGroupRegistry" runat="server" class="menu-category-label">System Registry</div>
 
-                    <!-- Feedback & Request -->
-                    <asp:HyperLink ID="lnkFeedbackRequest" runat="server"
-                        NavigateUrl="~/Users/Staff/FeedbackReq/FeedbackRequest.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-comment-dots"></i><span>Feedback &amp; Request</span>
-                    </asp:HyperLink>
+                    <div id="subGroupFeedback" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            <span>Feedback</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkFeedbackRequest" runat="server"
+                                NavigateUrl="~/Users/Staff/FeedbackReq/FeedbackRequest.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-comment-dots"></i><span>Feedback Requests</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkFeedback" runat="server"
+                                NavigateUrl="~/Users/Patron/FeedReq/Feedback.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-comment-dots"></i><span>Feedback</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <!-- Feedback -->
-                    <asp:HyperLink ID="lnkFeedback" runat="server"
-                        NavigateUrl="~/Users/Patron/FeedReq/Feedback.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-comment-dots"></i><span>Feedback</span>
-                    </asp:HyperLink>
+                    <div id="subGroupReports" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-file-lines"></i>
+                            <span>Reports</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkReports" runat="server"
+                                NavigateUrl="~/Users/Admin/Reports/adminReports.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-users-gear"></i><span>Reports</span>
+                            </asp:HyperLink>
+                            <asp:HyperLink ID="lnkGenerateReports" runat="server"
+                                NavigateUrl="~/Users/Admin/Reports/generateReports.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-users-gear"></i><span>Generate Reports</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
-                    <!-- Reports -->
-                    <asp:HyperLink ID="lnkReports" runat="server"
-                        NavigateUrl="~/Users/Admin/Reports/adminReports.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-users-gear"></i><span>Reports</span>
-                    </asp:HyperLink>
-
-                    <!-- Generate Reports -->
-                    <asp:HyperLink ID="lnkGenerateReports" runat="server"
-                        NavigateUrl="~/Users/Admin/Reports/generateReports.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-users-gear"></i><span>Generate Reports</span>
-                    </asp:HyperLink>
-
-                    <!-- System Logs -->
-                    <asp:HyperLink ID="lnkSystemLogs" runat="server"
-                        NavigateUrl="~/Users/Admin/Logs/SystemLogs.aspx" CssClass="nav-menu-item">
-                        <i class="fa-solid fa-sliders"></i><span>System Logs</span>
-                    </asp:HyperLink>
+                    <div id="subGroupSystem" runat="server" class="nav-submenu">
+                        <button type="button" class="nav-submenu-toggle" aria-expanded="false">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>System</span>
+                            <i class="fa-solid fa-chevron-down nav-submenu-chevron"></i>
+                        </button>
+                        <div class="nav-submenu-list">
+                            <asp:HyperLink ID="lnkSystemLogs" runat="server"
+                                NavigateUrl="~/Users/Admin/Logs/SystemLogs.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-sliders"></i><span>System Logs</span>
+                            </asp:HyperLink>
+                        </div>
+                    </div>
 
                 </div>
 
                 <div class="sidebar-user-footer">
-                    <div class="user-profile-avatar-initials">
-                        <%= spmst_lms_development.sessionHelper.GetInitials() %>
-                    </div>
+                    <%= RenderAvatar("footer") %>
 
                     <div class="user-meta-info">
-                        <p class="user-name">
-                            <%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.FullName) %>
-                        </p>
-                        <p class="user-email">
-                            <%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.Email) %>
-                        </p>
-                        <p class="user-role">
-                            <%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %>
-                        </p>
+                        <p class="user-name"><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.FullName) %></p>
+                        <p class="user-email"><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.Email) %></p>
+                        <p class="user-role"><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %></p>
                     </div>
 
                     <button type="button" class="btn-sidebar-logout" onclick="triggerClientLogout()"
@@ -783,15 +911,14 @@
 
             </nav>
 
+            <!-- ============================= MAIN WORKSPACE ============================= -->
             <main class="main-workspace-canvas">
 
                 <header class="desktop-header">
                     <div>
                         <div class="desktop-role-badge">
                             <i class="fa-solid fa-building-user"></i>
-                            <span>
-                                <%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %>
-                            </span>
+                            <span><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %></span>
                         </div>
                     </div>
 
@@ -805,8 +932,7 @@
                             <button type="button" class="btn-notification-bell" data-bs-toggle="dropdown" aria-expanded="false"
                                 title="System Alerts & Notifications">
                                 <i class="fa-regular fa-bell"></i>
-                                <% if (dbNotifications != null && dbNotifications.Count > 0)
-                                    { %>
+                                <% if (dbNotifications != null && dbNotifications.Count > 0) { %>
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count-badge">
                                     <%= dbNotifications.Count %>
                                 </span>
@@ -816,8 +942,7 @@
                             <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-0 notification-dropdown-menu">
                                 <li class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
                                     <span class="fw-bold text-dark">Notifications</span>
-                                    <span class="badge bg-secondary-subtle text-secondary"><%= dbNotifications?.Count ?? 0 %>
-                                        New</span>
+                                    <span class="badge bg-secondary-subtle text-secondary"><%= dbNotifications?.Count ?? 0 %> New</span>
                                 </li>
                                 <% 
                                     if (dbNotifications != null && dbNotifications.Count > 0)
@@ -827,7 +952,7 @@
                                 %>
                                 <li>
                                     <a class="dropdown-item p-3 border-bottom d-flex flex-column gap-1 notification-item-link"
-                                        href="#">
+                                       href='<%= ResolveUrl("~/Users/Patron/Notifications/Notifications.aspx") %>'>
                                         <div class="d-flex justify-content-between align-items-start gap-2">
                                             <strong class="text-dark"><%= HttpUtility.HtmlEncode(item.Title) %></strong>
                                             <small class="text-muted text-nowrap notification-timestamp"><%= item.CreatedAt.ToString("g") %></small>
@@ -851,9 +976,7 @@
                             </ul>
                         </div>
 
-                        <div class="header-avatar-initials" title="Current Profile Record Identity Instance">
-                            <%= spmst_lms_development.sessionHelper.GetInitials() %>
-                        </div>
+                        <%= RenderAvatar("header") %>
 
                         <button type="button" class="btn-header-logout" onclick="triggerClientLogout()" title="Terminate Workplace Session Framework Connection">
                             <i class="fa-solid fa-right-from-bracket"></i>
@@ -867,7 +990,6 @@
             </main>
 
         </div>
-
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -876,7 +998,6 @@
         function toggleSidebarDrawer() {
             const sidebar = document.getElementById('lmsSidebar');
             const backdrop = document.getElementById('sidebarBackdrop');
-
             if (sidebar && backdrop) {
                 sidebar.classList.toggle('drawer-open');
                 backdrop.classList.toggle('show-backdrop');
@@ -884,18 +1005,38 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
+
+            // ---------- Submenu toggles (pure UI, authorization stays server-side) ----------
+            document.querySelectorAll('.nav-submenu-toggle').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const parent = this.parentElement;
+                    const isOpen = parent.classList.toggle('open');
+                    this.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+            });
+
+            // ---------- Active-link detection + auto-open parent submenu ----------
             const currentPath = window.location.pathname.toLowerCase();
             const navLinks = document.querySelectorAll('.nav-menu-item');
 
-            navLinks.forEach(link => {
-                const linkHref = link.getAttribute('href').toLowerCase();
-                if (currentPath.indexOf(linkHref) !== -1 && linkHref !== "") {
-                    navLinks.forEach(item => item.classList.remove('active'));
+            navLinks.forEach(function (link) {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                const linkHref = href.toLowerCase();
+                if (linkHref !== '' && currentPath.indexOf(linkHref) !== -1) {
+                    navLinks.forEach(function (item) { item.classList.remove('active'); });
                     link.classList.add('active');
+
+                    const parentSub = link.closest('.nav-submenu');
+                    if (parentSub) {
+                        parentSub.classList.add('open');
+                        const toggle = parentSub.querySelector('.nav-submenu-toggle');
+                        if (toggle) toggle.setAttribute('aria-expanded', 'true');
+                    }
                 }
             });
 
-            // Set Desktop and Mobile Date elements uniformly
+            // ---------- Date / Term strings ----------
             const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
             const formattedDateString = new Date().toLocaleDateString('en-US', dateOptions);
 
@@ -905,24 +1046,56 @@
             const mobileDate = document.getElementById('mobileCurrentDate');
             if (mobileDate) mobileDate.textContent = formattedDateString;
 
-            // Compute and uniform Academic Term for both Desktop and Mobile elements
             const currentMonth = new Date().getMonth();
             let semesterString = "1st Semester";
-
-            if (currentMonth <= 5 && currentMonth >= 4) {
-                semesterString = "2nd Semester";
-            } else if (currentMonth >= 9 || currentMonth <= 3) {
-                semesterString = "1st Semester";
-            } else if (currentMonth >= 6 && currentMonth <= 8) {
-                semesterString = "Summer Term";
-            }
+            if (currentMonth <= 5 && currentMonth >= 4) semesterString = "2nd Semester";
+            else if (currentMonth >= 9 || currentMonth <= 3) semesterString = "1st Semester";
+            else if (currentMonth >= 6 && currentMonth <= 8) semesterString = "Summer Term";
 
             const desktopTerm = document.getElementById('headerAcademicTerm');
             if (desktopTerm) desktopTerm.textContent = semesterString;
 
-            const mobileTerm = document.getElementById('mobileCurrentDate');
             const mobileTermReal = document.getElementById('mobileAcademicTerm');
             if (mobileTermReal) mobileTermReal.textContent = semesterString;
+
+            // ---------- Notification bell: initial ring state from server-rendered badge ----------
+            document.querySelectorAll('.btn-notification-bell, .mobile-bell-btn').forEach(function (btn) {
+                if (btn.querySelector('.notification-count-badge')) {
+                    btn.classList.add('bell-ringing');
+                }
+            });
+
+            // ---------- Notification polling (AJAX, no reload) ----------
+            const POLL_INTERVAL_MS = 20000; // 20s
+            const pollEndpoint = '<%= ResolveUrl("~/Users/MasterPage/NotificationPoll.ashx") %>';
+
+            function applyBellState(count) {
+                document.querySelectorAll('.btn-notification-bell, .mobile-bell-btn').forEach(function (btn) {
+                    let badge = btn.querySelector('.notification-count-badge');
+
+                    if (count > 0) {
+                        btn.classList.add('bell-ringing');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-count-badge';
+                            btn.appendChild(badge);
+                        }
+                        badge.textContent = count;
+                    } else {
+                        btn.classList.remove('bell-ringing');
+                        if (badge && badge.parentNode === btn) btn.removeChild(badge);
+                    }
+                });
+            }
+
+            function pollNotifications() {
+                fetch(pollEndpoint, { credentials: 'same-origin' })
+                    .then(function (r) { return r.ok ? r.json() : null; })
+                    .then(function (data) { if (data) applyBellState(data.count || 0); })
+                    .catch(function () { /* silent — offline or session expired */ });
+            }
+
+            setInterval(pollNotifications, POLL_INTERVAL_MS);
         });
 
         function triggerClientLogout() {

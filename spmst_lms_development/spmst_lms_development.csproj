@@ -193,7 +193,7 @@
     <Content Include="Users\Staff\Import\TransactionImport.aspx" />
     <Content Include="Users\Staff\Import\UserImports.aspx" />
     <Content Include="Users\Staff\Inventory\bookFilter.aspx" />
-    <Content Include="Users\Staff\Inventory\bookImport.aspx" />
+    <Content Include="Users\Staff\Import\bookImport.aspx" />
     <Content Include="Users\Staff\Inventory\bookInventory.aspx" />
     <Content Include="Users\Staff\Inventory\bookNew.aspx" />
     <Content Include="Users\Staff\Inventory\bookUD.aspx" />
@@ -217,6 +217,9 @@
     <Compile Include="Assets\Helper\EmailHelper.cs" />
     <Compile Include="Assets\Helper\Handlers\AttendanceHelper.cs" />
     <Compile Include="Assets\Helper\Handlers\CirculationHelper.cs" />
+    <Compile Include="Assets\Helper\Handlers\NotificationPoll.ashx.cs">
+      <DependentUpon>NotificationPoll.ashx</DependentUpon>
+    </Compile>
     <Compile Include="Assets\Helper\Handlers\PatronAnalyticsHelper.cs" />
     <Compile Include="Assets\Helper\InputHelper.cs" />
     <Compile Include="Assets\Helper\logs_Audit.cs" />
@@ -530,11 +533,11 @@
     <Compile Include="Users\Staff\Inventory\bookFilter.aspx.designer.cs">
       <DependentUpon>bookFilter.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Users\Staff\Inventory\bookImport.aspx.cs">
+    <Compile Include="Users\Staff\Import\bookImport.aspx.cs">
       <DependentUpon>bookImport.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Users\Staff\Inventory\bookImport.aspx.designer.cs">
+    <Compile Include="Users\Staff\Import\bookImport.aspx.designer.cs">
       <DependentUpon>bookImport.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Inventory\bookInventory.aspx.cs">
@@ -649,6 +652,7 @@
     <Content Include="LandingPage\LandingPage.Master" />
     <Content Include="Users\Admin\Settings\LibrarySettingsData.ashx" />
     <Content Include="LandingPage\LandingData.ashx" />
+    <Content Include="Assets\Helper\Handlers\NotificationPoll.ashx" />
     <None Include="packages.config" />
     <Content Include="SmsTick.ashx" />
     <None Include="Web.Debug.config">

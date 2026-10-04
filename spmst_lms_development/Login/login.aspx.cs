@@ -43,7 +43,8 @@ namespace spmst_lms_development.Login
                             u.user_id, u.email, u.password_hash, u.role, u.is_active,
                             st.office_department, st.is_head_librarian,
                             COALESCE(st.first_name, s.first_name, f.first_name) AS first_name,
-                            COALESCE(st.last_name,  s.last_name,  f.last_name)  AS last_name
+                            COALESCE(st.last_name,  s.last_name,  f.last_name)  AS last_name,
+                            COALESCE(st.profile_path, s.profile_path, f.profile_path) AS profile_image
                         FROM Users u
                         LEFT JOIN Staff   st ON u.user_id = st.staff_id
                         LEFT JOIN Students s ON u.user_id = s.student_id
@@ -133,6 +134,9 @@ namespace spmst_lms_development.Login
 
                             string fullName = string.Format("{0} {1}", firstName, lastName).Trim();
                             if (string.IsNullOrEmpty(fullName)) fullName = "System User";
+                            
+                            string profileImagePath = reader["profile_image"] != DBNull.Value
+                                                ? reader["profile_image"].ToString() : string.Empty;
 
                             // ---------- Canonical role resolution ----------
                             string evaluatedRoleCode =
@@ -150,6 +154,7 @@ namespace spmst_lms_development.Login
                             Session["Email"] = reader["email"].ToString();
                             Session["FullName"] = fullName;
                             Session["UserRole"] = evaluatedRoleCode;  // code, NOT display name
+                            Session["ProfileImagePath"] = profileImagePath; // drives the master avatar
 
                             // ---------- Post-login bookkeeping ----------
                             UpdateUserLastLoginTimestamp(userId);

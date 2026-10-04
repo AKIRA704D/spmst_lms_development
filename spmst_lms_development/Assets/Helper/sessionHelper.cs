@@ -24,6 +24,7 @@ namespace spmst_lms_development
         public static string FullName => HttpContext.Current.Session["FullName"]?.ToString() ?? "Guest User";
         public static string UserRole => HttpContext.Current.Session["UserRole"]?.ToString() ?? RoleVisitor;
         public static string Email => HttpContext.Current.Session["Email"]?.ToString() ?? string.Empty;
+        public static string ProfileImagePath => HttpContext.Current.Session["ProfileImagePath"]?.ToString() ?? string.Empty;
 
         // =====================================================================
         // ROLE RESOLUTION — called only by login.aspx.cs after successful auth.

@@ -51,6 +51,15 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl navGroupCoreOps;
 
         /// <summary>
+        /// subGroupDashboards control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupDashboards;
+
+        /// <summary>
         /// lnkAdminDashboard control.
         /// </summary>
         /// <remarks>
@@ -87,6 +96,15 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkCirDashboard;
 
         /// <summary>
+        /// subGroupCirculation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupCirculation;
+
+        /// <summary>
         /// lnkBookBorrow control.
         /// </summary>
         /// <remarks>
@@ -94,15 +112,6 @@ namespace spmst_lms_development.Users.MasterPage
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkBookBorrow;
-
-        /// <summary>
-        /// lnkCatalog control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkCatalog;
 
         /// <summary>
         /// lnkToPickUp control.
@@ -141,6 +150,24 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkAttendance;
 
         /// <summary>
+        /// subGroupCatalog control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupCatalog;
+
+        /// <summary>
+        /// lnkCatalog control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkCatalog;
+
+        /// <summary>
         /// navGroupManagement control.
         /// </summary>
         /// <remarks>
@@ -148,6 +175,15 @@ namespace spmst_lms_development.Users.MasterPage
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl navGroupManagement;
+
+        /// <summary>
+        /// subGroupLibrary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupLibrary;
 
         /// <summary>
         /// lnkInventory control.
@@ -159,33 +195,6 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkInventory;
 
         /// <summary>
-        /// lnkAccounts control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkAccounts;
-
-        /// <summary>
-        /// lnkProfile control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkProfile;
-
-        /// <summary>
-        /// lnkNotifications control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkNotifications;
-
-        /// <summary>
         /// lnkLibrarySettings control.
         /// </summary>
         /// <remarks>
@@ -193,15 +202,6 @@ namespace spmst_lms_development.Users.MasterPage
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkLibrarySettings;
-
-        /// <summary>
-        /// lnkUserImports control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkUserImports;
 
         /// <summary>
         /// lnkBookImports control.
@@ -213,6 +213,51 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkBookImports;
 
         /// <summary>
+        /// subGroupUsers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupUsers;
+
+        /// <summary>
+        /// lnkAccounts control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkAccounts;
+
+        /// <summary>
+        /// lnkUserImports control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkUserImports;
+
+        /// <summary>
+        /// lnkProfile control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkProfile;
+
+        /// <summary>
+        /// subGroupTransactions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupTransactions;
+
+        /// <summary>
         /// lnkTransactionImports control.
         /// </summary>
         /// <remarks>
@@ -222,6 +267,24 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkTransactionImports;
 
         /// <summary>
+        /// subGroupNotifications control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupNotifications;
+
+        /// <summary>
+        /// lnkNotifications control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkNotifications;
+
+        /// <summary>
         /// navGroupRegistry control.
         /// </summary>
         /// <remarks>
@@ -229,6 +292,15 @@ namespace spmst_lms_development.Users.MasterPage
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlGenericControl navGroupRegistry;
+
+        /// <summary>
+        /// subGroupFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupFeedback;
 
         /// <summary>
         /// lnkFeedbackRequest control.
@@ -249,6 +321,15 @@ namespace spmst_lms_development.Users.MasterPage
         protected global::System.Web.UI.WebControls.HyperLink lnkFeedback;
 
         /// <summary>
+        /// subGroupReports control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupReports;
+
+        /// <summary>
         /// lnkReports control.
         /// </summary>
         /// <remarks>
@@ -265,6 +346,15 @@ namespace spmst_lms_development.Users.MasterPage
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HyperLink lnkGenerateReports;
+
+        /// <summary>
+        /// subGroupSystem control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlGenericControl subGroupSystem;
 
         /// <summary>
         /// lnkSystemLogs control.

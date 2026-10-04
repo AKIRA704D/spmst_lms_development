@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using spmst_lms_development.Assets.Helper; 
 
 namespace spmst_lms_development.Users.MasterPage
 {
@@ -37,74 +38,134 @@ namespace spmst_lms_development.Users.MasterPage
                 return;
             }
 
-            // Session already stores a canonical code — no parsing needed.
             _roles = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 sessionHelper.UserRole
             };
 
             ApplyRoleBasedNavigation();
-
-            if (!IsPostBack)
-            {
-                LoadUserProfileFooter();
-            }
-        }
-
-        private void LoadUserProfileFooter()
-        {
-            // Intentionally left empty — kept for future footer data hooks.
         }
 
         // =====================================================================
-        //  ROLE → TAB MATRIX
+        //  PROFILE IMAGE RESOLUTION  (exact implementation required by spec)
+        // =====================================================================
+        private string ResolveProfileImage(string profilePath)
+        => ProfileHelper.ResolveProfileImage(profilePath);
+
+        // Exposed to the .Master markup for the mobile avatar fallback logic.
+        protected string GetResolvedProfileImageUrl()
+        => ResolveProfileImage(sessionHelper.ProfileImagePath);
+
+        protected string RenderAvatar(string sizeVariant)
+        {
+            // sizeVariant: "mobile" | "header" | "footer"
+            string imgClass = sizeVariant + "-avatar-image";
+            string initialsClass = sizeVariant == "footer"
+                ? "user-profile-avatar-initials"
+                : sizeVariant + "-avatar-initials";
+
+            string url = GetResolvedProfileImageUrl();
+            string initials = HttpUtility.HtmlEncode(sessionHelper.GetInitials());
+
+            if (!string.IsNullOrEmpty(url))
+            {
+                return string.Format(
+                    "<img src=\"{0}\" alt=\"Profile\" class=\"{1}\" />",
+                    HttpUtility.HtmlAttributeEncode(url),
+                    imgClass);
+            }
+
+            return string.Format(
+                "<div class=\"{0}\">{1}</div>",
+                initialsClass,
+                initials);
+        }
+
+        // =====================================================================
+        //  ROLE → TAB MATRIX  (unchanged authorization, grouped for submenus)
         // =====================================================================
         private void ApplyRoleBasedNavigation()
         {
-            // -------- Dashboards (one per audience) --------
+            // ---------- Core Operations → Dashboards ----------
             Allow(lnkAdminDashboard, RoleAdmin);
             Allow(lnkPatronDashboard, PatronsOnly);
             Allow(lnkMgtDashboard, RoleAdmin, RoleStaffM);
             Allow(lnkCirDashboard, RoleAdmin, RoleStaffC);
 
-            // -------- Core Operations --------
+            // ---------- Core Operations → Circulation / Transactions ----------
             Allow(lnkBookBorrow, RoleAdmin, RoleStaffC);
-            Allow(lnkCatalog, Everyone);
             Allow(lnkToPickUp, PatronsOnly);
             Allow(lnkReservations, RoleAdmin, RoleStaffC, RoleStaffM);
             Allow(lnkPenalties, RoleAdmin, RoleStaffC);
             Allow(lnkAttendance, RoleAdmin, RoleStaffM);
 
-            // -------- Management --------
+            // ---------- Core Operations → Catalog ----------
+            Allow(lnkCatalog, Everyone);
+
+            // ---------- Management → Library ----------
             Allow(lnkInventory, RoleAdmin, RoleStaffC);
-            Allow(lnkAccounts, RoleAdmin, RoleStaffM);
-            Allow(lnkProfile, Everyone);
-            Allow(lnkNotifications, Everyone);
             Allow(lnkLibrarySettings, RoleAdmin);
-            Allow(lnkUserImports, RoleAdmin, RoleStaffM);
             Allow(lnkBookImports, RoleAdmin, RoleStaffC);
+
+            // ---------- Management → Users ----------
+            Allow(lnkAccounts, RoleAdmin, RoleStaffM);
+            Allow(lnkUserImports, RoleAdmin, RoleStaffM);
+            Allow(lnkProfile, Everyone);
+
+            // ---------- Management → Transactions ----------
             Allow(lnkTransactionImports, RoleAdmin, RoleStaffC);
 
-            // -------- System Registry --------
+            // ---------- Management → Notifications ----------
+            Allow(lnkNotifications, Everyone);
+
+            // ---------- System Registry → Feedback ----------
             Allow(lnkFeedbackRequest, Everyone);
             Allow(lnkFeedback, PatronsOnly);
+
+            // ---------- System Registry → Reports ----------
             Allow(lnkReports, RoleAdmin, RoleStaffM);
             Allow(lnkGenerateReports, RoleAdmin);
+
+            // ---------- System Registry → System ----------
             Allow(lnkSystemLogs, RoleAdmin);
 
-            // Hide section headers when every child tab is hidden
+            // =====================================================
+            //  SUBMENU VISIBILITY  (hide any submenu with zero children)
+            // =====================================================
+            subGroupDashboards.Visible = AnyVisible(
+                lnkAdminDashboard, lnkPatronDashboard, lnkMgtDashboard, lnkCirDashboard);
+
+            subGroupCirculation.Visible = AnyVisible(
+                lnkBookBorrow, lnkToPickUp, lnkReservations,
+                lnkPenalties, lnkAttendance);
+
+            subGroupCatalog.Visible = AnyVisible(lnkCatalog);
+
+            subGroupLibrary.Visible = AnyVisible(
+                lnkInventory, lnkLibrarySettings, lnkBookImports);
+
+            subGroupUsers.Visible = AnyVisible(
+                lnkAccounts, lnkUserImports, lnkProfile);
+
+            subGroupTransactions.Visible = AnyVisible(lnkTransactionImports);
+            subGroupNotifications.Visible = AnyVisible(lnkNotifications);
+
+            subGroupFeedback.Visible = AnyVisible(lnkFeedbackRequest, lnkFeedback);
+            subGroupReports.Visible = AnyVisible(lnkReports, lnkGenerateReports);
+            subGroupSystem.Visible = AnyVisible(lnkSystemLogs);
+
+            // =====================================================
+            //  CATEGORY HEADERS  (hide when every submenu is hidden)
+            // =====================================================
             navGroupCoreOps.Visible = AnyVisible(
-                lnkAdminDashboard, lnkPatronDashboard, lnkMgtDashboard, lnkCirDashboard,
-                lnkBookBorrow, lnkCatalog, lnkToPickUp,
-                lnkReservations, lnkPenalties, lnkAttendance);
+                subGroupDashboards, subGroupCirculation, subGroupCatalog);
 
             navGroupManagement.Visible = AnyVisible(
-                lnkInventory, lnkAccounts, lnkProfile,
-                lnkNotifications, lnkLibrarySettings);
+                subGroupLibrary, subGroupUsers,
+                subGroupTransactions, subGroupNotifications);
 
             navGroupRegistry.Visible = AnyVisible(
-                lnkFeedbackRequest, lnkFeedback, lnkReports,
-                lnkGenerateReports, lnkSystemLogs);
+                subGroupFeedback, subGroupReports, subGroupSystem);
         }
 
         private void Allow(HyperLink link, params string[] allowedRoles)
@@ -113,7 +174,8 @@ namespace spmst_lms_development.Users.MasterPage
             link.Visible = allowedRoles != null && allowedRoles.Any(r => _roles.Contains(r));
         }
 
-        private static bool AnyVisible(params HyperLink[] links)
-            => links.Any(l => l != null && l.Visible);
+        // Accepts HyperLink, HtmlGenericControl, and any other Control.
+        private static bool AnyVisible(params Control[] controls)
+            => controls.Any(c => c != null && c.Visible);
     }
 }

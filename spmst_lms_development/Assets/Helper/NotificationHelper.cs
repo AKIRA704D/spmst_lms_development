@@ -101,6 +101,35 @@ namespace spmst_lms_development
         }
 
         /// <summary>
+        /// Lightweight COUNT(*) variant used by the client-side poller.
+        /// Same table, same predicates — no duplicate logic.
+        /// </summary>
+        public static int GetUnreadNotificationCount(string userId, string connectionString)
+        {
+            const string query = @"
+                SELECT COUNT(*) FROM Notifications
+                WHERE is_read = 0 AND (user_id = @UserId OR user_id IS NULL)";
+
+            try
+            {
+                using (var conn = new MySqlConnection(connectionString))
+                using (var cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserId", userId ?? string.Empty);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    return result == null || result == DBNull.Value
+                        ? 0
+                        : Convert.ToInt32(result);
+                }
+            }
+            catch
+            {
+                return 0; // fail quietly, same policy as the existing helper
+            }
+        }
+
+        /// <summary>
         /// Universal system method to write a persistent dashboard notification into the MySQL table.
         /// </summary>
         public static void SendSystemNotification(string targetUserId, string title, string message, string connectionString)

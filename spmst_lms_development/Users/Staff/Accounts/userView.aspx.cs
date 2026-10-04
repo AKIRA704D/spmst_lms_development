@@ -1,9 +1,10 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using spmst_lms_development.Assets.Helper;
+using System;
 using System.Configuration;
 using System.Data;
 using System.Text;
 using System.Web.UI;
-using MySql.Data.MySqlClient;
 
 namespace spmst_lms_development.Users.Staff.Accounts
 {
@@ -284,36 +285,7 @@ namespace spmst_lms_development.Users.Staff.Accounts
         /// so the caller can fall back to initials.
         /// </summary>
         private string ResolveProfileImage(string profilePath)
-        {
-            if (string.IsNullOrWhiteSpace(profilePath)) return null;
-
-            // Tolerate backslashes copied in from Windows tooling.
-            string raw = profilePath.Trim().Replace('\\', '/');
-
-            // Absolute URLs are left alone.
-            if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-                raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                return raw;
-            }
-
-            // Anything without "~/" or "/" is treated as app-root-relative.
-            if (!raw.StartsWith("~/") && !raw.StartsWith("/"))
-                raw = "~/" + raw;
-
-            // Make sure the file actually exists on disk.
-            try
-            {
-                if (!System.IO.File.Exists(Server.MapPath(raw)))
-                    return null;
-            }
-            catch
-            {
-                return null;
-            }
-
-            return ResolveUrl(raw);
-        }
+        => ProfileHelper.ResolveProfileImage(profilePath);
 
         private void ShowErrorMessage(string message)
         {

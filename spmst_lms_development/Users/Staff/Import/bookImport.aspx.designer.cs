@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace spmst_lms_development.Users.Staff.Inventory
+namespace spmst_lms_development.Users.Staff.Import
 {
 
 

@@ -1,10 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Web;
 
 namespace spmst_lms_development.Assets.Helper
 {
     public static class ProfileHelper
     {
+        /// <summary>
+        /// Normalises a stored image path to an app-relative URL.
+        /// Returns null if the path is empty or the file doesn't exist on disk,
+        /// so the caller can fall back to initials.
+        ///
+        /// Static-safe variant: uses HttpContext.Current.Server and
+        /// VirtualPathUtility so it can be called from any context
+        /// (Page, MasterPage, UserControl, plain class).
+        /// </summary>
+        public static string ResolveProfileImage(string profilePath)
+        {
+            if (string.IsNullOrWhiteSpace(profilePath)) return null;
+
+            // Tolerate backslashes copied in from Windows tooling.
+            string raw = profilePath.Trim().Replace('\\', '/');
+
+            // Absolute URLs are left alone.
+            if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                return raw;
+            }
+
+            // Anything without "~/" or "/" is treated as app-root-relative.
+            if (!raw.StartsWith("~/") && !raw.StartsWith("/"))
+                raw = "~/" + raw;
+
+            // Make sure the file actually exists on disk.
+            try
+            {
+                var ctx = HttpContext.Current;
+                if (ctx == null) return null;
+
+                if (!System.IO.File.Exists(ctx.Server.MapPath(raw)))
+                    return null;
+
+                return VirtualPathUtility.ToAbsolute(raw);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Defines which fields are available for each role based on the database schema.
         /// </summary>

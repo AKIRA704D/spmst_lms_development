@@ -1,4 +1,4 @@
-﻿<%@ Page Title="Batch Import" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="bookImport.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Inventory.bookImport" %>
+﻿<%@ Page Title="Batch Import" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="bookImport.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Import.bookImport" %>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
 
