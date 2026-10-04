@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using spmst_lms_development.Assets.Helper;
 
 namespace spmst_lms_development.Users.Staff.Reservation
 {
@@ -27,18 +28,23 @@ namespace spmst_lms_development.Users.Staff.Reservation
                 string query = @"
                     SELECT t.transaction_id, t.user_id, t.accession_number, t.status,
                            r.title, r.call_number,
-                           COALESCE(CONCAT(s.first_name, ' ', s.last_name), CONCAT(f.first_name, ' ', f.last_name)) AS patron_name
+                           COALESCE(
+                        CONCAT(s.first_name,  ' ', s.last_name),
+                        CONCAT(f.first_name,  ' ', f.last_name),
+                        CONCAT(st.first_name, ' ', st.last_name)
+                    ) AS patron_name
                     FROM Transactions t
                     INNER JOIN Item_Copies c ON t.accession_number = c.accession_number
                     INNER JOIN Library_Resources r ON c.resource_id = r.resource_id
-                    LEFT JOIN Students s ON t.user_id = s.student_id
-                    LEFT JOIN Faculty f ON t.user_id = f.faculty_id
+                    LEFT JOIN Students s  ON t.user_id = s.student_id
+                    LEFT JOIN Faculty  f  ON t.user_id = f.faculty_id
+                    LEFT JOIN Staff    st ON t.user_id = st.staff_id
                     WHERE t.status IN ('Reserved', 'Ready')
                       AND t.return_date IS NULL";
 
                 if (!string.IsNullOrEmpty(txtSearchPatron.Text))
                 {
-                    query += " AND (t.user_id LIKE @search OR s.last_name LIKE @search OR f.last_name LIKE @search)";
+                    query += " AND (t.user_id LIKE @search OR s.last_name LIKE @search OR f.last_name LIKE @search OR st.last_name LIKE @search)"; ;
                 }
                 query += " ORDER BY t.borrow_date DESC";
 
@@ -81,22 +87,40 @@ namespace spmst_lms_development.Users.Staff.Reservation
         {
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
+                // 1 hour = 3600 seconds. Auto-cancel event runs every minute when updated_at <= NOW() - INTERVAL 1 HOUR.
+                // Remaining seconds = (updated_at + 1 hour) - NOW().
+                // Show only those with <= 1200 seconds (20 minutes) and > 0 seconds left.
                 string query = @"
                     SELECT r.title,
-                           COALESCE(CONCAT(s.first_name, ' ', s.last_name), CONCAT(f.first_name, ' ', f.last_name)) AS patron_name
+                           t.user_id,
+                           COALESCE(
+                        CONCAT(s.first_name,  ' ', s.last_name),
+                        CONCAT(f.first_name,  ' ', f.last_name),
+                        CONCAT(st.first_name, ' ', st.last_name)
+                    ) AS patron_name,
+                    TIMESTAMPDIFF(SECOND, NOW(), DATE_ADD(t.updated_at, INTERVAL 1 HOUR)) AS seconds_left
                     FROM Transactions t
                     INNER JOIN Item_Copies c ON t.accession_number = c.accession_number
                     INNER JOIN Library_Resources r ON c.resource_id = r.resource_id
-                    LEFT JOIN Students s ON t.user_id = s.student_id
-                    LEFT JOIN Faculty f ON t.user_id = f.faculty_id
+                    LEFT JOIN Students s  ON t.user_id = s.student_id
+                    LEFT JOIN Faculty  f  ON t.user_id = f.faculty_id
+                    LEFT JOIN Staff    st ON t.user_id = st.staff_id
                     WHERE t.status = 'Ready'
-                      AND t.due_date = CURDATE()
-                    ORDER BY t.due_date ASC";
+                      AND t.return_date IS NULL
+                      AND TIMESTAMPDIFF(SECOND, NOW(), DATE_ADD(t.updated_at, INTERVAL 1 HOUR)) <= 1200
+                      AND TIMESTAMPDIFF(SECOND, NOW(), DATE_ADD(t.updated_at, INTERVAL 1 HOUR)) > 0
+                    ORDER BY t.updated_at ASC";
+
                 DataTable dt = new DataTable();
                 using (MySqlDataAdapter da = new MySqlDataAdapter(query, conn))
                     da.Fill(dt);
+
                 rptExpiring.DataSource = dt;
                 rptExpiring.DataBind();
+
+                // Update count badge and placeholder
+                litExpiringCount.Text = dt.Rows.Count.ToString();
+                phNoExpiring.Visible = dt.Rows.Count == 0;
             }
         }
 
@@ -142,7 +166,7 @@ namespace spmst_lms_development.Users.Staff.Reservation
                             return;
                         }
 
-                        // Update status to 'Ready'
+                        // Update status to 'Ready' (updated_at will auto-update to NOW())
                         string updateSql = "UPDATE Transactions SET status = 'Ready' WHERE transaction_id = @tid AND status = 'Reserved'";
                         MySqlCommand cmdUpdate = new MySqlCommand(updateSql, conn, trans);
                         cmdUpdate.Parameters.AddWithValue("@tid", transId);
@@ -151,9 +175,21 @@ namespace spmst_lms_development.Users.Staff.Reservation
                         if (rowsAffected > 0)
                         {
                             trans.Commit();
-                            // Insert notification manually (since NotificationService is removed)
+
+                            // In-app notification (existing)
                             InsertNotification(userId, bookTitle);
-                            ShowSweetAlert("Success", $"Book marked as Ready. Patron notified about '{bookTitle}'.", "success");
+
+                            // ✨ SMS notification (NEW)
+                            int txnId = Convert.ToInt32(transId);
+                            SmsResult sms = ReservationSmsService.SendReadySms(userId, bookTitle, txnId);
+
+                            string msg = string.Format(
+                                "Book marked as Ready. Patron notified about '{0}'.", bookTitle);
+
+                            if (!sms.Success)
+                                msg += " (SMS not sent: " + sms.Error + ")";
+
+                            ShowSweetAlert("Success", msg, sms.Success ? "success" : "warning");
                         }
                         else
                         {
@@ -199,6 +235,25 @@ namespace spmst_lms_development.Users.Staff.Reservation
             string cleanMsg = message.Replace("'", "\\'");
             string script = $"showSweetAlert('{cleanTitle}', '{cleanMsg}', '{icon}');";
             ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(), script, true);
+        }
+
+        // ============================================
+        // Helper methods used by the Expiring Soon card
+        // ============================================
+        protected string GetCountdownClass(object secondsLeft)
+        {
+            if (secondsLeft == null || secondsLeft == DBNull.Value) return "countdown-warn";
+            int secs = Convert.ToInt32(secondsLeft);
+            return secs <= 300 ? "countdown-urgent" : "countdown-warn";
+        }
+
+        protected string FormatTimeLeft(object secondsLeft)
+        {
+            if (secondsLeft == null || secondsLeft == DBNull.Value) return "";
+            int secs = Convert.ToInt32(secondsLeft);
+            if (secs <= 0) return "Expiring now";
+            int mins = secs / 60;
+            return mins < 1 ? "< 1 min left" : mins + " min left";
         }
     }
 }

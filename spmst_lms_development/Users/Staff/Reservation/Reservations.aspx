@@ -118,6 +118,30 @@
             font-size: 0.8rem;
             margin-bottom: 1rem;
         }
+
+        /* Live countdown badge */
+        .countdown-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        .countdown-warn {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .countdown-urgent {
+            background-color: #f8d7da;
+            color: #842029;
+            animation: pulse-urgent 1.6s ease-in-out infinite;
+        }
+        @keyframes pulse-urgent {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.6; }
+        }
     </style>
 </asp:Content>
 
@@ -197,24 +221,47 @@
                     </div>
                 </div>
 
-                <!-- Right Column: Expiring Soon -->
+                <!-- Right Column: Expiring Soon (<= 20 minutes left) -->
                 <div class="col-lg-4">
                     <div class="expiring-card">
-                        <div class="expiring-header">
+                        <div class="expiring-header d-flex justify-content-between align-items-center">
                             <h5 class="fw-bold mb-0"><i class="fas fa-clock me-2 text-warning"></i>Expiring Soon</h5>
+                            <span class="badge rounded-pill text-bg-warning">
+                                <asp:Literal ID="litExpiringCount" runat="server" Text="0" />
+                            </span>
                         </div>
                         <div class="p-3">
                             <div class="alert-warning-custom">
-                                <i class="fas fa-info-circle me-2"></i> These items will be returned to the stacks if not picked up today.
+                                <i class="fas fa-info-circle me-2"></i>
+                                Reservations are held for <strong>1 hour</strong>.
+                                The items below have <strong>20 minutes or less</strong> left and will be
+                                auto-cancelled once the timer runs out.
                             </div>
+
                             <asp:Repeater ID="rptExpiring" runat="server">
                                 <ItemTemplate>
                                     <div class="expiring-item">
                                         <div class="fw-bold small"><%# Eval("title") %></div>
-                                        <div class="small text-muted"><%# Eval("patron_name") %></div>
+                                        <div class="small text-muted">
+                                            <%# Eval("patron_name") %> &middot; ID: <%# Eval("user_id") %>
+                                        </div>
+                                        <div class="mt-1">
+                                            <span class='countdown-badge <%# GetCountdownClass(Eval("seconds_left")) %>'
+                                                  data-seconds='<%# Eval("seconds_left") %>'>
+                                                <i class="fas fa-hourglass-half me-1"></i>
+                                                <span class="countdown-text"><%# FormatTimeLeft(Eval("seconds_left")) %></span>
+                                            </span>
+                                        </div>
                                     </div>
                                 </ItemTemplate>
                             </asp:Repeater>
+
+                            <asp:PlaceHolder ID="phNoExpiring" runat="server" Visible="false">
+                                <div class="text-center text-muted small py-3">
+                                    <i class="fas fa-circle-check text-success me-1"></i>
+                                    No reservations expiring in the next 20 minutes.
+                                </div>
+                            </asp:PlaceHolder>
                         </div>
                     </div>
                 </div>
@@ -229,6 +276,48 @@
         // ============================================
         function showSweetAlert(title, message, icon) {
             Swal.fire({ title: title, text: message, icon: icon, confirmButtonColor: '#0d6efd' });
+        }
+
+        // ============================================
+        // 2. LIVE COUNTDOWN FOR "EXPIRING SOON" BADGES
+        //    (server value = seconds left before auto-cancel)
+        // ============================================
+        function startCountdowns() {
+            document.querySelectorAll('.countdown-badge[data-seconds]').forEach(function (el) {
+                var secs = parseInt(el.getAttribute('data-seconds'), 10);
+                if (isNaN(secs)) return;
+
+                var label = el.querySelector('.countdown-text');
+
+                function tick() {
+                    if (secs <= 0) {
+                        label.textContent = 'Expiring now';
+                        el.classList.remove('countdown-warn');
+                        el.classList.add('countdown-urgent');
+                        return false;
+                    }
+                    var mins = Math.floor(secs / 60);
+                    label.textContent = (mins < 1) ? '< 1 min left' : mins + ' min left';
+
+                    if (secs <= 300) {
+                        el.classList.remove('countdown-warn');
+                        el.classList.add('countdown-urgent');
+                    }
+                    secs--;
+                    return true;
+                }
+
+                if (tick()) {
+                    var timer = setInterval(function () {
+                        if (!tick()) clearInterval(timer);
+                    }, 1000);
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', startCountdowns);
+        if (window.Sys && Sys.WebForms && Sys.WebForms.PageRequestManager) {
+            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(startCountdowns);
         }
     </script>
 </asp:Content>
