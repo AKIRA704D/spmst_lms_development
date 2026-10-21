@@ -144,6 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Themes\patron-dashboard-theme.css" />
     <Content Include="Assets\Profile\default-cover.png" />
     <Content Include="Assets\Covers\default-cover.jpg" />
     <Content Include="Assets\Img\lib_logo.png" />
@@ -182,7 +183,6 @@
     <Content Include="Users\Staff\FeedbackReq\FeedbackRequest.aspx" />
     <Content Include="Users\Patron\History\History.aspx" />
     <Content Include="Users\Patron\Notifications\Notifications.aspx" />
-    <Content Include="Users\Patron\patronDash.aspx" />
     <Content Include="Users\Staff\Accounts\UserAcc.aspx" />
     <Content Include="Users\Staff\Accounts\userFilter.aspx" />
     <Content Include="Users\Staff\Accounts\userNew.aspx" />
@@ -460,13 +460,6 @@
     </Compile>
     <Compile Include="Users\Patron\Notifications\Notifications.aspx.designer.cs">
       <DependentUpon>Notifications.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="Users\Patron\patronDash.aspx.cs">
-      <DependentUpon>patronDash.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Users\Patron\patronDash.aspx.designer.cs">
-      <DependentUpon>patronDash.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Staff\Accounts\UserAcc.aspx.cs">
       <DependentUpon>UserAcc.aspx</DependentUpon>

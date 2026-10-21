@@ -1,0 +1,507 @@
+﻿/* =========================================================
+   SPAMAST LMS — Patron Dashboard Theme
+   Shared design system for patron-facing pages.
+   ========================================================= */
+
+:root {
+    --sp-green-900: #0b3d2c;
+    --sp-green-800: #0f452d;
+    --sp-green-700: #14532d;
+    --sp-green-600: #1b7a3d;
+    --sp-gold: #d4a017;
+    --sp-gold-200: #e4b94a;
+    --sp-lime: #d4e022;
+    --sp-paper: #f8faf7;
+    --sp-line: #dfe7e0;
+    --sp-ink: #1f2d24;
+    --sp-serif: Georgia, "Times New Roman", serif;
+    --sp-sans: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --sp-wrap: 1400px;
+    --sp-radius: 8px;
+    --sp-logo: url("https://www2.spamast.edu.ph/wp-content/uploads/2024/09/452931072_459590360307917_6589427784078406213_n.jpg");
+}
+
+/* ---------- Page wrapper ---------- */
+.pd-wrap {
+    box-sizing: border-box;
+    font-family: var(--sp-sans);
+    color: var(--sp-ink);
+    background: var(--sp-paper);
+    max-width: var(--sp-wrap);
+    margin: 0 auto;
+    padding: 24px;
+    line-height: 1.5;
+    border-radius: var(--sp-radius);
+}
+
+    .pd-wrap *,
+    .pd-wrap *::before,
+    .pd-wrap *::after {
+        box-sizing: border-box;
+    }
+
+/* ---------- Header ---------- */
+.pd-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--sp-line);
+    margin-bottom: 24px;
+}
+
+.pd-eyebrow {
+    font-size: 0.78rem;
+    color: var(--sp-green-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 4px;
+}
+
+.pd-title {
+    font-family: var(--sp-serif);
+    font-size: clamp(1.55rem, 3vw, 2.35rem);
+    color: var(--sp-green-800);
+    margin: 0 0 4px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.pd-subtitle {
+    color: var(--sp-ink);
+    opacity: 0.7;
+    margin: 0;
+    font-size: 0.92rem;
+}
+
+.pd-rank-badge {
+    background: var(--sp-green-700);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--sp-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    box-shadow: 0 4px 12px rgba(11, 61, 44, 0.18);
+}
+
+.pd-rank-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sp-gold-200);
+    font-weight: 600;
+}
+
+.pd-rank-value {
+    font-family: var(--sp-serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* ---------- Stats grid ---------- */
+.pd-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+}
+
+.pd-stat {
+    background: #fff;
+    border: 1px solid var(--sp-line);
+    border-top: 4px solid var(--sp-green-600);
+    border-radius: var(--sp-radius);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--sp-ink);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+    .pd-stat:hover,
+    .pd-stat:focus-visible {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(11, 61, 44, 0.10);
+        outline: none;
+    }
+
+.pd-stat-value {
+    font-family: var(--sp-serif);
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--sp-green-700);
+    line-height: 1;
+}
+
+.pd-stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sp-ink);
+    opacity: 0.68;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.pd-stat-fine {
+    border-top-color: var(--sp-gold);
+}
+
+    .pd-stat-fine .pd-stat-value {
+        color: var(--sp-gold);
+    }
+
+/* ---------- Two-column grid ---------- */
+.pd-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+@media (min-width: 992px) {
+    .pd-grid {
+        grid-template-columns: 1.3fr 1fr;
+    }
+}
+
+.pd-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+}
+
+/* ---------- Card ---------- */
+.pd-card {
+    background: #fff;
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    padding: 20px;
+}
+
+.pd-card-header {
+    margin-bottom: 12px;
+}
+
+.pd-card-title {
+    font-family: var(--sp-serif);
+    font-size: 1.15rem;
+    color: var(--sp-green-800);
+    margin: 0;
+    font-weight: 700;
+}
+
+.pd-empty {
+    padding: 18px 20px;
+    text-align: center;
+    color: var(--sp-ink);
+    opacity: 0.75;
+    font-size: 0.9rem;
+    background: var(--sp-paper);
+    border-radius: var(--sp-radius);
+}
+
+    .pd-empty p {
+        margin: 0;
+    }
+
+/* ---------- Book list ---------- */
+.pd-books {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pd-book {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 10px;
+    border-radius: var(--sp-radius);
+    background: var(--sp-paper);
+    flex-wrap: wrap;
+}
+
+.pd-book-cover {
+    width: 48px;
+    height: 68px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: var(--sp-line);
+}
+
+.pd-book-info {
+    flex: 1;
+    min-width: 160px;
+}
+
+.pd-book-title {
+    font-family: var(--sp-serif);
+    font-size: 1rem;
+    color: var(--sp-green-800);
+    margin: 0 0 2px;
+    font-weight: 700;
+    word-break: break-word;
+}
+
+.pd-book-author {
+    font-size: 0.82rem;
+    color: var(--sp-ink);
+    opacity: 0.78;
+    margin: 0;
+    word-break: break-word;
+}
+
+.pd-book-meta {
+    font-size: 0.74rem;
+    color: var(--sp-ink);
+    opacity: 0.62;
+    margin: 4px 0 0;
+}
+
+/* ---------- Status pills ---------- */
+.pd-pill {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    align-self: flex-start;
+}
+
+.pd-pill-normal {
+    background: #e8f5e9;
+    color: var(--sp-green-700);
+}
+
+.pd-pill-soon {
+    background: #fff8e1;
+    color: #8a6a00;
+}
+
+.pd-pill-today {
+    background: #fff3e0;
+    color: #b15600;
+}
+
+.pd-pill-overdue {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.pd-pill-ready {
+    background: var(--sp-lime);
+    color: var(--sp-green-900);
+}
+
+.pd-pill-reserved {
+    background: #e3f2fd;
+    color: #0d47a1;
+}
+
+.pd-pill-renewal {
+    background: #f3e5f5;
+    color: #4a148c;
+}
+
+/* ---------- Recommendations ---------- */
+.pd-recs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pd-rec {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 6px;
+    border-radius: var(--sp-radius);
+    background: var(--sp-paper);
+}
+
+.pd-rec-cover {
+    width: 34px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: var(--sp-line);
+    flex-shrink: 0;
+}
+
+.pd-rec-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--sp-green-800);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 24ch;
+}
+
+.pd-rec-author {
+    font-size: 0.74rem;
+    opacity: 0.72;
+    margin: 0;
+}
+
+/* ---------- Fines ---------- */
+.pd-fines {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pd-fine {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-left: 3px solid var(--sp-gold);
+    background: var(--sp-paper);
+    border-radius: 4px;
+}
+
+.pd-fine-title {
+    font-size: 0.86rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--sp-green-800);
+}
+
+.pd-fine-reason {
+    font-size: 0.76rem;
+    opacity: 0.72;
+    margin: 0;
+}
+
+.pd-fine-amount {
+    font-family: var(--sp-serif);
+    font-weight: 700;
+    color: var(--sp-gold);
+    white-space: nowrap;
+}
+
+/* ---------- Notifications ---------- */
+.pd-notifs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pd-notif {
+    padding: 10px;
+    border-radius: var(--sp-radius);
+    background: var(--sp-paper);
+    border-left: 3px solid transparent;
+}
+
+    .pd-notif.is-unread {
+        background: #eef5ef;
+        border-left-color: var(--sp-green-600);
+    }
+
+.pd-notif-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin: 0 0 2px;
+    color: var(--sp-green-800);
+}
+
+.pd-notif-msg {
+    font-size: 0.8rem;
+    margin: 0 0 4px;
+    opacity: 0.85;
+}
+
+.pd-notif-date {
+    font-size: 0.68rem;
+    opacity: 0.58;
+    margin: 0;
+}
+
+/* ---------- Quick actions ---------- */
+.pd-actions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
+
+@media (min-width: 600px) {
+    .pd-actions {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.pd-action {
+    display: block;
+    padding: 10px 14px;
+    background: var(--sp-paper);
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    text-decoration: none;
+    color: var(--sp-green-800);
+    font-weight: 600;
+    font-size: 0.86rem;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+    .pd-action:hover,
+    .pd-action:focus-visible {
+        background: var(--sp-green-700);
+        color: #fff;
+        border-color: var(--sp-green-700);
+        outline: none;
+    }
+
+/* ---------- Small-screen tuning ---------- */
+@media (max-width: 640px) {
+    .pd-wrap {
+        padding: 16px;
+        border-radius: 0;
+    }
+
+    .pd-rank-badge {
+        width: 100%;
+        align-items: flex-start;
+    }
+
+    .pd-book {
+        gap: 10px;
+    }
+
+    .pd-book-cover {
+        width: 40px;
+        height: 56px;
+    }
+
+    .pd-stat-value {
+        font-size: 1.45rem;
+    }
+}
