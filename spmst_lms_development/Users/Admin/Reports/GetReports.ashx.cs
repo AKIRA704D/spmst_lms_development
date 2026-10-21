@@ -11,9 +11,14 @@ namespace spmst_lms_development.Users.Admin.Reports
 {
     /// <summary>
     /// Data handler for the admin "Generate Report" builder page (generateReports.aspx).
-    /// Modeled on the fish-record system's GetReports.ashx report-builder pattern, adapted
-    /// for the LMS circulation/catalog domain. All queries are library-wide (no per-user
-    /// scoping) since this is an admin-facing tool - unlike the original staff-scoped version.
+    /// All queries are library-wide (admin-facing tool).
+    ///
+    /// Schema-truth notes (SPAMAST_LMSv3):
+    ///  - Transactions.status enum: Borrowed, Returned, Reserved, Ready, Cancelled, Renewal, Renewed.
+    ///  - "Overdue" is derived (Borrowed/Renewal/Renewed AND return_date IS NULL AND due_date < today).
+    ///    It is NEVER stored.
+    ///  - Penalties is 1:1 with Transactions (uk_penalty_transaction).
+    ///  - Penalty_Payments.amount is the money actually collected per payment row.
     /// </summary>
     public class GetReports : IHttpHandler, IRequiresSessionState
     {
@@ -23,6 +28,10 @@ namespace spmst_lms_development.Users.Admin.Reports
         private const string DefaultCoverAssetPath = "Assets/Covers/default-cover.jpg";
         private const string DefaultProfileAssetPath = "Assets/Profile/default-cover.png";
 
+        /// <summary>
+        /// Sub-query that flattens Students/Faculty/Staff into a single borrower directory.
+        /// Columns: uid, full_name, gender, contact, org_unit, course, section, profile_path.
+        /// </summary>
         private const string BorrowerNameJoin = @"
             (
                 SELECT student_id AS uid,
@@ -53,17 +62,28 @@ namespace spmst_lms_development.Users.Admin.Reports
 
         private static readonly List<ReportQuery> Catalog = new List<ReportQuery>
         {
+            // ------------------------------------------------------------------
+            // FIXED: ONLY_FULL_GROUP_BY. The CASE used to live in the outer SELECT
+            // while GROUP BY referenced its alias; MySQL could not prove
+            // functional dependency on return_date/due_date and rejected it.
+            // Now the CASE is materialised in a derived table and the outer query
+            // groups a plain column — strict-mode safe and semantically identical.
+            // ------------------------------------------------------------------
             new ReportQuery {
                 Key = "status_breakdown", Label = "Transactions by Status", Category = "Circulation",
                 ChartType = "pie", Columns = new[] { "Status", "Count" },
-                Sql = @"SELECT
-                            CASE
-                                WHEN status = 'Borrowed' AND return_date IS NULL AND due_date < CURDATE()
-                                    THEN 'Overdue'
-                                ELSE status
-                            END AS Status,
-                            COUNT(*) AS Count
-                        FROM transactions
+                Sql = @"SELECT Status, COUNT(*) AS Count
+                        FROM (
+                            SELECT
+                                CASE
+                                    WHEN status IN ('Borrowed','Renewal','Renewed')
+                                         AND return_date IS NULL
+                                         AND due_date < CURDATE()
+                                        THEN 'Overdue'
+                                    ELSE status
+                                END AS Status
+                            FROM transactions
+                        ) AS grouped
                         GROUP BY Status
                         ORDER BY Count DESC;"
             },
@@ -131,6 +151,7 @@ namespace spmst_lms_development.Users.Admin.Reports
             new ReportQuery {
                 Key = "fines_trend", Label = "Fines Collected by Month", Category = "Fines",
                 ChartType = "line", Columns = new[] { "Month", "Amount Collected" },
+                // Uses penalty_payments.amount = money actually collected.
                 Sql = @"SELECT DATE_FORMAT(payment_date, '%Y-%m') AS Month,
                                COALESCE(SUM(amount), 0) AS AmountCollected
                         FROM penalty_payments
@@ -159,6 +180,12 @@ namespace spmst_lms_development.Users.Admin.Reports
                         ORDER BY Checkouts DESC
                         LIMIT 10;"
             },
+            // ------------------------------------------------------------------
+            // FIXED: replaced `status NOT IN ('Returned','Cancelled')` (which
+            // included Reserved/Ready pickup holds) with an explicit whitelist of
+            // active-loan statuses. Overdue is (Borrowed|Renewal|Renewed) +
+            // return_date NULL + due_date < today.
+            // ------------------------------------------------------------------
             new ReportQuery {
                 Key = "overdue_list", Label = "Overdue Transactions (List)", Category = "Circulation",
                 ChartType = "none", Columns = new[] { "Borrower", "Title", "Due Date", "Days Overdue" },
@@ -169,7 +196,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                         LEFT JOIN item_copies ic    ON ic.accession_number = t.accession_number
                         LEFT JOIN library_resources lr ON lr.resource_id = ic.resource_id
                         WHERE t.return_date IS NULL
-                          AND t.status NOT IN ('Returned','Cancelled')
+                          AND t.status IN ('Borrowed','Renewal','Renewed')
                           AND t.due_date < CURDATE()
                         ORDER BY DaysOverdue DESC
                         LIMIT 50;"
@@ -696,13 +723,23 @@ namespace spmst_lms_development.Users.Admin.Reports
             }
         }
 
-        // ValidStatuses includes the virtual "Overdue" state. Under the new schema the
-        // transactions.status column only has: Borrowed, Returned, Reserved, Ready, Cancelled.
-        // "Overdue" is now derived at query time from (status = 'Borrowed' AND return_date IS NULL
-        // AND due_date < CURDATE()), so the parser below splits real vs. virtual statuses.
+        // =====================================================================
+        // Status catalogue.
+        //
+        // The stored enum in Transactions.status is:
+        //   Borrowed, Returned, Reserved, Ready, Cancelled, Renewal, Renewed
+        //
+        // "Overdue" is a VIRTUAL status derived at query time from:
+        //   status IN ('Borrowed','Renewal','Renewed') AND return_date IS NULL
+        //   AND due_date < CURDATE()
+        //
+        // Reserved/Ready are pickup holds, NOT active loans, and are excluded
+        // from the overdue derivation.
+        // =====================================================================
         private static readonly HashSet<string> ValidStatuses = new HashSet<string>
         {
-            "Borrowed", "Returned", "Overdue", "Reserved", "Ready", "Cancelled"
+            "Borrowed", "Returned", "Overdue", "Reserved", "Ready", "Cancelled",
+            "Renewal", "Renewed"
         };
 
         private void WriteBorrowerDetail(HttpContext context, string idRaw, string statusesRaw, string dateFromRaw, string dateToRaw)
@@ -747,7 +784,7 @@ namespace spmst_lms_development.Users.Admin.Reports
                 }
                 if (realStatuses.Count == 0 && !includeOverdue)
                 {
-                    realStatuses.AddRange(new[] { "Borrowed", "Returned", "Reserved", "Ready", "Cancelled" });
+                    realStatuses.AddRange(new[] { "Borrowed", "Returned", "Reserved", "Ready", "Cancelled", "Renewal", "Renewed" });
                 }
 
                 var statusParamNames = new List<string>();
@@ -759,7 +796,8 @@ namespace spmst_lms_development.Users.Admin.Reports
                 }
                 if (includeOverdue)
                 {
-                    statusClauses.Add("(t.status = 'Borrowed' AND t.return_date IS NULL AND t.due_date < CURDATE())");
+                    // Renewal/Renewed are still active loans (item physically out).
+                    statusClauses.Add("(t.status IN ('Borrowed','Renewal','Renewed') AND t.return_date IS NULL AND t.due_date < CURDATE())");
                 }
                 string statusClause = "(" + string.Join(" OR ", statusClauses) + ")";
 
@@ -849,6 +887,8 @@ namespace spmst_lms_development.Users.Admin.Reports
                     }
 
                     // ---- STATS: loan count, fines paid (from penalties), last borrow date ----
+                    // NOTE: penalties is 1:1 with transactions (uk_penalty_transaction),
+                    // so SUM(amount_paid) here does NOT duplicate transaction rows.
                     int loanCount = 0;
                     decimal totalFinesPaid = 0m;
                     DateTime? lastBorrowDate = null;
@@ -884,12 +924,14 @@ namespace spmst_lms_development.Users.Admin.Reports
                     }
 
                     // ---- TRANSACTION RECORDS ----
-                    // Status shown uses the virtual "Overdue" derivation so the user sees a
-                    // meaningful label even though it's not a stored enum value.
+                    // display_status uses the same active-loan set as the overdue_list
+                    // report so the two surfaces never disagree.
                     string recordsSql = @"
                         SELECT t.borrow_date, t.due_date, t.return_date,
                                CASE
-                                   WHEN t.status = 'Borrowed' AND t.return_date IS NULL AND t.due_date < CURDATE()
+                                   WHEN t.status IN ('Borrowed','Renewal','Renewed')
+                                        AND t.return_date IS NULL
+                                        AND t.due_date < CURDATE()
                                        THEN 'Overdue'
                                    ELSE t.status
                                END AS display_status,
