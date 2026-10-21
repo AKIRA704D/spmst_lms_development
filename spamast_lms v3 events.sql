@@ -153,7 +153,7 @@ BEGIN
 END$$
 DELIMITER ;
 -- ===========================================================
--- TRIGGEERS
+-- TRIGGERS
 -- ===========================================================
 DROP TRIGGER IF EXISTS trg_staff_users;
 DROP TRIGGER IF EXISTS trg_students_users;
@@ -287,7 +287,81 @@ BEGIN
 END$$
 DELIMITER ;
 -- ===========================================================
+-- ----------------------------------------------------------------------------
+-- 1. Students → archive matching Users row
+-- ----------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_students_archive_user;
+DELIMITER $$
+CREATE TRIGGER trg_students_archive_user
+AFTER DELETE ON Students
+FOR EACH ROW
+BEGIN
+    UPDATE Users
+       SET is_active       = 3,
+           archived_at     = COALESCE(archived_at, CURRENT_TIMESTAMP),
+           archived_reason = COALESCE(archived_reason,
+                                      'Student record deleted; associated account archived.')
+     WHERE user_id  = OLD.student_id
+       AND is_active <> 3;
+END$$
+DELIMITER ;
+
+-- ----------------------------------------------------------------------------
+-- 2. Faculty → archive matching Users row
+-- ----------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_faculty_archive_user;
+DELIMITER $$
+CREATE TRIGGER trg_faculty_archive_user
+AFTER DELETE ON Faculty
+FOR EACH ROW
+BEGIN
+    UPDATE Users
+       SET is_active       = 3,
+           archived_at     = COALESCE(archived_at, CURRENT_TIMESTAMP),
+           archived_reason = COALESCE(archived_reason,
+                                      'Faculty record deleted; associated account archived.')
+     WHERE user_id  = OLD.faculty_id
+       AND is_active <> 3;
+END$$
+DELIMITER ;
+
+-- ----------------------------------------------------------------------------
+-- 3. Staff → archive matching Users row
+-- ----------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS trg_staff_archive_user;
+DELIMITER $$
+CREATE TRIGGER trg_staff_archive_user
+AFTER DELETE ON Staff
+FOR EACH ROW
+BEGIN
+    UPDATE Users
+       SET is_active       = 3,
+           archived_at     = COALESCE(archived_at, CURRENT_TIMESTAMP),
+           archived_reason = COALESCE(archived_reason,
+                                      'Staff record deleted; associated account archived.')
+     WHERE user_id  = OLD.staff_id
+       AND is_active <> 3;
+END$$
+DELIMITER ;
+
+-- ----------------------------------------------------------------------------
+-- 4. Verification queries (run after deployment)
+-- ----------------------------------------------------------------------------
+SHOW TRIGGERS FROM SPAMAST_LMSv4
+WHERE `Trigger` IN
+      ('trg_students_archive_user',
+       'trg_faculty_archive_user',
+       'trg_staff_archive_user');
+
+-- Sanity check: no schema additions required — is_active / archived_at /
+-- archived_reason already exist in the shipped schema.
+SELECT column_name, column_type, is_nullable
+  FROM information_schema.columns
+ WHERE table_schema = 'SPAMAST_LMSv3'
+   AND table_name   = 'Users'
+   AND column_name IN ('is_active','archived_at','archived_reason');
 -- SHOW EXISTING EVENTS AND TRIGGERS FOR spamast_lmsv3
+-- ===========================================================
 -- ===========================================================
 show events from spamast_lmsv3 ;
 show triggers from spamast_lmsv3 ;

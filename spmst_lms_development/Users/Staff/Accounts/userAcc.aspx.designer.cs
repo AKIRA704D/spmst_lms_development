@@ -33,6 +33,15 @@ namespace spmst_lms_development.Users.Staff.Accounts
         protected global::System.Web.UI.WebControls.Button btnRefreshTable;
 
         /// <summary>
+        /// btnConfirmArchive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnConfirmArchive;
+
+        /// <summary>
         /// txtSearch control.
         /// </summary>
         /// <remarks>
@@ -85,6 +94,15 @@ namespace spmst_lms_development.Users.Staff.Accounts
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.HtmlControls.HtmlButton tabStaff;
+
+        /// <summary>
+        /// tabArchived control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlButton tabArchived;
 
         /// <summary>
         /// rptPatrons control.
