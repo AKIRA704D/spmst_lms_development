@@ -10,11 +10,17 @@ ON SCHEDULE EVERY 1 MINUTE
 DO
 BEGIN
     UPDATE Transactions t
-    INNER JOIN item_copies ic ON t.accession_number = ic.accession_number
-    SET t.status = 'Cancelled',
-		ic.is_available = 1
-    WHERE status = 'Ready'
-      AND updated_at <= NOW() - INTERVAL 1 HOUR;
+    INNER JOIN Item_Copies ic
+        ON t.accession_number = ic.accession_number
+    SET
+        t.status = 'Cancelled',
+        t.remarks = CONCAT(
+            'Auto-cancelled: reservation expired at ',
+            DATE_FORMAT(DATE_ADD(t.updated_at, INTERVAL 1 HOUR), '%Y-%m-%d %H:%i:%s')
+        ),
+        ic.is_available = 1
+    WHERE t.status = 'Ready'
+      AND t.updated_at <= NOW() - INTERVAL 1 HOUR;
 END$$
 DELIMITER ;
 -- ===========================================================
@@ -363,8 +369,8 @@ SELECT column_name, column_type, is_nullable
 -- SHOW EXISTING EVENTS AND TRIGGERS FOR spamast_lmsv3
 -- ===========================================================
 -- ===========================================================
-show events from spamast_lmsv3 ;
-show triggers from spamast_lmsv3 ;
+show events from spamast_lmsv4 ;
+show triggers from spamast_lmsv4 ;
 -- ===========================================================
 -- Insert Data
 -- ===========================================================
