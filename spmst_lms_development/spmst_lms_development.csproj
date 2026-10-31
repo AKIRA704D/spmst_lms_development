@@ -153,6 +153,7 @@
     <Content Include="Assets\Img\lmsa_logo.png" />
     <Content Include="Assets\Img\spmst_logo.jpg" />
     <Content Include="Assets\Img\spmst_logo_wbg.png" />
+    <Content Include="Assets\Themes\to-pick-up-theme.css" />
     <Content Include="LandingPage\AboutContact.aspx" />
     <Content Include="LandingPage\Home.aspx" />
     <Content Include="Users\Admin\Settings\LibrarySettings.aspx" />

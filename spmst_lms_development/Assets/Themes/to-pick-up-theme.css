@@ -1,0 +1,378 @@
+﻿:root {
+    --sp-green-900: #0b3d2c;
+    --sp-green-800: #0f452d;
+    --sp-green-700: #14532d;
+    --sp-green-600: #1b7a3d;
+    --sp-gold: #d4a017;
+    --sp-gold-200: #e4b94a;
+    --sp-lime: #d4e022;
+    --sp-paper: #f8faf7;
+    --sp-line: #dfe7e0;
+    --sp-ink: #1f2d24;
+    --sp-serif: Georgia, "Times New Roman", serif;
+    --sp-sans: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --sp-wrap: 1400px;
+    --sp-radius: 8px;
+    --sp-logo: url("https://www2.spamast.edu.ph/wp-content/uploads/2024/09/452931072_459590360307917_6589427784078406213_n.jpg");
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.pickup-page {
+    width: 100%;
+    max-width: var(--sp-wrap);
+    margin: 0 auto;
+    padding: 1.5rem clamp(1rem, 3vw, 2rem);
+    color: var(--sp-ink);
+    font-family: var(--sp-sans);
+}
+
+.pickup-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.pickup-title {
+    margin: 0;
+    color: var(--sp-green-900);
+    font-family: var(--sp-serif);
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.pickup-subtitle {
+    margin: 0.35rem 0 0;
+    color: var(--sp-ink);
+    opacity: 0.75;
+    font-size: 0.95rem;
+}
+
+.pickup-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem 1.25rem;
+    background: var(--sp-paper);
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+}
+
+.pickup-summary-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--sp-green-600);
+}
+
+.pickup-summary-card.accent-processing::before {
+    background: var(--sp-gold);
+}
+
+.summary-card-title {
+    margin-bottom: 0.45rem;
+    color: var(--sp-green-700);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+    .summary-card-title i {
+        margin-right: 0.35rem;
+        color: var(--sp-gold);
+    }
+
+.summary-card-value {
+    color: var(--sp-green-900);
+    font-family: var(--sp-serif);
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.pickup-panel {
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+}
+
+.pickup-panel-header {
+    padding: 1rem 1.25rem;
+    background: var(--sp-green-900);
+    color: #ffffff;
+}
+
+    .pickup-panel-header h2 {
+        margin: 0;
+        font-family: var(--sp-serif);
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+
+        .pickup-panel-header h2 i {
+            margin-right: 0.45rem;
+            color: var(--sp-gold-200);
+        }
+
+.reservation-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.reservation-card {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-bottom: 1px solid var(--sp-line);
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+    .reservation-card:last-child {
+        border-bottom: 0;
+    }
+
+    .reservation-card:hover {
+        background: var(--sp-paper);
+    }
+
+.reservation-cover-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 92px;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    background: var(--sp-paper);
+    border: 1px solid var(--sp-line);
+    border-radius: calc(var(--sp-radius) - 2px);
+}
+
+.reservation-cover {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.reservation-main {
+    min-width: 0;
+}
+
+.reservation-title {
+    margin: 0 0 0.25rem;
+    color: var(--sp-green-900);
+    font-family: var(--sp-serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+}
+
+.reservation-author {
+    margin: 0 0 0.55rem;
+    color: var(--sp-ink);
+    opacity: 0.8;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+}
+
+.reservation-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 1rem;
+    color: var(--sp-ink);
+    font-size: 0.86rem;
+}
+
+.meta-label {
+    color: var(--sp-green-700);
+    font-weight: 700;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.status-ready {
+    background: var(--sp-green-600);
+    color: #ffffff;
+}
+
+.status-processing {
+    background: var(--sp-gold-200);
+    color: var(--sp-green-900);
+}
+
+.status-expired {
+    background: var(--sp-line);
+    color: var(--sp-ink);
+}
+
+.expiry-text {
+    font-weight: 600;
+}
+
+.reservation-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+    min-width: 150px;
+}
+
+.btn-cancel {
+    min-height: 44px;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--sp-green-700);
+    border-radius: var(--sp-radius);
+    background: #ffffff;
+    color: var(--sp-green-700);
+    font-family: var(--sp-sans);
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, outline-color 0.2s ease;
+}
+
+    .btn-cancel:hover,
+    .btn-cancel:focus {
+        background: var(--sp-green-700);
+        color: #ffffff;
+        outline: 3px solid var(--sp-gold-200);
+        outline-offset: 2px;
+    }
+
+.expired-note {
+    color: var(--sp-ink);
+    opacity: 0.7;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.reservation-expired {
+    background: #f1f4f2;
+    color: var(--sp-ink);
+    filter: grayscale(0.55);
+    opacity: 0.8;
+}
+
+    .reservation-expired .reservation-cover {
+        opacity: 0.55;
+    }
+
+    .reservation-expired .reservation-title,
+    .reservation-expired .reservation-author,
+    .reservation-expired .reservation-meta,
+    .reservation-expired .expiry-text {
+        color: var(--sp-ink);
+    }
+
+    .reservation-expired .btn-cancel {
+        display: none;
+    }
+
+.pickup-empty {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--sp-ink);
+}
+
+    .pickup-empty i {
+        margin-bottom: 0.9rem;
+        color: var(--sp-green-600);
+        font-size: 2.5rem;
+    }
+
+    .pickup-empty p {
+        margin: 0;
+        opacity: 0.8;
+    }
+
+@media (max-width: 900px) {
+    .reservation-card {
+        grid-template-columns: 80px minmax(0, 1fr);
+    }
+
+    .reservation-cover-wrap {
+        width: 80px;
+    }
+
+    .reservation-actions {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 640px) {
+    .pickup-page {
+        padding: 1rem;
+    }
+
+    .pickup-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reservation-card {
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 0.85rem;
+        padding: 0.9rem;
+    }
+
+    .reservation-cover-wrap {
+        width: 64px;
+    }
+
+    .reservation-title {
+        font-size: 1rem;
+    }
+
+    .reservation-meta {
+        display: grid;
+        gap: 0.3rem;
+    }
+
+    .reservation-actions {
+        grid-column: 1 / -1;
+        align-items: stretch;
+        min-width: 0;
+    }
+
+    .btn-cancel {
+        width: 100%;
+    }
+
+    .expired-note {
+        text-align: center;
+    }
+}
