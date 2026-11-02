@@ -42,24 +42,6 @@ namespace spmst_lms_development.Users.Admin.Catalog
         protected global::System.Web.UI.WebControls.Image imgCover;
 
         /// <summary>
-        /// rptCopies control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptCopies;
-
-        /// <summary>
-        /// pnlNoCopies control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoCopies;
-
-        /// <summary>
         /// litTitle control.
         /// </summary>
         /// <remarks>
@@ -139,5 +121,23 @@ namespace spmst_lms_development.Users.Admin.Catalog
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litDescription;
+
+        /// <summary>
+        /// rptCopies control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptCopies;
+
+        /// <summary>
+        /// pnlNoCopies control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoCopies;
     }
 }

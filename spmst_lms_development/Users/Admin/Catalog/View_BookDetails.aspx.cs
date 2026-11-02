@@ -3,23 +3,29 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.IO;
-using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace spmst_lms_development.Users.Admin.Catalog
 {
     public partial class View_BookDetails : System.Web.UI.Page
     {
-        private readonly string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!IsPostBack)
+            if (IsPostBack) return;
+
+            string resourceId = Request.QueryString["ResourceID"];
+            if (!string.IsNullOrEmpty(resourceId))
             {
-                string resourceId = Request.QueryString["ResourceID"];
-                if (!string.IsNullOrEmpty(resourceId))
-                    LoadBookData(resourceId);
+                LoadBookData(resourceId);
+            }
+            else
+            {
+                litTitle.Text = "No book selected";
+                litAccession.Text = "N/A";
+                rptCopies.Visible = false;
+                pnlNoCopies.Visible = true;
             }
         }
 
@@ -29,51 +35,52 @@ namespace spmst_lms_development.Users.Admin.Catalog
             {
                 conn.Open();
 
-                // ---- Main resource (unchanged; all columns exist in schema) ----
+                // ---------- 1. Main resource ----------
                 string resourceQuery = "SELECT * FROM Library_Resources WHERE resource_id = @id";
-                MySqlCommand cmdRes = new MySqlCommand(resourceQuery, conn);
-                cmdRes.Parameters.AddWithValue("@id", id);
-                using (MySqlDataReader dr = cmdRes.ExecuteReader())
+                using (MySqlCommand cmdRes = new MySqlCommand(resourceQuery, conn))
                 {
-                    if (dr.Read())
+                    cmdRes.Parameters.AddWithValue("@id", id);
+                    using (MySqlDataReader dr = cmdRes.ExecuteReader())
                     {
-                        litTitle.Text = dr["title"].ToString();
-                        litAuthor.Text = dr["author"].ToString();
-                        litISBN.Text = dr["isbn"].ToString();
-                        litEdition.Text = dr["edition"] != DBNull.Value ? dr["edition"].ToString() : "N/A";
-                        litCallNum.Text = dr["call_number"].ToString();
-                        litPublisher.Text = dr["publisher"].ToString();
-                        litYear.Text = dr["copyright_year"].ToString();
-                        litPages.Text = dr["pages_numeric"].ToString();
-                        litDescription.Text = !string.IsNullOrEmpty(dr["description"].ToString())
-                                              ? dr["description"].ToString()
-                                              : "No description available.";
+                        if (!dr.Read())
+                        {
+                            litTitle.Text = "Book not found";
+                            litAccession.Text = "N/A";
+                            rptCopies.Visible = false;
+                            pnlNoCopies.Visible = true;
+                            return;
+                        }
 
-                        string coverPath = dr["cover_path"]?.ToString();
-                        if (!string.IsNullOrEmpty(coverPath) && File.Exists(Server.MapPath("~/" + coverPath)))
-                            imgCover.ImageUrl = "~/" + coverPath;
-                        else
-                            imgCover.ImageUrl = "~/Assets/Covers/default-cover.jpg";
+                        litTitle.Text = SafeString(dr["title"]);
+                        litAuthor.Text = SafeString(dr["author"], "Unknown Author");
+                        litISBN.Text = SafeString(dr["isbn"], "N/A");
+                        litEdition.Text = SafeString(dr["edition"], "N/A");
+                        litCallNum.Text = SafeString(dr["call_number"], "N/A");
+                        litPublisher.Text = SafeString(dr["publisher"], "N/A");
+                        litYear.Text = SafeString(dr["copyright_year"], "N/A");
+                        litPages.Text = SafeString(dr["pages_numeric"], "N/A");
+                        litDescription.Text = SafeString(dr["description"], "No description available.");
+
+                        // Cover — normalize, validate via Server.MapPath, fall back
+                        imgCover.ImageUrl = ResolveCoverUrl(dr["cover_path"] as string);
                     }
                 }
 
-                // ---- Copies with availability (rewritten for new schema) ----
-                // Schema notes:
-                //   Item_Copies.status_condition ENUM('Good','Damage','Lost','Reserved')
-                //   Transactions.status ENUM('Borrowed','Returned','Reserved','Ready','Cancelled')
-                //   Transactions.borrow_date / due_date are DATE, not DATETIME.
+                // ---------- 2. Copies with accurate availability ----------
+                // Schema-aware: Item_Copies.status_condition ENUM('Good','Damage','Lost','Combination','Reserved')
+                //               Transactions.status ENUM(... 'Borrowed','Renewal','Renewed', 'Reserved','Ready', ...)
                 string copiesQuery = @"
                     SELECT
                         c.accession_number,
                         c.status_condition,
                         c.is_available,
                         CASE
-                            WHEN c.status_condition IN ('Damage','Lost') THEN 'Not Available'
-                            WHEN c.status_condition = 'Reserved'        THEN 'Reserved'
+                            WHEN c.status_condition IN ('Damage','Lost','Combination') THEN 'Not Available'
+                            WHEN c.status_condition = 'Reserved' THEN 'Reserved'
                             WHEN c.is_available = 0 AND EXISTS (
                                 SELECT 1 FROM Transactions t
                                 WHERE t.accession_number = c.accession_number
-                                  AND t.status = 'Borrowed'
+                                  AND t.status IN ('Borrowed','Renewal','Renewed')
                             ) THEN 'Borrowed'
                             WHEN c.is_available = 0 AND EXISTS (
                                 SELECT 1 FROM Transactions t
@@ -87,60 +94,116 @@ namespace spmst_lms_development.Users.Admin.Catalog
                     WHERE c.resource_id = @id
                     ORDER BY c.accession_number";
 
-                MySqlCommand cmdCopies = new MySqlCommand(copiesQuery, conn);
-                cmdCopies.Parameters.AddWithValue("@id", id);
-
-                DataTable dtCopies = new DataTable();
-                using (MySqlDataAdapter da = new MySqlDataAdapter(cmdCopies))
-                    da.Fill(dtCopies);
-
-                if (dtCopies.Rows.Count > 0)
+                using (MySqlCommand cmdCopies = new MySqlCommand(copiesQuery, conn))
                 {
-                    rptCopies.DataSource = dtCopies;
-                    rptCopies.DataBind();
-                    pnlNoCopies.Visible = false;
+                    cmdCopies.Parameters.AddWithValue("@id", id);
+                    DataTable dtCopies = new DataTable();
+                    using (MySqlDataAdapter da = new MySqlDataAdapter(cmdCopies))
+                        da.Fill(dtCopies);
 
-                    var available = dtCopies.AsEnumerable()
-                        .FirstOrDefault(row =>
-                            row["status_condition"].ToString().Equals("Good", StringComparison.OrdinalIgnoreCase)
-                            && Convert.ToInt32(row["is_available"]) == 1);
+                    if (dtCopies.Rows.Count > 0)
+                    {
+                        rptCopies.DataSource = dtCopies;
+                        rptCopies.DataBind();
+                        rptCopies.Visible = true;
+                        pnlNoCopies.Visible = false;
 
-                    litAccession.Text = available != null
-                        ? available["accession_number"].ToString()
-                        : "Out of Stock";
-                }
-                else
-                {
-                    rptCopies.Visible = false;
-                    pnlNoCopies.Visible = true;
-                    litAccession.Text = "Out of Stock";
+                        // Primary accession = first available copy (if any)
+                        string primaryAcc = null;
+                        foreach (DataRow row in dtCopies.Rows)
+                        {
+                            if (string.Equals(row["availability_reason"].ToString(),
+                                              "Available", StringComparison.OrdinalIgnoreCase))
+                            {
+                                primaryAcc = row["accession_number"].ToString();
+                                break;
+                            }
+                        }
+                        litAccession.Text = primaryAcc ?? "Out of Stock";
+                    }
+                    else
+                    {
+                        rptCopies.Visible = false;
+                        pnlNoCopies.Visible = true;
+                        litAccession.Text = "Out of Stock";
+                    }
                 }
             }
         }
 
-        // ========== UI HELPERS ==========
-        protected string GetStatusClass(string status)
+        /// <summary>
+        /// Resolves a DB-stored cover path to a browser-safe application-relative URL.
+        /// Falls back to ~/Assets/Covers/default-cover.jpg when path is null/empty,
+        /// invalid, or when the physical file does not exist.
+        /// Handles paths that may already contain a leading "~/" or "/" and backslashes.
+        /// </summary>
+        private string ResolveCoverUrl(string coverPath)
         {
-            if (string.IsNullOrEmpty(status)) return "status-default";
-            switch (status.ToLower())
+            const string fallback = "~/Assets/Covers/default-cover.jpg";
+            if (string.IsNullOrWhiteSpace(coverPath)) return fallback;
+
+            // Normalize: strip leading ~ or /, convert backslashes
+            string normalized = coverPath.Trim()
+                                         .TrimStart('~', '/', '\\')
+                                         .Replace("\\", "/");
+
+            if (string.IsNullOrEmpty(normalized)) return fallback;
+
+            try
             {
-                case "available": return "status-available";
-                case "reserved": return "status-reserved";
-                case "borrowed": return "status-borrowed";
-                default: return "status-damaged";
+                string physical = Server.MapPath("~/" + normalized);
+                if (File.Exists(physical))
+                    return "~/" + normalized;
+            }
+            catch
+            {
+                // Ignore path resolution errors → use fallback
+            }
+            return fallback;
+        }
+
+        private static string SafeString(object value, string fallback = "")
+        {
+            if (value == null || value == DBNull.Value) return fallback;
+            string s = value.ToString();
+            return string.IsNullOrWhiteSpace(s) ? fallback : s;
+        }
+
+        // =============================================================
+        // UI HELPERS — bound to Eval() so DB values drive presentation
+        // =============================================================
+        protected string GetCopyCardClass(object availabilityReasonObj)
+        {
+            string reason = availabilityReasonObj == null ? string.Empty : availabilityReasonObj.ToString();
+            return string.Equals(reason, "Available", StringComparison.OrdinalIgnoreCase)
+                ? "copy-card available"
+                : "copy-card unavailable";
+        }
+
+        protected string GetStatusClass(object statusObj)
+        {
+            string status = statusObj == null ? string.Empty : statusObj.ToString().ToLowerInvariant();
+            switch (status)
+            {
+                case "available": return "status-badge status-available";
+                case "reserved": return "status-badge status-reserved";
+                case "borrowed": return "status-badge status-borrowed";
+                default: return "status-badge status-damaged";
             }
         }
 
-        protected string GetConditionClass(string condition)
+        protected string GetConditionClass(object conditionObj)
         {
-            if (string.IsNullOrEmpty(condition)) return "text-secondary fw-semibold";
-            switch (condition.ToLower())
+            string condition = conditionObj == null ? string.Empty : conditionObj.ToString().ToLowerInvariant();
+            switch (condition)
             {
-                case "good": return "text-success fw-semibold";
+                case "good": return "condition-badge condition-good";
                 case "damage":
-                case "damaged": return "text-warning fw-semibold";
-                case "lost": return "text-danger fw-semibold";
-                default: return "text-secondary fw-semibold";
+                case "damaged": return "condition-badge condition-damaged";
+                case "lost": return "condition-badge condition-lost";
+                case "combination": return "condition-badge condition-lost";
+                case "reserved": return "condition-badge condition-reserved";
+                default: return "condition-badge condition-default";
             }
         }
     }

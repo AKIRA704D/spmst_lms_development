@@ -10,7 +10,10 @@ namespace spmst_lms_development.Users.Admin.Catalog
 {
     public partial class BrowseCatalog : System.Web.UI.Page
     {
-        private readonly string connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
+        private const string DefaultCover = "~/Assets/Covers/default-cover.jpg";
+
+        private readonly string connStr =
+            ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -24,12 +27,13 @@ namespace spmst_lms_development.Users.Admin.Catalog
         private void LoadSections()
         {
             using (MySqlConnection conn = new MySqlConnection(connStr))
+            using (MySqlCommand cmd = new MySqlCommand(
+                @"SELECT DISTINCT section AS section_name
+                  FROM Library_Resources
+                  WHERE section IS NOT NULL AND section <> ''
+                  ORDER BY section", conn))
+            using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
             {
-                string query = @"SELECT DISTINCT section AS section_name
-                                 FROM Library_Resources
-                                 WHERE section IS NOT NULL
-                                 ORDER BY section";
-                MySqlDataAdapter da = new MySqlDataAdapter(query, conn);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
                 rptSections.DataSource = dt;
@@ -43,7 +47,6 @@ namespace spmst_lms_development.Users.Admin.Catalog
             {
                 // Schema-aligned availability definition:
                 //   "Available" copy = status_condition='Good' AND is_available=1
-                //   (the Reserved_Book flow flips is_available=0 on reserve/borrow)
                 string query = @"
                     SELECT
                         r.resource_id,
@@ -77,19 +80,21 @@ namespace spmst_lms_development.Users.Admin.Catalog
                                     r.call_number, r.section, r.cover_path
                             ORDER BY r.title";
 
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                if (!string.IsNullOrEmpty(section))
-                    cmd.Parameters.AddWithValue("@section", section);
-                if (!string.IsNullOrEmpty(search))
-                    cmd.Parameters.AddWithValue("@search", "%" + search + "%");
+                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                {
+                    if (!string.IsNullOrEmpty(section))
+                        cmd.Parameters.AddWithValue("@section", section);
+                    if (!string.IsNullOrEmpty(search))
+                        cmd.Parameters.AddWithValue("@search", "%" + search + "%");
 
-                DataTable dt = new DataTable();
-                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
-                    da.Fill(dt);
+                    DataTable dt = new DataTable();
+                    using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                        da.Fill(dt);
 
-                rptBooks.DataSource = dt;
-                rptBooks.DataBind();
-                pnlNoResults.Visible = (dt.Rows.Count == 0);
+                    rptBooks.DataSource = dt;
+                    rptBooks.DataBind();
+                    pnlNoResults.Visible = (dt.Rows.Count == 0);
+                }
             }
         }
 
@@ -101,19 +106,63 @@ namespace spmst_lms_development.Users.Admin.Catalog
 
         protected void rptBooks_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            if (e.Item.ItemType != ListItemType.Item &&
+                e.Item.ItemType != ListItemType.AlternatingItem)
+                return;
+
+            DataRowView row = (DataRowView)e.Item.DataItem;
+            Image imgCover = (Image)e.Item.FindControl("imgCover");
+            if (imgCover == null) return;
+
+            string coverPath = row["cover_path"] as string;
+
+            // Server-side validation + fallback
+            imgCover.ImageUrl = ResolveCoverUrl(coverPath);
+
+            // Client-side fallback for images that exist but fail to load
+            string fallback = ResolveUrl(DefaultCover);
+            imgCover.Attributes["onerror"] =
+                "this.onerror=null;this.src='" + fallback + "';";
+        }
+
+        /// <summary>
+        /// Resolves a stored cover_path to a valid app-relative URL.
+        /// Handles: empty/null, missing files, filenames without folders,
+        /// leading ~ / ~/ /, path traversal, and invalid paths.
+        /// Returns ~/Assets/Covers/default-cover.jpg on any failure.
+        /// </summary>
+        private string ResolveCoverUrl(string coverPath)
+        {
+            if (string.IsNullOrWhiteSpace(coverPath))
+                return DefaultCover;
+
+            string path = coverPath.Trim().Replace("\\", "/");
+
+            // Strip leading ~/, ~, or /
+            if (path.StartsWith("~/")) path = path.Substring(2);
+            else if (path.StartsWith("~")) path = path.Substring(1);
+            else if (path.StartsWith("/")) path = path.Substring(1);
+
+            // If only a bare filename is stored, place it under Covers
+            if (!path.Contains("/"))
+                path = "Assets/Covers/" + path;
+
+            // Block path traversal
+            if (path.Contains(".."))
+                return DefaultCover;
+
+            try
             {
-                DataRowView row = (DataRowView)e.Item.DataItem;
-                Image imgCover = (Image)e.Item.FindControl("imgCover");
-                if (imgCover != null)
-                {
-                    string coverPath = row["cover_path"]?.ToString();
-                    if (!string.IsNullOrEmpty(coverPath) && File.Exists(Server.MapPath("~/" + coverPath)))
-                        imgCover.ImageUrl = "~/" + coverPath;
-                    else
-                        imgCover.ImageUrl = "~/Assets/Covers/default-cover.jpg";
-                }
+                string physical = Server.MapPath("~/" + path);
+                if (!string.IsNullOrEmpty(physical) && File.Exists(physical))
+                    return "~/" + path;
             }
+            catch
+            {
+                // Invalid path (bad characters, mapped path failure, etc.)
+            }
+
+            return DefaultCover;
         }
 
         protected void Category_Click(object sender, EventArgs e)
@@ -123,8 +172,8 @@ namespace spmst_lms_development.Users.Admin.Catalog
             ViewState["SelectedCategory"] = selectedCategory;
 
             lnkAll.CssClass = string.IsNullOrEmpty(selectedCategory)
-                ? "btn category-pill active"
-                : "btn category-pill inactive";
+                ? "category-pill active"
+                : "category-pill inactive";
 
             foreach (RepeaterItem item in rptSections.Items)
             {
@@ -132,8 +181,8 @@ namespace spmst_lms_development.Users.Admin.Catalog
                 if (lb != null)
                 {
                     lb.CssClass = (lb.CommandArgument == selectedCategory)
-                        ? "btn category-pill active"
-                        : "btn category-pill inactive";
+                        ? "category-pill active"
+                        : "category-pill inactive";
                 }
             }
 

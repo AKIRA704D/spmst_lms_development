@@ -3,199 +3,128 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="<%= ResolveUrl("~/Assets/Themes/browse-catalog-theme.css") %>" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-        /* ============================================
-           1. GLOBAL & UTILITY
-           ============================================ */
-        .card-shadow {
-            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08);
-        }
-        .category-pill {
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-        .category-pill.active {
-            background-color: #0d6efd;
-            color: white;
-        }
-        .category-pill.inactive {
-            background-color: #e9ecef;
-            color: #6c757d;
-        }
-        .category-pill.inactive:hover {
-            background-color: #dee2e6;
-        }
-        .btn-reserve {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-            transition: all 0.3s ease;
-        }
-        .btn-reserve:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
-        }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-        .status-available {
-            background-color: #d1fae5;
-            color: #059669;
-        }
-        .status-unavailable {
-            background-color: #fef3c7;
-            color: #b45309;
-        }
-        .copy-stats {
-            background-color: #f8f9fa;
-            border-radius: 0.75rem;
-            padding: 0.5rem;
-        }
-
-        /* ============================================
-           2. UNIVERSAL MODAL & IFRAME
-           ============================================ */
-        #universalModal .modal-content {
-            border-radius: 1rem;
-            overflow: hidden;
-            max-height: 90vh;
-        }
-
-        /* modal-body does NOT scroll — the iframe handles it */
-        #universalModal .modal-body {
-            padding: 0;
-            overflow: hidden;
-        }
-
-        .modal-iframe {
-            width: 100%;
-            height: 0; /* JS sets it dynamically */
-            border: none;
-            display: block;
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="container py-4">
+    <div class="catalog-page">
+
         <!-- Header -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <header class="catalog-header">
             <div>
-                <h1 class="display-5 fw-bold">What's your next <span class="text-primary">adventure?</span></h1>
-                <p class="text-muted">Welcome back, <asp:Literal ID="litPatronName" runat="server" Text="Patron" />.</p>
+                <h1 class="catalog-title">What's your next <span class="accent">adventure?</span></h1>
+                <p class="catalog-greeting">
+                    Welcome back, <asp:Literal ID="litPatronName" runat="server" Text="Patron" />.
+                </p>
             </div>
-            <div class="bg-white p-3 rounded-3 shadow-sm border text-md-end">
-                <p class="small text-muted mb-0">SPAMAST Library</p>
-                <p class="fw-bold mb-0"><%= DateTime.Now.ToString("dddd, MMM dd") %></p>
+            <div class="catalog-date">
+                <p class="date-label">SPAMAST Library</p>
+                <p class="date-value"><%= DateTime.Now.ToString("dddd, MMM dd") %></p>
             </div>
-        </div>
+        </header>
 
         <asp:UpdatePanel ID="upSearch" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
-                <!-- Search Bar -->
-                <div class="card p-4 shadow-sm border-0 rounded-4 mb-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
-                        <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control form-control-lg border-start-0"
-                            placeholder="Search by title, author, or ISBN..." AutoPostBack="true"
-                            OnTextChanged="txtSearch_TextChanged" onkeyup="debounceSearch(this);" />
+
+                <!-- Search + category filters -->
+                <div class="catalog-toolbar">
+                    <div class="search-wrap">
+                        <i class="fas fa-search"></i>
+                        <asp:TextBox ID="txtSearch" runat="server" CssClass="search-input"
+                            placeholder="Search by title, author, or ISBN..."
+                            AutoPostBack="true"
+                            OnTextChanged="txtSearch_TextChanged"
+                            onkeyup="debounceSearch(this);" />
                     </div>
-                    <!-- Category Pills -->
-                    <div class="d-flex flex-wrap gap-2 mt-4">
+
+                    <div class="category-pills">
                         <asp:LinkButton ID="lnkAll" runat="server" OnClick="Category_Click" CommandArgument=""
-                            CssClass="btn category-pill active">
-                            <i class="fas fa-book-open me-1"></i> All Categories
+                            CssClass="category-pill active">
+                            <i class="fas fa-book-open"></i> All Categories
                         </asp:LinkButton>
                         <asp:Repeater ID="rptSections" runat="server">
                             <ItemTemplate>
                                 <asp:LinkButton ID="lnkSection" runat="server" OnClick="Category_Click"
                                     CommandArgument='<%# Eval("section_name") %>'
-                                    CssClass="btn category-pill inactive">
-                                    <i class="fas fa-tag me-1"></i> <%# Eval("section_name") %>
+                                    CssClass="category-pill inactive">
+                                    <i class="fas fa-tag"></i> <%# Eval("section_name") %>
                                 </asp:LinkButton>
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
                 </div>
 
-                <!-- Books Grid -->
-                <div class="row g-4">
+                <!-- Responsive books grid -->
+                <div class="books-grid">
                     <asp:Repeater ID="rptBooks" runat="server" OnItemDataBound="rptBooks_ItemDataBound">
                         <ItemTemplate>
-                            <div class="col-lg-6">
-                                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
-                                    <div class="row g-0 h-100">
-                                        <!-- Cover Column -->
-                                        <div class="col-md-4 position-relative">
-                                            <asp:Image ID="imgCover" runat="server" CssClass="Img-fluid h-100 w-100 object-fit-cover" style="min-height: 200px;" />
-                                            <div class="position-absolute bottom-0 start-0 end-0 p-2 bg-dark bg-opacity-75 text-white small">
-                                                <i class="fas fa-book me-1"></i> <%# Eval("section") %>
-                                            </div>
+                            <article class="book-card">
+
+                                <!-- Cover -->
+                                <div class="book-cover-container">
+                                    <asp:Image ID="imgCover" runat="server"
+                                        AlternateText='<%# Eval("title") %>' />
+                                </div>
+
+                                <!-- Info -->
+                                <div class="book-info">
+                                    <span class='status-badge <%# Eval("display_status").ToString() == "Available" ? "status-available" : "status-unavailable" %>'>
+                                        <span class="dot"></span>
+                                        <%# Eval("display_status").ToString().ToUpper() %>
+                                    </span>
+
+                                    <span class="book-section" title='<%# Eval("section") %>'>
+                                        <%# Eval("section") %>
+                                    </span>
+
+                                    <h3 class="book-title"><%# Eval("title") %></h3>
+                                    <p class="book-author">by <%# Eval("author") %></p>
+
+                                    <div class="book-stats">
+                                        <div class="book-stat">
+                                            <span class="label">Total</span>
+                                            <span class="value"><%# Eval("total_copies") %></span>
                                         </div>
-                                        <!-- Details Column -->
-                                        <div class="col-md-8">
-                                            <div class="card-body h-100 d-flex flex-column">
-                                                <div class="mb-2">
-                                                    <span class='status-badge <%# Eval("display_status").ToString() == "Available" ? "status-available" : "status-unavailable" %>'>
-                                                        <span class="w-2 h-2 rounded-circle bg-current d-inline-block me-1"></span>
-                                                        <%# Eval("display_status").ToString().ToUpper() %>
-                                                    </span>
-                                                </div>
-                                                <h5 class="card-title fw-bold"><%# Eval("title") %></h5>
-                                                <p class="card-text text-muted small">by <%# Eval("author") %></p>
-                                                <div class="row mt-2 g-2">
-                                                    <div class="col-6">
-                                                        <div class="copy-stats text-center">
-                                                            <span class="small text-muted">Total Copies</span>
-                                                            <h6 class="mb-0 fw-bold"><%# Eval("total_copies") %></h6>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-6">
-                                                        <div class="copy-stats text-center">
-                                                            <span class="small text-muted">Available</span>
-                                                            <h6 class="mb-0 fw-bold text-success"><%# Eval("available_copies") %></h6>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="mt-3 d-flex gap-2">
-                                                    <asp:LinkButton ID="btnReserve" runat="server"
-                                                        OnClientClick='<%# "return openReserveModal(" + Eval("resource_id") + ");" %>'
-                                                        Enabled='<%# Eval("display_status").ToString() == "Available" %>'
-                                                        CssClass='<%# Eval("display_status").ToString() == "Available" ? "btn btn-primary flex-grow-1" : "btn btn-secondary flex-grow-1 disabled" %>'>
-                                                        <i class="fas fa-bookmark me-1"></i> Reserve
-                                                    </asp:LinkButton>
-                                                    <asp:LinkButton ID="btnViewDetails" runat="server"
-                                                        OnClientClick='<%# "return openDetailsModal(" + Eval("resource_id") + ");" %>'
-                                                        CssClass="btn btn-outline-secondary">
-                                                        <i class="fas fa-eye"></i>
-                                                    </asp:LinkButton>
-                                                </div>
-                                            </div>
+                                        <div class="book-stat">
+                                            <span class="label">Available</span>
+                                            <span class="value available"><%# Eval("available_copies") %></span>
                                         </div>
                                     </div>
+
+                                    <div class="book-actions">
+                                        <asp:LinkButton ID="btnReserve" runat="server"
+                                            OnClientClick='<%# "return openReserveModal(" + Eval("resource_id") + ");" %>'
+                                            Enabled='<%# Eval("display_status").ToString() == "Available" %>'
+                                            CssClass='<%# Eval("display_status").ToString() == "Available" ? "book-btn book-btn-primary" : "book-btn book-btn-disabled" %>'
+                                            ToolTip="Reserve this book">
+                                            <i class="fas fa-bookmark"></i> Reserve
+                                        </asp:LinkButton>
+
+                                        <asp:LinkButton ID="btnViewDetails" runat="server"
+                                            OnClientClick='<%# "return openDetailsModal(" + Eval("resource_id") + ");" %>'
+                                            CssClass="book-btn book-btn-outline"
+                                            ToolTip="View details">
+                                            <i class="fas fa-eye"></i>
+                                        </asp:LinkButton>
+                                    </div>
                                 </div>
-                            </div>
+                            </article>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
 
-                <!-- No Results -->
-                <asp:Panel ID="pnlNoResults" runat="server" Visible="false" CssClass="text-center py-5">
-                    <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">No books found matching your criteria.</p>
+                <!-- No results -->
+                <asp:Panel ID="pnlNoResults" runat="server" Visible="false" CssClass="no-results">
+                    <i class="fas fa-book-open"></i>
+                    <p>No books found matching your criteria.</p>
                 </asp:Panel>
+
             </ContentTemplate>
         </asp:UpdatePanel>
     </div>
 
-    <!-- Universal modal (same behavior pattern as UserAcc.aspx) -->
+    <!-- Universal modal -->
     <div class="modal fade" id="universalModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-xl">
             <div class="modal-content">
@@ -207,123 +136,140 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript">
-        // ============================================
-        // 1. SEARCH DEBOUNCING
-        // ============================================
-        let searchTimer;
-        function debounceSearch(input) {
-            clearTimeout(searchTimer);
-            searchTimer = setTimeout(function () {
-                __doPostBack(input.id, '');
-            }, 300);
-        }
+   <script type="text/javascript">
+       // ============================================
+       // 1. SEARCH DEBOUNCING
+       // ============================================
+       let searchTimer;
+       function debounceSearch(input) {
+           clearTimeout(searchTimer);
+           searchTimer = setTimeout(function () {
+               __doPostBack(input.id, '');
+           }, 300);
+       }
 
-        // ============================================
-        // 2. UNIVERSAL MODAL HANDLERS
-        // ============================================
-        let currentModal = null;
+       // ============================================
+       // 2. UNIVERSAL MODAL HANDLERS
+       // ============================================
+       let currentModal = null;
 
-        /*
-         * Resize the iframe to the natural content height, capped at 90vh.
-         * Short content -> iframe shrinks to content height.
-         * Tall content  -> iframe is capped at 90vh and scrolls internally.
-         */
-        function resizeModalIframe() {
-            const iframe = document.getElementById('modalIframe');
-            if (!iframe || !iframe.getAttribute('src')) return;
+       function isFullHeight() {
+           const iframe = document.getElementById('modalIframe');
+           return !!(iframe && iframe.classList.contains('full-height'));
+       }
 
-            try {
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                if (!doc || !doc.body) return;
+       function resizeModalIframe() {
+           const iframe = document.getElementById('modalIframe');
+           if (!iframe || !iframe.getAttribute('src')) return;
 
-                const natural = Math.max(
-                    doc.documentElement.scrollHeight,
-                    doc.body.scrollHeight,
-                    doc.documentElement.offsetHeight,
-                    doc.body.offsetHeight
-                );
+           // Full-height pages: CSS owns the height, don't measure/shrink.
+           if (isFullHeight()) return;
 
-                const maxH = Math.round(window.innerHeight * 0.9);
-                const finalH = Math.min(natural, maxH);
+           // Content-sized pages (Reserved_Book.aspx, etc.)
+           try {
+               const doc = iframe.contentDocument || iframe.contentWindow.document;
+               if (!doc || !doc.body) return;
 
-                iframe.style.height = finalH + 'px';
-            } catch (e) {
-                iframe.style.height = '80vh';
-            }
-        }
+               const natural = Math.max(
+                   doc.documentElement.scrollHeight,
+                   doc.body.scrollHeight,
+                   doc.documentElement.offsetHeight,
+                   doc.body.offsetHeight
+               );
 
-        window.resizeModalIframe = resizeModalIframe;
+               const maxH = Math.round(window.innerHeight * 0.9);
+               const finalH = Math.min(natural, maxH);
 
-        function getUniversalModal() {
-            if (!currentModal) {
-                const modalEl = document.getElementById('universalModal');
-                currentModal = new bootstrap.Modal(modalEl);
-            }
-            return currentModal;
-        }
+               iframe.style.height = finalH + 'px';
+           } catch (e) {
+               iframe.style.height = '80vh';
+           }
+       }
+       window.resizeModalIframe = resizeModalIframe;
 
-        function openUniversalModal(page, idParam, idValue) {
-            const iframe = document.getElementById('modalIframe');
+       // Called by full-height child pages (e.g. View_BookDetails.aspx) from within the iframe.
+       function setModalFullHeight() {
+           const iframe = document.getElementById('modalIframe');
+           if (!iframe) return;
+           iframe.classList.add('full-height');
+           iframe.style.removeProperty('height');   // let the CSS class win
+       }
+       window.setModalFullHeight = setModalFullHeight;
 
-            if (iframe) {
-                // Reset previous modal height before loading new content.
-                iframe.style.height = '0px';
+       function clearModalFullHeight() {
+           const iframe = document.getElementById('modalIframe');
+           if (!iframe) return;
+           iframe.classList.remove('full-height');
+       }
 
-                // Re-measure after load; repeated timeouts catch late-rendered content.
-                iframe.onload = function () {
-                    setTimeout(resizeModalIframe, 50);
-                    setTimeout(resizeModalIframe, 150);
-                    setTimeout(resizeModalIframe, 300);
-                };
+       function getUniversalModal() {
+           if (!currentModal) {
+               const modalEl = document.getElementById('universalModal');
+               currentModal = new bootstrap.Modal(modalEl);
+           }
+           return currentModal;
+       }
 
-                iframe.src = `${page}?${idParam}=${idValue}`;
-            }
+       function openUniversalModal(page, idParam, idValue) {
+           const iframe = document.getElementById('modalIframe');
 
-            getUniversalModal().show();
-            return false;
-        }
+           if (iframe) {
+               clearModalFullHeight();               // reset sizing mode for the new page
+               iframe.style.height = '0px';
+               iframe.onload = function () {
+                   // Retry a few times to beat asset load / layout jitter
+                   setTimeout(resizeModalIframe, 50);
+                   setTimeout(resizeModalIframe, 150);
+                   setTimeout(resizeModalIframe, 300);
+               };
+               iframe.src = `${page}?${idParam}=${idValue}`;
+           }
 
-        function openReserveModal(bookId) {
-            return openUniversalModal('Reserved_Book.aspx', 'BookID', bookId);
-        }
+           getUniversalModal().show();
+           return false;
+       }
 
-        function openDetailsModal(resourceId) {
-            return openUniversalModal('View_BookDetails.aspx', 'ResourceID', resourceId);
-        }
+       function openReserveModal(bookId) {
+           return openUniversalModal('Reserved_Book.aspx', 'BookID', bookId);
+       }
 
-        function closeUniversalModal() {
-            if (currentModal) {
-                currentModal.hide();
-            }
+       function openDetailsModal(resourceId) {
+           return openUniversalModal('View_BookDetails.aspx', 'ResourceID', resourceId);
+       }
 
-            const iframe = document.getElementById('modalIframe');
-            if (iframe) {
-                iframe.onload = null;
-                iframe.src = '';
-                iframe.style.height = '0px';
-            }
-        }
+       function closeUniversalModal() {
+           if (currentModal) currentModal.hide();
 
-        window.closeUniversalModal = closeUniversalModal;
+           const iframe = document.getElementById('modalIframe');
+           if (iframe) {
+               iframe.onload = null;
+               iframe.src = '';
+               iframe.style.height = '0px';
+               clearModalFullHeight();
+           }
+       }
+       window.closeUniversalModal = closeUniversalModal;
 
-        // ============================================
-        // 3. WINDOW RESIZE HANDLING
-        // ============================================
-        window.addEventListener('resize', function () {
-            const iframe = document.getElementById('modalIframe');
-            if (iframe && iframe.getAttribute('src')) {
-                resizeModalIframe();
-            }
-        });
+       // ============================================
+       // 3. WINDOW RESIZE HANDLING
+       // ============================================
+       window.addEventListener('resize', function () {
+           const iframe = document.getElementById('modalIframe');
+           if (!iframe || !iframe.getAttribute('src')) return;
 
-        // ============================================
-        // 4. UPDATE PANEL POSTBACK FOCUS
-        // ============================================
-        let prm = Sys.WebForms.PageRequestManager.getInstance();
-        prm.add_endRequest(function () {
-            let searchBox = document.getElementById('<%= txtSearch.ClientID %>');
-            if (searchBox) searchBox.focus();
-        });
-    </script>
+           // Full-height pages track the viewport via CSS (calc(90dvh - 2px))
+           if (isFullHeight()) return;
+
+           resizeModalIframe();
+       });
+
+       // ============================================
+       // 4. UPDATE PANEL POSTBACK FOCUS
+       // ============================================
+       let prm = Sys.WebForms.PageRequestManager.getInstance();
+       prm.add_endRequest(function () {
+           let searchBox = document.getElementById('<%= txtSearch.ClientID %>');
+        if (searchBox) searchBox.focus();
+    });
+   </script>
 </asp:Content>

@@ -1,0 +1,26 @@
+﻿/* ============================================================
+   SPAMAST LMS — Centralized Theme Variables
+   ============================================================ */
+:root {
+    /* Primary Green */
+    --sp-green-900: #0b3d2c;
+    --sp-green-800: #0f452d;
+    --sp-green-700: #14532d;
+    --sp-green-600: #1b7a3d;
+    /* Accent Colors */
+    --sp-gold: #d4a017;
+    --sp-gold-200: #e4b94a;
+    --sp-lime: #d4e022;
+    /* Background and Text */
+    --sp-paper: #f8faf7;
+    --sp-line: #dfe7e0;
+    --sp-ink: #1f2d24;
+    /* Typography */
+    --sp-serif: Georgia, "Times New Roman", serif;
+    --sp-sans: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* Layout */
+    --sp-wrap: 1400px;
+    --sp-radius: 8px;
+    /* Branding */
+    --sp-logo: url("https://www2.spamast.edu.ph/wp-content/uploads/2024/09/452931072_459590360307917_6589427784078406213_n.jpg");
+}

@@ -51,6 +51,33 @@ namespace spmst_lms_development.Users.Admin.Catalog
         protected global::System.Web.UI.WebControls.LinkButton btnClose;
 
         /// <summary>
+        /// step1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel step1;
+
+        /// <summary>
+        /// step2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel step2;
+
+        /// <summary>
+        /// step3 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel step3;
+
+        /// <summary>
         /// pnlStep1 control.
         /// </summary>
         /// <remarks>
@@ -96,13 +123,22 @@ namespace spmst_lms_development.Users.Admin.Catalog
         protected global::System.Web.UI.WebControls.Literal litSection;
 
         /// <summary>
-        /// btnContinue control.
+        /// btnCancel1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnContinue;
+        protected global::System.Web.UI.WebControls.Button btnCancel1;
+
+        /// <summary>
+        /// btnNext1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnNext1;
 
         /// <summary>
         /// pnlStep2 control.
@@ -114,6 +150,15 @@ namespace spmst_lms_development.Users.Admin.Catalog
         protected global::System.Web.UI.WebControls.Panel pnlStep2;
 
         /// <summary>
+        /// pnlNoLocations control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoLocations;
+
+        /// <summary>
         /// rblLocations control.
         /// </summary>
         /// <remarks>
@@ -121,6 +166,51 @@ namespace spmst_lms_development.Users.Admin.Catalog
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.RadioButtonList rblLocations;
+
+        /// <summary>
+        /// btnCancel2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnCancel2;
+
+        /// <summary>
+        /// btnNext2 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnNext2;
+
+        /// <summary>
+        /// pnlStep3Confirm control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlStep3Confirm;
+
+        /// <summary>
+        /// litConfirmBook control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litConfirmBook;
+
+        /// <summary>
+        /// litConfirmLocation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litConfirmLocation;
 
         /// <summary>
         /// chkTerms control.
@@ -132,13 +222,22 @@ namespace spmst_lms_development.Users.Admin.Catalog
         protected global::System.Web.UI.WebControls.CheckBox chkTerms;
 
         /// <summary>
-        /// btnBack control.
+        /// lblTerms control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnBack;
+        protected global::System.Web.UI.WebControls.Label lblTerms;
+
+        /// <summary>
+        /// btnCancel3 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnCancel3;
 
         /// <summary>
         /// btnConfirm control.
@@ -150,22 +249,31 @@ namespace spmst_lms_development.Users.Admin.Catalog
         protected global::System.Web.UI.WebControls.Button btnConfirm;
 
         /// <summary>
-        /// pnlStep3 control.
+        /// pnlStep3Success control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlStep3;
+        protected global::System.Web.UI.WebControls.Panel pnlStep3Success;
 
         /// <summary>
-        /// litDeadline control.
+        /// litTitleStep3 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Literal litDeadline;
+        protected global::System.Web.UI.WebControls.Literal litTitleStep3;
+
+        /// <summary>
+        /// litPickupLocation control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litPickupLocation;
 
         /// <summary>
         /// btnBrowseMore control.

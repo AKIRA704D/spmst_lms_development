@@ -144,6 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Themes\browse-catalog-theme.css" />
     <Content Include="Assets\Themes\history-theme.css" />
     <Content Include="Assets\Themes\patron-dashboard-theme.css" />
     <Content Include="Assets\Profile\default-cover.png" />
@@ -155,6 +156,7 @@
     <Content Include="Assets\Img\spmst_logo.jpg" />
     <Content Include="Assets\Img\spmst_logo_wbg.png" />
     <Content Include="Assets\Themes\reservations-theme.css" />
+    <Content Include="Assets\Themes\spmast-theme.css" />
     <Content Include="Assets\Themes\to-pick-up-theme.css" />
     <Content Include="LandingPage\AboutContact.aspx" />
     <Content Include="LandingPage\Home.aspx" />
