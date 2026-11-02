@@ -100,6 +100,7 @@ namespace spmst_lms_development.Users.MasterPage
             Allow(lnkHistory, PatronsOnly);
             Allow(lnkAttendance, RoleAdmin, RoleStaffM);
 
+
             // ---------- Core Operations → Catalog ----------
             Allow(lnkCatalog, Everyone);
 
