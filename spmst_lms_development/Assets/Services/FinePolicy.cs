@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
 
-namespace spmst_lms_development.Services
+namespace spmst_lms_development.Assets.Services
 {
     // ============================================================
     // 1. Schema mirror — Penalties.penalty_type ENUM

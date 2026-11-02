@@ -270,7 +270,7 @@
     <Compile Include="LandingPage\LandingPage.master.designer.cs">
       <DependentUpon>LandingPage.Master</DependentUpon>
     </Compile>
-    <Compile Include="Services\FinePolicy.cs" />
+    <Compile Include="Assets\Services\FinePolicy.cs" />
     <Compile Include="SmsTick.ashx.cs">
       <DependentUpon>SmsTick.ashx</DependentUpon>
     </Compile>
