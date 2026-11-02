@@ -1,0 +1,552 @@
+﻿/* ============================================================
+   SPAMAST LMS — Shared Reservations Theme
+   Applies to: Reservations.aspx (staff) and ToPickUp.aspx (patron)
+   ============================================================ */
+
+:root {
+    --sp-green-900: #0b3d2c;
+    --sp-green-800: #0f452d;
+    --sp-green-700: #14532d;
+    --sp-green-600: #1b7a3d;
+    --sp-gold: #d4a017;
+    --sp-gold-200: #e4b94a;
+    --sp-lime: #d4e022;
+    --sp-paper: #f8faf7;
+    --sp-line: #dfe7e0;
+    --sp-ink: #1f2d24;
+    --sp-serif: Georgia, "Times New Roman", serif;
+    --sp-sans: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --sp-wrap: 1400px;
+    --sp-radius: 8px;
+    --sp-logo: url("https://www2.spamast.edu.ph/wp-content/uploads/2024/09/452931072_459590360307917_6589427784078406213_n.jpg");
+    /* Derived / semantic tokens */
+    --sp-urgent: #b91c1c;
+    --sp-urgent-bg: #fee2e2;
+    --sp-warning-bg: #fff3cd;
+    --sp-warning-text: #7a5b00;
+    --sp-muted-bg: #eef1ee;
+    --sp-muted-text: #6b7280;
+    --sp-white: #ffffff;
+    --sp-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --sp-shadow-lg: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* ---------------- Base ---------------- */
+
+.reservations-page,
+.pickup-page {
+    background-color: var(--sp-paper);
+    color: var(--sp-ink);
+    font-family: var(--sp-sans);
+    padding: 1.5rem 0 2.5rem;
+    min-height: 70vh;
+}
+
+    .reservations-page .page-title,
+    .pickup-page .pickup-title {
+        font-family: var(--sp-serif);
+        color: var(--sp-green-900);
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .reservations-page .page-subtitle,
+    .pickup-page .pickup-subtitle {
+        color: var(--sp-muted-text);
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+/* ---------------- Cards / Panels ---------------- */
+
+.sp-card {
+    background: var(--sp-white);
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    box-shadow: var(--sp-shadow);
+    overflow: hidden;
+}
+
+.sp-card-header {
+    background: var(--sp-white);
+    border-bottom: 1px solid var(--sp-line);
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+    .sp-card-header h5,
+    .sp-card-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--sp-green-800);
+    }
+
+.sp-card-body {
+    padding: 0;
+}
+
+/* ---------------- Stats ---------------- */
+
+.stats-card {
+    background: var(--sp-white);
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    padding: 0.85rem 1rem;
+    box-shadow: var(--sp-shadow);
+    text-align: center;
+    min-width: 130px;
+}
+
+    .stats-card .label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--sp-muted-text);
+    }
+
+    .stats-card .value {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--sp-green-700);
+        line-height: 1.1;
+    }
+
+/* ---------------- Main Reservations Table ---------------- */
+
+.res-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .res-table th {
+        background: var(--sp-muted-bg);
+        padding: 0.75rem 1rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--sp-green-800);
+        border-bottom: 1px solid var(--sp-line);
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    .res-table td {
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--sp-line);
+        vertical-align: middle;
+        font-size: 0.875rem;
+    }
+
+    .res-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .res-table tr.expired-row {
+        background: var(--sp-muted-bg);
+        color: var(--sp-muted-text);
+    }
+
+        .res-table tr.expired-row .book-title {
+            color: var(--sp-muted-text);
+        }
+
+.book-title {
+    font-weight: 700;
+    color: var(--sp-green-800);
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+.book-meta {
+    font-size: 0.75rem;
+    color: var(--sp-muted-text);
+    display: block;
+}
+
+.patron-name {
+    font-weight: 700;
+    color: var(--sp-ink);
+    display: block;
+}
+
+.patron-id {
+    font-size: 0.75rem;
+    color: var(--sp-muted-text);
+}
+
+.cover-thumb {
+    width: 44px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--sp-line);
+    background: var(--sp-muted-bg);
+    flex-shrink: 0;
+}
+
+.book-cell {
+    display: flex;
+    gap: 0.65rem;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+    .book-cell > div {
+        min-width: 0;
+    }
+
+/* ---------------- Status Badges ---------------- */
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.7rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.status-pending,
+.status-reserved {
+    background: var(--sp-warning-bg);
+    color: var(--sp-warning-text);
+}
+
+.status-ready {
+    background: #d1e7dd;
+    color: var(--sp-green-900);
+}
+
+.status-expired {
+    background: var(--sp-muted-bg);
+    color: var(--sp-muted-text);
+    border: 1px solid var(--sp-line);
+}
+
+.status-cancelled {
+    background: #f3dede;
+    color: #7a2a2a;
+}
+
+/* ---------------- Action Buttons ---------------- */
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.btn-action-ready {
+    background: var(--sp-green-700);
+    color: var(--sp-white);
+    border-color: var(--sp-green-800);
+}
+
+    .btn-action-ready:hover {
+        background: var(--sp-green-900);
+        color: var(--sp-white);
+    }
+
+.btn-action-secondary {
+    background: var(--sp-white);
+    color: var(--sp-green-800);
+    border-color: var(--sp-line);
+}
+
+    .btn-action-secondary:hover {
+        background: var(--sp-muted-bg);
+    }
+
+.btn-action-muted {
+    background: var(--sp-muted-bg);
+    color: var(--sp-muted-text);
+    border-color: var(--sp-line);
+    cursor: default;
+    pointer-events: none;
+}
+
+.btn-action .fa-solid,
+.btn-action .fas {
+    font-size: 0.8rem;
+}
+
+/* ---------------- Expiring Soon Card ---------------- */
+
+.expiring-card {
+    background: var(--sp-white);
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    box-shadow: var(--sp-shadow);
+    overflow: hidden;
+}
+
+.expiring-header {
+    background: var(--sp-green-800);
+    color: var(--sp-white);
+    padding: 0.85rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+    .expiring-header h5 {
+        color: var(--sp-white);
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .expiring-header .badge {
+        background: var(--sp-gold);
+        color: var(--sp-green-900);
+        font-weight: 800;
+    }
+
+.expiring-alert {
+    background: var(--sp-warning-bg);
+    color: var(--sp-warning-text);
+    border-radius: var(--sp-radius);
+    padding: 0.65rem 0.8rem;
+    font-size: 0.78rem;
+    margin-bottom: 0.75rem;
+    border-left: 4px solid var(--sp-gold);
+}
+
+.expiring-item {
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--sp-line);
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+    .expiring-item:last-child {
+        border-bottom: none;
+    }
+
+    .expiring-item .book-title {
+        font-size: 0.85rem;
+    }
+
+    .expiring-item .book-meta {
+        font-size: 0.72rem;
+    }
+
+.expiring-cover {
+    width: 38px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 3px;
+    border: 1px solid var(--sp-line);
+    flex-shrink: 0;
+    background: var(--sp-muted-bg);
+}
+
+.expiring-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.expiry-time {
+    font-size: 0.72rem;
+    color: var(--sp-muted-text);
+    margin-top: 0.15rem;
+}
+
+/* ---------------- Countdown Badge ---------------- */
+
+.countdown-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    margin-top: 0.35rem;
+    letter-spacing: 0.3px;
+}
+
+.countdown-warn {
+    background: var(--sp-warning-bg);
+    color: var(--sp-warning-text);
+}
+
+.countdown-urgent {
+    background: var(--sp-urgent-bg);
+    color: var(--sp-urgent);
+    border: 1px solid var(--sp-urgent);
+    animation: sp-pulse 1.4s ease-in-out infinite;
+}
+
+.countdown-done {
+    background: var(--sp-muted-bg);
+    color: var(--sp-muted-text);
+    border: 1px solid var(--sp-line);
+    animation: none;
+}
+
+@keyframes sp-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* ---------------- Empty States ---------------- */
+
+.sp-empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--sp-muted-text);
+}
+
+    .sp-empty i {
+        font-size: 1.6rem;
+        color: var(--sp-green-600);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .sp-empty p {
+        margin: 0;
+        font-size: 0.85rem;
+    }
+
+/* ---------------- Search ---------------- */
+
+.sp-search {
+    display: flex;
+    align-items: stretch;
+    gap: 0.35rem;
+    min-width: 220px;
+}
+
+    .sp-search input[type="text"] {
+        border: 1px solid var(--sp-line);
+        border-radius: 6px;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        flex: 1;
+        min-width: 0;
+        background: var(--sp-white);
+        color: var(--sp-ink);
+    }
+
+        .sp-search input[type="text"]:focus {
+            outline: none;
+            border-color: var(--sp-green-600);
+            box-shadow: 0 0 0 2px rgba(20, 83, 45, 0.15);
+        }
+
+    .sp-search button,
+    .sp-search a {
+        background: var(--sp-green-700);
+        color: var(--sp-white);
+        border: 1px solid var(--sp-green-800);
+        border-radius: 6px;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .sp-search button:hover,
+        .sp-search a:hover {
+            background: var(--sp-green-900);
+        }
+
+/* ---------------- Responsive ---------------- */
+
+@media (max-width: 991.98px) {
+    .expiring-card {
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .reservations-page {
+        padding: 1rem 0 1.5rem;
+    }
+
+    /* Card-style table on mobile */
+    .res-table thead {
+        display: none;
+    }
+
+    .res-table,
+    .res-table tbody,
+    .res-table tr,
+    .res-table td {
+        display: block;
+        width: 100%;
+    }
+
+        .res-table tr {
+            border: 1px solid var(--sp-line);
+            border-radius: var(--sp-radius);
+            margin-bottom: 0.75rem;
+            background: var(--sp-white);
+            box-shadow: var(--sp-shadow);
+            overflow: hidden;
+        }
+
+            .res-table tr.expired-row {
+                background: var(--sp-muted-bg);
+            }
+
+        .res-table td {
+            padding: 0.55rem 0.9rem;
+            border-bottom: 1px solid var(--sp-line);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.2rem;
+        }
+
+            .res-table td:last-child {
+                border-bottom: none;
+            }
+
+            .res-table td::before {
+                content: attr(data-label);
+                font-size: 0.65rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                color: var(--sp-muted-text);
+            }
+
+    .btn-action {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .sp-search {
+        width: 100%;
+    }
+}

@@ -739,6 +739,10 @@
                                 NavigateUrl="~/Users/Staff/Reservation/Reservations.aspx" CssClass="nav-menu-item">
                                 <i class="fa-solid fa-calendar-days"></i><span>Reservations</span>
                             </asp:HyperLink>
+                            <asp:HyperLink ID="lnkHistory" runat="server"
+                                NavigateUrl="~/Users/Patron/History/History.aspx" CssClass="nav-menu-item">
+                                <i class="fa-solid fa-calendar-days"></i><span>History</span>
+                            </asp:HyperLink>
                             <asp:HyperLink ID="lnkPenalties" runat="server"
                                 NavigateUrl="~/Users/Staff/Penalties/Penalties.aspx" CssClass="nav-menu-item">
                                 <i class="fa-solid fa-calendar-days"></i><span>Penalties</span>

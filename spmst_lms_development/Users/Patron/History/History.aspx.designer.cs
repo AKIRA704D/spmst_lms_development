@@ -33,6 +33,15 @@ namespace spmst_lms_development.Users.Patron.History
         protected global::System.Web.UI.WebControls.Literal litTopOverdue;
 
         /// <summary>
+        /// upSummary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upSummary;
+
+        /// <summary>
         /// litCardActive control.
         /// </summary>
         /// <remarks>
@@ -40,6 +49,15 @@ namespace spmst_lms_development.Users.Patron.History
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Literal litCardActive;
+
+        /// <summary>
+        /// litCardOverdue control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litCardOverdue;
 
         /// <summary>
         /// litCardFines control.
@@ -60,21 +78,75 @@ namespace spmst_lms_development.Users.Patron.History
         protected global::System.Web.UI.WebControls.Literal litCardReturned;
 
         /// <summary>
-        /// upHistory control.
+        /// litActiveTabCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upHistory;
+        protected global::System.Web.UI.WebControls.Literal litActiveTabCount;
 
         /// <summary>
-        /// rptHistory control.
+        /// litInactiveTabCount control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptHistory;
+        protected global::System.Web.UI.WebControls.Literal litInactiveTabCount;
+
+        /// <summary>
+        /// upActive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upActive;
+
+        /// <summary>
+        /// hfRenewTxnId control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfRenewTxnId;
+
+        /// <summary>
+        /// btnSubmitRenewal control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSubmitRenewal;
+
+        /// <summary>
+        /// rptActive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptActive;
+
+        /// <summary>
+        /// upInactive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upInactive;
+
+        /// <summary>
+        /// rptInactive control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptInactive;
     }
 }

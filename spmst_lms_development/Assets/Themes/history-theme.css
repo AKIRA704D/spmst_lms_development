@@ -1,0 +1,270 @@
+﻿/* ============================================================
+   SPAMAST LMS — Centralized Theme
+   Path: Assets/Themes/spmast-theme.css
+   Purpose: shared design tokens + reusable component styles
+   ============================================================ */
+
+:root {
+    --sp-green-900: #0b3d2c;
+    --sp-green-800: #0f452d;
+    --sp-green-700: #14532d;
+    --sp-green-600: #1b7a3d;
+    --sp-gold: #d4a017;
+    --sp-gold-200: #e4b94a;
+    --sp-lime: #d4e022;
+    --sp-paper: #f8faf7;
+    --sp-line: #dfe7e0;
+    --sp-ink: #1f2d24;
+    --sp-serif: Georgia, "Times New Roman", serif;
+    --sp-sans: Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --sp-wrap: 1400px;
+    --sp-radius: 8px;
+    --sp-logo: url("https://www2.spamast.edu.ph/wp-content/uploads/2024/09/452931072_459590360307917_6589427784078406213_n.jpg");
+}
+
+/* ---------- Base ---------- */
+.sp-page {
+    background-color: var(--sp-paper);
+    color: var(--sp-ink);
+    font-family: var(--sp-sans);
+}
+
+    .sp-page h1, .sp-page h2, .sp-page h3,
+    .sp-page h4, .sp-page h5, .sp-page h6 {
+        font-family: var(--sp-serif);
+        color: var(--sp-green-900);
+    }
+
+.sp-wrap {
+    max-width: var(--sp-wrap);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* ---------- Cards ---------- */
+.sp-card {
+    background-color: #ffffff;
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    box-shadow: 0 1px 2px rgba(11, 61, 44, 0.05);
+}
+
+.sp-card-muted {
+    background-color: var(--sp-paper);
+}
+
+/* ---------- Buttons ---------- */
+.sp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--sp-radius);
+    font-family: var(--sp-sans);
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    border: 1px solid transparent;
+    text-decoration: none;
+}
+
+    .sp-btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.35);
+    }
+
+.sp-btn-primary {
+    background-color: var(--sp-green-700);
+    color: #ffffff;
+    border-color: var(--sp-green-700);
+}
+
+    .sp-btn-primary:hover,
+    .sp-btn-primary:focus {
+        background-color: var(--sp-green-600);
+        border-color: var(--sp-green-600);
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+.sp-btn-outline {
+    background-color: transparent;
+    color: var(--sp-green-700);
+    border-color: var(--sp-green-700);
+}
+
+    .sp-btn-outline:hover,
+    .sp-btn-outline:focus {
+        background-color: var(--sp-green-700);
+        color: #ffffff;
+        text-decoration: none;
+    }
+
+.sp-btn-gold {
+    background-color: var(--sp-gold);
+    color: var(--sp-green-900);
+    border-color: var(--sp-gold);
+}
+
+    .sp-btn-gold:hover {
+        background-color: var(--sp-gold-200);
+        border-color: var(--sp-gold-200);
+        color: var(--sp-green-900);
+    }
+
+.sp-btn-sm {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.8rem;
+}
+
+.sp-btn:disabled,
+.sp-btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ---------- Badges ---------- */
+.sp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.sp-badge-borrowed {
+    background-color: #dbeafe;
+    color: #1e3a8a;
+    border-color: #bfdbfe;
+}
+
+.sp-badge-overdue {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.sp-badge-renewal {
+    background-color: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.sp-badge-reserved {
+    background-color: #ede9fe;
+    color: #5b21b6;
+    border-color: #ddd6fe;
+}
+
+.sp-badge-ready {
+    background-color: var(--sp-lime);
+    color: var(--sp-green-900);
+    border-color: #b8c41a;
+}
+
+.sp-badge-returned {
+    background-color: #f3f4f6;
+    color: #374151;
+    border-color: #e5e7eb;
+}
+
+.sp-badge-cancelled {
+    background-color: #f9fafb;
+    color: #6b7280;
+    border-color: #e5e7eb;
+}
+
+.sp-badge-renewed {
+    background-color: #ecfdf5;
+    color: var(--sp-green-800);
+    border-color: #a7f3d0;
+}
+
+.sp-badge-unknown {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border-color: #e5e7eb;
+}
+
+/* ---------- Nav tabs ---------- */
+.sp-page .nav-tabs {
+    border-bottom: 2px solid var(--sp-line);
+}
+
+    .sp-page .nav-tabs .nav-link {
+        color: var(--sp-ink);
+        font-weight: 600;
+        border: none;
+        border-bottom: 3px solid transparent;
+        background: transparent;
+        padding: 0.6rem 1rem;
+        border-radius: 0;
+    }
+
+        .sp-page .nav-tabs .nav-link:hover {
+            color: var(--sp-green-700);
+            border-bottom-color: var(--sp-gold-200);
+        }
+
+        .sp-page .nav-tabs .nav-link.active {
+            color: var(--sp-green-800);
+            background: transparent;
+            border-bottom-color: var(--sp-green-700);
+        }
+
+/* ---------- Alerts / empty states ---------- */
+.sp-alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--sp-radius);
+    border: 1px solid var(--sp-line);
+    background-color: #ffffff;
+    color: var(--sp-ink);
+}
+
+.sp-alert-empty {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: #6b7280;
+}
+
+    .sp-alert-empty i {
+        font-size: 2rem;
+        color: var(--sp-gold);
+        margin-bottom: 0.75rem;
+    }
+
+/* ---------- Text utilities ---------- */
+.sp-text-muted {
+    color: #6b7280;
+}
+
+.sp-text-strong {
+    color: var(--sp-green-900);
+    font-weight: 600;
+}
+
+.sp-text-gold {
+    color: var(--sp-gold);
+}
+
+.sp-text-danger {
+    color: #b91c1c;
+}
+
+/* ---------- Misc ---------- */
+.sp-divider {
+    height: 1px;
+    background-color: var(--sp-line);
+    margin: 1rem 0;
+}

@@ -97,6 +97,7 @@ namespace spmst_lms_development.Users.MasterPage
             Allow(lnkToPickUp, PatronsOnly);
             Allow(lnkReservations, RoleAdmin, RoleStaffC, RoleStaffM);
             Allow(lnkPenalties, RoleAdmin, RoleStaffC);
+            Allow(lnkHistory, PatronsOnly);
             Allow(lnkAttendance, RoleAdmin, RoleStaffM);
 
             // ---------- Core Operations → Catalog ----------

@@ -15,6 +15,15 @@ namespace spmst_lms_development.Users.Staff.Reservation
     {
 
         /// <summary>
+        /// upReservations control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.UpdatePanel upReservations;
+
+        /// <summary>
         /// litTotalHolds control.
         /// </summary>
         /// <remarks>
@@ -51,6 +60,15 @@ namespace spmst_lms_development.Users.Staff.Reservation
         protected global::System.Web.UI.WebControls.Repeater rptReservations;
 
         /// <summary>
+        /// pnlEmptyReservations control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlEmptyReservations;
+
+        /// <summary>
         /// litExpiringCount control.
         /// </summary>
         /// <remarks>
@@ -75,6 +93,6 @@ namespace spmst_lms_development.Users.Staff.Reservation
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.PlaceHolder phNoExpiring;
+        protected global::System.Web.UI.WebControls.Panel phNoExpiring;
     }
 }

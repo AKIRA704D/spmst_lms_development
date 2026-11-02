@@ -100,12 +100,9 @@ namespace spmst_lms_development.Users.Patron.Reservations
                             foreach (DataRow row in dt.Rows)
                             {
                                 string status = Convert.ToString(row["Status"]);
-                                bool isCancelled = string.Equals(
-                                    status, "Cancelled", StringComparison.OrdinalIgnoreCase);
-                                bool isReady = string.Equals(
-                                    status, "Ready", StringComparison.OrdinalIgnoreCase);
-                                bool isReserved = string.Equals(
-                                    status, "Reserved", StringComparison.OrdinalIgnoreCase);
+                                bool isCancelled = string.Equals(status, "Cancelled", StringComparison.OrdinalIgnoreCase);
+                                bool isReady = string.Equals(status, "Ready", StringComparison.OrdinalIgnoreCase);
+                                bool isReserved = string.Equals(status, "Reserved", StringComparison.OrdinalIgnoreCase);
 
                                 bool isExpiredNow =
                                     row["IsExpiredNow"] != DBNull.Value &&
@@ -115,20 +112,17 @@ namespace spmst_lms_development.Users.Patron.Reservations
 
                                 DateTime? expiryAt = null;
                                 if (row["ExpiryAt"] != DBNull.Value)
-                                {
                                     expiryAt = Convert.ToDateTime(row["ExpiryAt"]);
-                                }
 
                                 row["DisplayAuthor"] = FormatAuthor(row["Author"]);
                                 row["CoverUrl"] = ResolveCoverUrl(row["CoverPath"]);
-                                row["CoverFallbackUrl"] =
-                                    ResolveUrl("~/Assets/Covers/default-cover.jpg");
+                                row["CoverFallbackUrl"] = ResolveUrl("~/Assets/Covers/default-cover.jpg");
 
                                 row["ReservedDateDisplay"] =
                                     row["ReservedDate"] == DBNull.Value
-                                        ? "—"
+                                        ? "\u2014"
                                         : Convert.ToDateTime(row["ReservedDate"])
-                                            .ToString("MMM d, yyyy", CultureInfo.InvariantCulture);
+                                                 .ToString("MMM d, yyyy", CultureInfo.InvariantCulture);
 
                                 row["IsExpired"] = isExpired;
                                 row["CancelVisible"] = !isExpired && (isReady || isReserved);
@@ -150,8 +144,7 @@ namespace spmst_lms_development.Users.Patron.Reservations
                                         statusText = "Reservation Expired";
                                         statusCss = "status-expired";
                                         expiryDisplay = expiryAt.HasValue
-                                            ? "Expired at " + expiryAt.Value.ToString(
-                                                "MMM d, yyyy, h:mm tt", CultureInfo.InvariantCulture)
+                                            ? "Expired at " + expiryAt.Value.ToString("MMM d, yyyy, h:mm tt", CultureInfo.InvariantCulture)
                                             : "Expired";
                                     }
                                     else
@@ -159,8 +152,7 @@ namespace spmst_lms_development.Users.Patron.Reservations
                                         statusText = "Ready for Pickup";
                                         statusCss = "status-ready";
                                         expiryDisplay = expiryAt.HasValue
-                                            ? "Valid until " + expiryAt.Value.ToString(
-                                                "MMM d, yyyy, h:mm tt", CultureInfo.InvariantCulture)
+                                            ? "Valid until " + expiryAt.Value.ToString("MMM d, yyyy, h:mm tt", CultureInfo.InvariantCulture)
                                             : "Valid for 1 hour after ready";
                                     }
                                 }
@@ -177,18 +169,12 @@ namespace spmst_lms_development.Users.Patron.Reservations
                                 row["RowCss"] = "reservation-card" +
                                     (isExpired ? " reservation-expired" : string.Empty);
 
-                                if (isReady && !isExpired)
-                                {
-                                    readyCount++;
-                                }
-                                else if (isReserved)
-                                {
-                                    processingCount++;
-                                }
+                                if (isReady && !isExpired) readyCount++;
+                                else if (isReserved) processingCount++;
                             }
 
-                            litReadyCount.Text = readyCount.ToString();
-                            litProcessingCount.Text = processingCount.ToString();
+                            litReadyCount.Text = readyCount.ToString(CultureInfo.InvariantCulture);
+                            litProcessingCount.Text = processingCount.ToString(CultureInfo.InvariantCulture);
 
                             rptReservations.DataSource = dt;
                             rptReservations.DataBind();
@@ -229,11 +215,8 @@ namespace spmst_lms_development.Users.Patron.Reservations
 
         protected void rptReservations_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            if (!string.Equals(
-                e.CommandName, "CancelReservation", StringComparison.OrdinalIgnoreCase))
-            {
+            if (!string.Equals(e.CommandName, "CancelReservation", StringComparison.OrdinalIgnoreCase))
                 return;
-            }
 
             string userId = Session["UserID"]?.ToString();
 
@@ -246,11 +229,7 @@ namespace spmst_lms_development.Users.Patron.Reservations
             int transactionId;
             if (!int.TryParse(Convert.ToString(e.CommandArgument), out transactionId))
             {
-                ShowSweetAlert(
-                    "Unable to Cancel",
-                    "Invalid reservation request.",
-                    "error");
-
+                ShowSweetAlert("Unable to Cancel", "Invalid reservation request.", "error");
                 return;
             }
 
@@ -278,10 +257,8 @@ namespace spmst_lms_development.Users.Patron.Reservations
                                     ELSE 0
                                 END AS IsExpired
                             FROM Transactions t
-                            INNER JOIN Item_Copies ic
-                                ON t.accession_number = ic.accession_number
-                            INNER JOIN Library_Resources lr
-                                ON ic.resource_id = lr.resource_id
+                            INNER JOIN Item_Copies ic       ON t.accession_number = ic.accession_number
+                            INNER JOIN Library_Resources lr ON ic.resource_id      = lr.resource_id
                             WHERE t.transaction_id = @TxnId
                               AND t.user_id = @UserId
                             FOR UPDATE";
@@ -307,41 +284,29 @@ namespace spmst_lms_development.Users.Patron.Reservations
                         {
                             trans.Rollback();
                             LoadReservations();
-                            ShowSweetAlert(
-                                "Unable to Cancel",
-                                "This reservation was not found for your account.",
-                                "error");
-
+                            ShowSweetAlert("Unable to Cancel",
+                                "This reservation was not found for your account.", "error");
                             return;
                         }
 
-                        if (string.Equals(
-                            status, "Cancelled", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(status, "Cancelled", StringComparison.OrdinalIgnoreCase))
                         {
                             trans.Rollback();
                             LoadReservations();
-                            ShowSweetAlert(
-                                "Already Cancelled",
-                                "This reservation has already been cancelled.",
-                                "info");
-
+                            ShowSweetAlert("Already Cancelled",
+                                "This reservation has already been cancelled.", "info");
                             return;
                         }
 
-                        bool isReady = string.Equals(
-                            status, "Ready", StringComparison.OrdinalIgnoreCase);
-                        bool isReserved = string.Equals(
-                            status, "Reserved", StringComparison.OrdinalIgnoreCase);
+                        bool isReady = string.Equals(status, "Ready", StringComparison.OrdinalIgnoreCase);
+                        bool isReserved = string.Equals(status, "Reserved", StringComparison.OrdinalIgnoreCase);
 
                         if (!isReady && !isReserved)
                         {
                             trans.Rollback();
                             LoadReservations();
-                            ShowSweetAlert(
-                                "Unable to Cancel",
-                                "This reservation can no longer be cancelled.",
-                                "error");
-
+                            ShowSweetAlert("Unable to Cancel",
+                                "This reservation can no longer be cancelled.", "error");
                             return;
                         }
 
@@ -349,134 +314,89 @@ namespace spmst_lms_development.Users.Patron.Reservations
                         {
                             trans.Rollback();
                             LoadReservations();
-                            ShowSweetAlert(
-                                "Reservation Expired",
-                                "This reservation has expired and can no longer be cancelled.",
-                                "warning");
-
+                            ShowSweetAlert("Reservation Expired",
+                                "This reservation has expired and can no longer be cancelled.", "warning");
                             return;
                         }
 
                         string updateSql = @"
                             UPDATE Transactions
-                            SET status = 'Cancelled',
-                                remarks = 'Cancelled by patron'
-                            WHERE transaction_id = @TxnId
-                              AND user_id = @UserId
-                              AND status IN ('Reserved', 'Ready')
-                              AND (
-                                    status <> 'Ready'
-                                    OR updated_at > NOW() - INTERVAL 1 HOUR
-                                  )";
+                               SET status = 'Cancelled',
+                                   remarks = 'Cancelled by patron'
+                             WHERE transaction_id = @TxnId
+                               AND user_id = @UserId
+                               AND status IN ('Reserved', 'Ready')
+                               AND (
+                                     status <> 'Ready'
+                                     OR updated_at > NOW() - INTERVAL 1 HOUR
+                                   )";
 
                         using (MySqlCommand updateCmd = new MySqlCommand(updateSql, conn, trans))
                         {
                             updateCmd.Parameters.AddWithValue("@TxnId", transactionId);
                             updateCmd.Parameters.AddWithValue("@UserId", userId);
 
-                            int affected = updateCmd.ExecuteNonQuery();
-
-                            if (affected == 0)
+                            if (updateCmd.ExecuteNonQuery() == 0)
                             {
                                 trans.Rollback();
                                 LoadReservations();
-                                ShowSweetAlert(
-                                    "Unable to Cancel",
+                                ShowSweetAlert("Unable to Cancel",
                                     "The reservation could not be cancelled. It may have expired or already been cancelled.",
                                     "error");
-
                                 return;
                             }
                         }
 
                         trans.Commit();
-
                         LoadReservations();
 
-                        ShowSweetAlert(
-                            "Cancelled",
-                            "Your reservation for '" + title + "' has been cancelled.",
-                            "success");
+                        ShowSweetAlert("Cancelled",
+                            "Your reservation for '" + title + "' has been cancelled.", "success");
                     }
                 }
             }
             catch
             {
-                ShowSweetAlert(
-                    "Error",
-                    "Unable to cancel the reservation right now. Please try again.",
-                    "error");
+                ShowSweetAlert("Error",
+                    "Unable to cancel the reservation right now. Please try again.", "error");
             }
         }
 
         private string FormatAuthor(object authorObj)
         {
             string raw = authorObj == null || authorObj == DBNull.Value
-                ? string.Empty
-                : authorObj.ToString();
+                ? string.Empty : authorObj.ToString();
 
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-                return "Unknown Author";
-            }
+            if (string.IsNullOrWhiteSpace(raw)) return "Unknown Author";
 
             raw = raw.Replace("\r", " ").Replace("\n", ";").Trim();
 
             string first = raw;
             bool multiple = false;
 
-            string[] semicolonParts = raw
-                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-                .Select(p => p.Trim())
-                .Where(p => p.Length > 0)
-                .ToArray();
-
-            if (semicolonParts.Length > 1)
-            {
-                multiple = true;
-                first = semicolonParts[0];
-            }
+            string[] semi = raw.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                               .Select(p => p.Trim()).Where(p => p.Length > 0).ToArray();
+            if (semi.Length > 1) { multiple = true; first = semi[0]; }
             else
             {
-                string[] andParts = Regex
-                    .Split(raw, @"\s+(?:and|&)\s+", RegexOptions.IgnoreCase)
-                    .Select(p => p.Trim())
-                    .Where(p => p.Length > 0)
-                    .ToArray();
-
-                if (andParts.Length > 1)
-                {
-                    multiple = true;
-                    first = andParts[0];
-                }
+                string[] andParts = Regex.Split(raw, @"\s+(?:and|&)\s+", RegexOptions.IgnoreCase)
+                                          .Select(p => p.Trim()).Where(p => p.Length > 0).ToArray();
+                if (andParts.Length > 1) { multiple = true; first = andParts[0]; }
                 else
                 {
-                    string[] commaParts = raw
-                        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(p => p.Trim())
-                        .Where(p => p.Length > 0)
-                        .ToArray();
-
-                    if (commaParts.Length > 1)
-                    {
-                        multiple = true;
-                        first = commaParts[0];
-                    }
+                    string[] comma = raw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(p => p.Trim()).Where(p => p.Length > 0).ToArray();
+                    if (comma.Length > 1) { multiple = true; first = comma[0]; }
                 }
             }
 
             first = first.Trim().Trim(',', ';').Trim();
-
             if (first.EndsWith(" et al.", StringComparison.OrdinalIgnoreCase))
-            {
                 first = first.Substring(0, first.Length - 8).Trim();
-            }
 
             if (string.IsNullOrWhiteSpace(first) ||
                 first.Equals("et al.", StringComparison.OrdinalIgnoreCase))
-            {
                 return "Unknown Author";
-            }
 
             return multiple ? first + " et al." : first;
         }
@@ -487,67 +407,32 @@ namespace spmst_lms_development.Users.Patron.Reservations
             string defaultUrl = ResolveUrl(defaultAppRelative);
 
             string raw = coverObj == null || coverObj == DBNull.Value
-                ? string.Empty
-                : coverObj.ToString().Trim();
-
-            if (string.IsNullOrWhiteSpace(raw))
-            {
-                return defaultUrl;
-            }
+                ? string.Empty : coverObj.ToString().Trim();
+            if (string.IsNullOrWhiteSpace(raw)) return defaultUrl;
 
             if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
                 raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
                 return raw;
-            }
 
             string normalized = raw.Replace('\\', '/').Trim();
+            if (normalized.Contains("..")) return defaultUrl;
 
-            if (normalized.Contains(".."))
-            {
-                return defaultUrl;
-            }
-
-            int assetsIndex = normalized.IndexOf(
-                "Assets/", StringComparison.OrdinalIgnoreCase);
+            int assetsIndex = normalized.IndexOf("Assets/", StringComparison.OrdinalIgnoreCase);
 
             string appRelative;
-
-            if (assetsIndex >= 0)
-            {
-                appRelative = "~/" + normalized.Substring(assetsIndex);
-            }
-            else if (normalized.StartsWith("~/", StringComparison.Ordinal))
-            {
-                appRelative = normalized;
-            }
-            else if (normalized.StartsWith("/", StringComparison.Ordinal))
-            {
-                appRelative = "~" + normalized;
-            }
-            else if (!normalized.Contains("/"))
-            {
-                appRelative = "~/Assets/Covers/" + normalized;
-            }
-            else
-            {
-                appRelative = "~/" + normalized.TrimStart('/');
-            }
+            if (assetsIndex >= 0) appRelative = "~/" + normalized.Substring(assetsIndex);
+            else if (normalized.StartsWith("~/", StringComparison.Ordinal)) appRelative = normalized;
+            else if (normalized.StartsWith("/", StringComparison.Ordinal)) appRelative = "~" + normalized;
+            else if (!normalized.Contains("/")) appRelative = "~/Assets/Covers/" + normalized;
+            else appRelative = "~/" + normalized.TrimStart('/');
 
             try
             {
                 string physicalPath = Server.MapPath(appRelative);
-
-                if (!string.IsNullOrEmpty(physicalPath) &&
-                    System.IO.File.Exists(physicalPath))
-                {
+                if (!string.IsNullOrEmpty(physicalPath) && System.IO.File.Exists(physicalPath))
                     return ResolveUrl(appRelative);
-                }
             }
-            catch
-            {
-                // Fall through to the default cover.
-            }
+            catch { /* fall through */ }
 
             return defaultUrl;
         }
@@ -562,18 +447,13 @@ namespace spmst_lms_development.Users.Patron.Reservations
                 ");";
 
             ScriptManager.RegisterStartupScript(
-                this,
-                GetType(),
-                Guid.NewGuid().ToString(),
-                script,
-                true);
+                this, GetType(), Guid.NewGuid().ToString(), script, true);
         }
 
         private static string JsString(string value)
         {
             return System.Web.HttpUtility.JavaScriptStringEncode(
-                value ?? string.Empty,
-                true);
+                value ?? string.Empty, true);
         }
     }
 }

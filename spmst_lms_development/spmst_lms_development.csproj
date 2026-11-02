@@ -144,6 +144,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Themes\history-theme.css" />
     <Content Include="Assets\Themes\patron-dashboard-theme.css" />
     <Content Include="Assets\Profile\default-cover.png" />
     <Content Include="Assets\Covers\default-cover.jpg" />
@@ -153,6 +154,7 @@
     <Content Include="Assets\Img\lmsa_logo.png" />
     <Content Include="Assets\Img\spmst_logo.jpg" />
     <Content Include="Assets\Img\spmst_logo_wbg.png" />
+    <Content Include="Assets\Themes\reservations-theme.css" />
     <Content Include="Assets\Themes\to-pick-up-theme.css" />
     <Content Include="LandingPage\AboutContact.aspx" />
     <Content Include="LandingPage\Home.aspx" />
@@ -222,6 +224,9 @@
       <DependentUpon>NotificationPoll.ashx</DependentUpon>
     </Compile>
     <Compile Include="Assets\Helper\Handlers\PatronAnalyticsHelper.cs" />
+    <Compile Include="Assets\Helper\Handlers\ReservationStatusHandler.ashx.cs">
+      <DependentUpon>ReservationStatusHandler.ashx</DependentUpon>
+    </Compile>
     <Compile Include="Assets\Helper\InputHelper.cs" />
     <Compile Include="Assets\Helper\logs_Audit.cs" />
     <Compile Include="Assets\Helper\NotificationHelper.cs" />
@@ -238,6 +243,7 @@
     <Compile Include="Assets\Helper\Reservations\ReservationNoticeSmsService.cs" />
     <Compile Include="Assets\Helper\Reservations\ReservationNotificationLog.cs" />
     <Compile Include="Assets\Helper\Reservations\ReservationNotificationService.cs" />
+    <Compile Include="Assets\Helper\Reservations\ReservationStatusService.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />
     <Compile Include="Assets\Helper\SmsHelper.cs" />
     <Compile Include="LandingPage\AboutContact.aspx.cs">
@@ -652,6 +658,7 @@
     <Content Include="Users\Admin\Settings\LibrarySettingsData.ashx" />
     <Content Include="LandingPage\LandingData.ashx" />
     <Content Include="Assets\Helper\Handlers\NotificationPoll.ashx" />
+    <Content Include="Assets\Helper\Handlers\ReservationStatusHandler.ashx" />
     <None Include="packages.config" />
     <Content Include="SmsTick.ashx" />
     <None Include="Web.Debug.config">
