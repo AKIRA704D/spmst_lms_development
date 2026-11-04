@@ -15,6 +15,15 @@ namespace spmst_lms_development.Users.Staff.Transactions
     {
 
         /// <summary>
+        /// hfDefaultCover control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfDefaultCover;
+
+        /// <summary>
         /// lnkBorrow control.
         /// </summary>
         /// <remarks>
@@ -132,6 +141,42 @@ namespace spmst_lms_development.Users.Staff.Transactions
         protected global::System.Web.UI.HtmlControls.HtmlButton btnBookCam;
 
         /// <summary>
+        /// pnlNoReserved control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoReserved;
+
+        /// <summary>
+        /// pnlReservedTransactions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlReservedTransactions;
+
+        /// <summary>
+        /// litReservedCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litReservedCount;
+
+        /// <summary>
+        /// rptReservedTransactions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptReservedTransactions;
+
+        /// <summary>
         /// pnlBookInfo control.
         /// </summary>
         /// <remarks>
@@ -193,6 +238,33 @@ namespace spmst_lms_development.Users.Staff.Transactions
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnComplete;
+
+        /// <summary>
+        /// pnlActiveSummary control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlActiveSummary;
+
+        /// <summary>
+        /// litActiveCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litActiveCount;
+
+        /// <summary>
+        /// rptActiveTransactions control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptActiveTransactions;
 
         /// <summary>
         /// UPLiveFeed control.

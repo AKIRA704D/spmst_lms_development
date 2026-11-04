@@ -7,6 +7,8 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 namespace spmst_lms_development.Users.Staff.Transactions
 {
@@ -26,8 +28,17 @@ namespace spmst_lms_development.Users.Staff.Transactions
             "Thesis"
         };
 
+        protected string DefaultCoverUrl
+        {
+            get { return ResolveUrl("~/Assets/Covers/default-cover.jpg"); }
+        }
+
+      
+
         protected void Page_Load(object sender, EventArgs e)
         {
+            hfDefaultCover.Value = DefaultCoverUrl;
+
             if (!IsPostBack)
             {
                 string currentPage = System.IO.Path.GetFileName(Request.Url.AbsolutePath);
@@ -53,6 +64,11 @@ namespace spmst_lms_development.Users.Staff.Transactions
             string decryptedId = DecryptString(scannedText);
             string id = !string.IsNullOrEmpty(decryptedId) ? decryptedId : scannedText;
 
+            string firstName = null;
+            string lastName = null;
+            string dept = null;
+            string role = null;
+
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
                 string query = @"
@@ -73,32 +89,50 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 {
                     if (reader.Read())
                     {
-                        pnlPatronInfo.Visible = true;
-                        litPatronName.Text = $"{reader["first_name"]} {reader["last_name"]}";
-                        litPatronDept.Text = reader["dept"].ToString();
-                        litPatronRole.Text = reader["role"].ToString().ToUpper();
-                        litInitial.Text = reader["first_name"].ToString().Substring(0, 1);
-
-                        ViewState["DecryptedPatronID"] = id;
-                        ViewState["UserRole"] = reader["role"].ToString();
-
-                        txtPatronQR.Text = "VALID ID SCANNED";
-                        divBookStep.Attributes["class"] = "mb-4";
-                        txtBookBarcode.Enabled = true;
-                        btnBookCam.Disabled = false;
-                        txtBookBarcode.Focus();
-                    }
-                    else
-                    {
-                        ShowToast("User not found or invalid QR code.", "error");
-                        ResetForm();
+                        firstName = reader["first_name"].ToString();
+                        lastName = reader["last_name"].ToString();
+                        dept = reader["dept"].ToString();
+                        role = reader["role"].ToString();
                     }
                 }
             }
+
+            if (firstName == null)
+            {
+                ShowToast("User not found or invalid QR code.", "error");
+                ResetForm();
+                return;
+            }
+
+            pnlPatronInfo.Visible = true;
+            litPatronName.Text = $"{firstName} {lastName}";
+            litPatronDept.Text = dept;
+            litPatronRole.Text = role.ToUpper();
+            litInitial.Text = firstName.Length > 0 ? firstName.Substring(0, 1) : "?";
+
+            ViewState["DecryptedPatronID"] = id;
+            ViewState["UserRole"] = role;
+
+            // Clear any previously selected reservation / book panel.
+            ViewState["SelectedTransactionID"] = null;
+            ViewState["SelectedAccession"] = null;
+            ViewState["ScannedResourceID"] = null;
+            ViewState["ScannedSection"] = null;
+            pnlBookInfo.Visible = false;
+
+            txtPatronQR.Text = "VALID ID SCANNED";
+            divBookStep.Attributes["class"] = "mb-4";
+            txtBookBarcode.Enabled = true;
+            btnBookCam.Disabled = false;
+
+            // Automatically retrieve this patron's Reserved and active transactions.
+            BindPatronTransactions(id);
+
+            txtBookBarcode.Focus();
         }
 
         // ============================================================
-        //  STEP 2 : BOOK SCAN
+        //  STEP 2 : BOOK SCAN (MANUAL FALLBACK)
         // ============================================================
         protected void txtBookBarcode_TextChanged(object sender, EventArgs e)
         {
@@ -114,6 +148,8 @@ namespace spmst_lms_development.Users.Staff.Transactions
             }
 
             pnlBookInfo.Visible = false;
+            ViewState["SelectedTransactionID"] = null;
+            ViewState["SelectedAccession"] = null;
 
             try
             {
@@ -145,7 +181,6 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             bool isAvailable = Convert.ToInt32(reader["is_available"]) == 1;
                             string section = reader["section"].ToString();
 
-                            // ---- availability / reservation check ----
                             if (activeStatus == "Borrowed")
                             {
                                 ShowToast("This book is currently borrowed.", "error");
@@ -171,7 +206,6 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                 return;
                             }
 
-                            // ---- populate info panel ----
                             pnlBookInfo.Visible = true;
                             litBookTitle.Text = reader["title"].ToString();
                             litBookAuthor.Text = reader["author"].ToString();
@@ -181,31 +215,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             ViewState["ScannedResourceID"] = resourceId;
                             ViewState["ScannedSection"] = section;
 
-                            // ---- loan-type rules by section ----
-                            string cleanSection = (section ?? string.Empty).Trim();
-                            bool isLoanInOnly = LoanInOnlySections.Contains(cleanSection);
-
-                            var loanOutItem = ddlLoanType.Items.FindByValue("LOAN-OUT");
-                            var loanInItem = ddlLoanType.Items.FindByValue("LOAN-IN");
-
-                            if (loanOutItem == null || loanInItem == null)
-                            {
-                                ShowToast("Loan type options are not configured correctly.", "error");
-                                return;
-                            }
-
-                            if (isLoanInOnly)
-                            {
-                                loanOutItem.Enabled = false;
-                                loanInItem.Enabled = true;
-                                ddlLoanType.SelectedValue = "LOAN-IN";
-                            }
-                            else
-                            {
-                                loanOutItem.Enabled = true;
-                                loanInItem.Enabled = true;
-                                ddlLoanType.SelectedValue = "LOAN-OUT";
-                            }
+                            ConfigureLoanTypeOptions(section);
 
                             ShowToast("Book Recognized: " + reader["title"], "success");
                         }
@@ -225,13 +235,53 @@ namespace spmst_lms_development.Users.Staff.Transactions
         }
 
         // ============================================================
+        //  SELECT EXISTING RESERVED TRANSACTION
+        // ============================================================
+        protected void rptReservedTransactions_ItemCommand(object source, RepeaterCommandEventArgs e)
+        {
+            if (!string.Equals(e.CommandName, "SelectReservation", StringComparison.OrdinalIgnoreCase))
+                return;
+
+            int transactionId;
+            if (!int.TryParse(Convert.ToString(e.CommandArgument), out transactionId))
+                return;
+
+            string patronId = ViewState["DecryptedPatronID"]?.ToString();
+            if (string.IsNullOrEmpty(patronId))
+            {
+                ShowToast("Please scan Patron ID first.", "warning");
+                return;
+            }
+
+            DataRow row = GetReservedTransaction(patronId, transactionId);
+            if (row == null)
+            {
+                ShowToast("This reservation is no longer available for this patron.", "error");
+                BindPatronTransactions(patronId);
+                return;
+            }
+
+            PopulateBookPanel(row, transactionId);
+        }
+
+        // ============================================================
         //  COMPLETE TRANSACTION
         // ============================================================
         protected void btnComplete_Click(object sender, EventArgs e)
         {
             string studentID = ViewState["DecryptedPatronID"]?.ToString();
-            string barcode = litBookAccNo.Text;
-            string bookTitle = litBookTitle.Text;
+
+            int selectedTransactionId;
+            bool hasSelectedReservation =
+                int.TryParse(Convert.ToString(ViewState["SelectedTransactionID"]), out selectedTransactionId)
+                && selectedTransactionId > 0;
+
+            string barcode = hasSelectedReservation
+                ? Convert.ToString(ViewState["SelectedAccession"])
+                : litBookAccNo.Text;
+
+            barcode = (barcode ?? string.Empty).Trim();
+
             string role = ViewState["UserRole"]?.ToString() ?? "student";
             string resourceId = ViewState["ScannedResourceID"]?.ToString();
             string loanType = ddlLoanType.SelectedValue;
@@ -242,7 +292,6 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 return;
             }
 
-            // ---- server-side loan type validation ----
             string scannedSection = ViewState["ScannedSection"]?.ToString() ?? string.Empty;
             bool isLoanInOnly = LoanInOnlySections.Contains(scannedSection.Trim());
 
@@ -257,17 +306,17 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 return;
             }
 
-            // ---- due-date computation ----
             DateTime borrowDate = DateTime.Today;
             DateTime dueDate;
-            string status = "Borrowed";
 
             if (loanType == "LOAN-OUT")
                 dueDate = (role == "faculty" || role == "staff")
                           ? borrowDate.AddDays(150)
                           : borrowDate.AddDays(3);
             else
-                dueDate = borrowDate;   // LOAN-IN : same-day return
+                dueDate = borrowDate;
+
+            string status = "Borrowed";
 
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
@@ -276,64 +325,124 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 {
                     try
                     {
-                        string oldAccessionNumber = null;
                         bool isReservationSwap = false;
 
-                        // ---- 1. Exact reservation match? ----
-                        string checkExact = @"
-                            SELECT transaction_id FROM Transactions
-                            WHERE user_id = @uid
-                              AND accession_number = @acc
-                              AND status IN ('Reserved','Ready')
-                            LIMIT 1";
-                        MySqlCommand cmdExact = new MySqlCommand(checkExact, conn, trans);
-                        cmdExact.Parameters.AddWithValue("@uid", studentID);
-                        cmdExact.Parameters.AddWithValue("@acc", barcode);
-                        object exactResId = cmdExact.ExecuteScalar();
-
-                        if (exactResId != null)
+                        if (hasSelectedReservation)
                         {
-                            // Promote the reservation into a loan
-                            string updateTrans = @"
+                            // Process the exact Reserved transaction selected by staff.
+                            string checkSelected = @"
+                                SELECT accession_number, status
+                                  FROM Transactions
+                                 WHERE transaction_id = @tid
+                                   AND user_id = @uid
+                                 FOR UPDATE";
+
+                            string dbAcc = null;
+                            string dbStatus = null;
+
+                            MySqlCommand cmdSel = new MySqlCommand(checkSelected, conn, trans);
+                            cmdSel.Parameters.AddWithValue("@tid", selectedTransactionId);
+                            cmdSel.Parameters.AddWithValue("@uid", studentID);
+
+                            using (MySqlDataReader r = cmdSel.ExecuteReader())
+                            {
+                                if (r.Read())
+                                {
+                                    dbAcc = r["accession_number"].ToString();
+                                    dbStatus = r["status"].ToString();
+                                }
+                            }
+
+                            if (string.IsNullOrEmpty(dbAcc))
+                                throw new InvalidOperationException("The selected reservation was not found for this patron.");
+
+                            if (!string.Equals(dbStatus, "Reserved", StringComparison.OrdinalIgnoreCase))
+                                throw new InvalidOperationException("The selected transaction is no longer in Reserved status.");
+
+                            barcode = dbAcc;
+
+                            string updateSelected = @"
                                 UPDATE Transactions
                                    SET status      = @status,
                                        borrow_date = @borrowDate,
                                        due_date    = @dueDate
-                                 WHERE transaction_id = @tid";
-                            MySqlCommand cmdUp = new MySqlCommand(updateTrans, conn, trans);
-                            cmdUp.Parameters.AddWithValue("@status", status);
-                            cmdUp.Parameters.AddWithValue("@borrowDate", borrowDate);
-                            cmdUp.Parameters.AddWithValue("@dueDate", dueDate);
-                            cmdUp.Parameters.AddWithValue("@tid", exactResId);
-                            cmdUp.ExecuteNonQuery();
+                                 WHERE transaction_id = @tid
+                                   AND user_id = @uid
+                                   AND status = 'Reserved'";
+
+                            MySqlCommand cmdUpSel = new MySqlCommand(updateSelected, conn, trans);
+                            cmdUpSel.Parameters.AddWithValue("@status", status);
+                            cmdUpSel.Parameters.AddWithValue("@borrowDate", borrowDate);
+                            cmdUpSel.Parameters.AddWithValue("@dueDate", dueDate);
+                            cmdUpSel.Parameters.AddWithValue("@tid", selectedTransactionId);
+                            cmdUpSel.Parameters.AddWithValue("@uid", studentID);
+
+                            int affected = cmdUpSel.ExecuteNonQuery();
+                            if (affected != 1)
+                                throw new InvalidOperationException("The reservation could not be processed because its status changed.");
                         }
                         else
                         {
-                            // ---- 2. Reservation on a different copy of same resource? ----
-                            string checkDiff = @"
-                                SELECT t.transaction_id, t.accession_number
-                                FROM Transactions t
-                                JOIN Item_Copies c ON t.accession_number = c.accession_number
-                                WHERE t.user_id = @uid
-                                  AND c.resource_id = @resId
-                                  AND t.status IN ('Reserved','Ready')
-                                  AND t.accession_number <> @acc
+                            // ---- 1. Exact reservation match? ----
+                            string checkExact = @"
+                                SELECT transaction_id FROM Transactions
+                                WHERE user_id = @uid
+                                  AND accession_number = @acc
+                                  AND status IN ('Reserved','Ready')
                                 LIMIT 1";
-                            MySqlCommand cmdDiff = new MySqlCommand(checkDiff, conn, trans);
-                            cmdDiff.Parameters.AddWithValue("@uid", studentID);
-                            cmdDiff.Parameters.AddWithValue("@resId", resourceId);
-                            cmdDiff.Parameters.AddWithValue("@acc", barcode);
 
-                            using (MySqlDataReader reader = cmdDiff.ExecuteReader())
+                            MySqlCommand cmdExact = new MySqlCommand(checkExact, conn, trans);
+                            cmdExact.Parameters.AddWithValue("@uid", studentID);
+                            cmdExact.Parameters.AddWithValue("@acc", barcode);
+                            object exactResId = cmdExact.ExecuteScalar();
+
+                            if (exactResId != null)
                             {
-                                if (reader.Read())
-                                {
-                                    object diffResId = reader["transaction_id"];
-                                    oldAccessionNumber = reader["accession_number"].ToString();
-                                    isReservationSwap = true;
-                                    reader.Close();
+                                string updateTrans = @"
+                                    UPDATE Transactions
+                                       SET status      = @status,
+                                           borrow_date = @borrowDate,
+                                           due_date    = @dueDate
+                                     WHERE transaction_id = @tid";
 
-                                    // Swap the copy on the reservation row
+                                MySqlCommand cmdUp = new MySqlCommand(updateTrans, conn, trans);
+                                cmdUp.Parameters.AddWithValue("@status", status);
+                                cmdUp.Parameters.AddWithValue("@borrowDate", borrowDate);
+                                cmdUp.Parameters.AddWithValue("@dueDate", dueDate);
+                                cmdUp.Parameters.AddWithValue("@tid", exactResId);
+                                cmdUp.ExecuteNonQuery();
+                            }
+                            else
+                            {
+                                // ---- 2. Reservation on a different copy of same resource? ----
+                                string checkDiff = @"
+                                    SELECT t.transaction_id, t.accession_number
+                                    FROM Transactions t
+                                    JOIN Item_Copies c ON t.accession_number = c.accession_number
+                                    WHERE t.user_id = @uid
+                                      AND c.resource_id = @resId
+                                      AND t.status IN ('Reserved','Ready')
+                                      AND t.accession_number <> @acc
+                                    LIMIT 1";
+
+                                MySqlCommand cmdDiff = new MySqlCommand(checkDiff, conn, trans);
+                                cmdDiff.Parameters.AddWithValue("@uid", studentID);
+                                cmdDiff.Parameters.AddWithValue("@resId", (object)resourceId ?? DBNull.Value);
+                                cmdDiff.Parameters.AddWithValue("@acc", barcode);
+
+                                int diffTxnId = 0;
+
+                                using (MySqlDataReader reader = cmdDiff.ExecuteReader())
+                                {
+                                    if (reader.Read())
+                                    {
+                                        diffTxnId = Convert.ToInt32(reader["transaction_id"]);
+                                        isReservationSwap = true;
+                                    }
+                                }
+
+                                if (diffTxnId > 0)
+                                {
                                     string updateDiff = @"
                                         UPDATE Transactions
                                            SET accession_number = @newAcc,
@@ -341,24 +450,24 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                                borrow_date      = @borrowDate,
                                                due_date         = @dueDate
                                          WHERE transaction_id = @tid";
+
                                     MySqlCommand cmdUpDiff = new MySqlCommand(updateDiff, conn, trans);
                                     cmdUpDiff.Parameters.AddWithValue("@newAcc", barcode);
                                     cmdUpDiff.Parameters.AddWithValue("@status", status);
                                     cmdUpDiff.Parameters.AddWithValue("@borrowDate", borrowDate);
                                     cmdUpDiff.Parameters.AddWithValue("@dueDate", dueDate);
-                                    cmdUpDiff.Parameters.AddWithValue("@tid", diffResId);
+                                    cmdUpDiff.Parameters.AddWithValue("@tid", diffTxnId);
                                     cmdUpDiff.ExecuteNonQuery();
                                 }
                                 else
                                 {
-                                    reader.Close();
-
                                     // ---- 3. Plain new loan ----
                                     string insertTrans = @"
                                         INSERT INTO Transactions
                                             (user_id, accession_number, borrow_date, due_date, status)
                                         VALUES
                                             (@uid, @acc, @borrowDate, @dueDate, @status)";
+
                                     MySqlCommand cmdIn = new MySqlCommand(insertTrans, conn, trans);
                                     cmdIn.Parameters.AddWithValue("@uid", studentID);
                                     cmdIn.Parameters.AddWithValue("@acc", barcode);
@@ -372,13 +481,17 @@ namespace spmst_lms_development.Users.Staff.Transactions
 
                         trans.Commit();
 
-                        // ---- UX ----
                         string dueDateMessage = loanType == "LOAN-IN"
                             ? "Must be returned today"
                             : $"Due on: {dueDate:MMMM dd, yyyy}";
-                        string successMessage = isReservationSwap
-                            ? $"Reservation swapped and {dueDateMessage}"
-                            : $"Transaction successful! {dueDateMessage}";
+
+                        string successMessage;
+                        if (hasSelectedReservation)
+                            successMessage = $"Reservation processed! {dueDateMessage}";
+                        else if (isReservationSwap)
+                            successMessage = $"Reservation swapped and {dueDateMessage}";
+                        else
+                            successMessage = $"Transaction successful! {dueDateMessage}";
 
                         ShowSweetAlert("Success!", successMessage, "success");
                         ResetForm();
@@ -397,12 +510,182 @@ namespace spmst_lms_development.Users.Staff.Transactions
         }
 
         // ============================================================
+        //  PATRON TRANSACTION RETRIEVAL
+        // ============================================================
+        private DataTable GetPatronTransactions(string patronId, bool reservedOnly)
+        {
+            string statusClause = reservedOnly
+                ? "t.status IN ('Reserved','Ready')"
+                : "t.status IN ('Reserved','Ready','Borrowed','Renewal')";
+
+            string query = $@"
+                SELECT
+                    t.transaction_id   AS TransactionID,
+                    t.user_id          AS PatronID,
+                    t.accession_number AS AccessionNumber,
+                    t.status           AS Status,
+                    t.borrow_date      AS BorrowDate,
+                    t.due_date         AS DueDate,
+                    CASE WHEN t.due_date = t.borrow_date
+                         THEN 'LOAN-IN' ELSE 'LOAN-OUT' END AS LoanType,
+                    r.resource_id      AS ResourceID,
+                    r.title            AS BookTitle,
+                    r.author           AS Author,
+                    r.section          AS Section,
+                    r.cover_path       AS CoverPath,
+                    p.penalty_type     AS PenaltyType,
+                    p.fine_amount      AS FineAmount,
+                    p.fine_status      AS FineStatus
+                FROM Transactions t
+                JOIN Item_Copies       c ON t.accession_number = c.accession_number
+                JOIN Library_Resources r ON c.resource_id      = r.resource_id
+                LEFT JOIN Penalties    p ON p.penalty_id       = t.penalty_id
+                WHERE t.user_id = @uid
+                  AND {statusClause}
+                ORDER BY t.transaction_id DESC";
+
+            DataTable dt = new DataTable();
+
+            using (MySqlConnection conn = new MySqlConnection(_connStr))
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@uid", patronId);
+                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                    da.Fill(dt);
+            }
+
+            return dt;
+        }
+
+        private DataRow GetReservedTransaction(string patronId, int transactionId)
+        {
+            string query = @"
+                SELECT
+                    t.transaction_id   AS TransactionID,
+                    t.user_id          AS PatronID,
+                    t.accession_number AS AccessionNumber,
+                    t.status           AS Status,
+                    t.borrow_date      AS BorrowDate,
+                    t.due_date         AS DueDate,
+                    CASE WHEN t.due_date = t.borrow_date
+                         THEN 'LOAN-IN' ELSE 'LOAN-OUT' END AS LoanType,
+                    r.resource_id      AS ResourceID,
+                    r.title            AS BookTitle,
+                    r.author           AS Author,
+                    r.section          AS Section,
+                    r.cover_path       AS CoverPath,
+                    p.penalty_type     AS PenaltyType,
+                    p.fine_amount      AS FineAmount,
+                    p.fine_status      AS FineStatus
+                FROM Transactions t
+                JOIN Item_Copies       c ON t.accession_number = c.accession_number
+                JOIN Library_Resources r ON c.resource_id      = r.resource_id
+                LEFT JOIN Penalties    p ON p.penalty_id       = t.penalty_id
+                WHERE t.transaction_id = @tid
+                  AND t.user_id = @uid
+                  AND t.status = 'Reserved'
+                LIMIT 1";
+
+            DataTable dt = new DataTable();
+
+            using (MySqlConnection conn = new MySqlConnection(_connStr))
+            using (MySqlCommand cmd = new MySqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@tid", transactionId);
+                cmd.Parameters.AddWithValue("@uid", patronId);
+
+                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                    da.Fill(dt);
+            }
+
+            return dt.Rows.Count > 0 ? dt.Rows[0] : null;
+        }
+
+        private void BindPatronTransactions(string patronId)
+        {
+            DataTable reserved = GetPatronTransactions(patronId, true);
+            rptReservedTransactions.DataSource = reserved;
+            rptReservedTransactions.DataBind();
+            pnlReservedTransactions.Visible = reserved.Rows.Count > 0;
+            pnlNoReserved.Visible = reserved.Rows.Count == 0;
+            litReservedCount.Text = reserved.Rows.Count.ToString();
+
+            DataTable active = GetPatronTransactions(patronId, false);
+            rptActiveTransactions.DataSource = active;
+            rptActiveTransactions.DataBind();
+            pnlActiveSummary.Visible = active.Rows.Count > 0;
+            litActiveCount.Text = active.Rows.Count.ToString();
+        }
+
+        private void PopulateBookPanel(DataRow row, int? transactionId)
+        {
+            string section = Convert.ToString(row["Section"]);
+            string accession = Convert.ToString(row["AccessionNumber"]);
+
+            litBookTitle.Text = Convert.ToString(row["BookTitle"]);
+            litBookAuthor.Text = DisplayText(row["Author"]);
+            litBookSection.Text = DisplayText(section);
+            litBookAccNo.Text = accession;
+
+            pnlBookInfo.Visible = true;
+
+            ViewState["ScannedResourceID"] = Convert.ToString(row["ResourceID"]);
+            ViewState["ScannedSection"] = section;
+            ViewState["SelectedTransactionID"] = transactionId;
+            ViewState["SelectedAccession"] = accession;
+
+            ConfigureLoanTypeOptions(section);
+
+            ShowToast("Reservation selected: " + litBookTitle.Text, "success");
+        }
+
+        private void ConfigureLoanTypeOptions(string section)
+        {
+            string cleanSection = (section ?? string.Empty).Trim();
+            bool isLoanInOnly = LoanInOnlySections.Contains(cleanSection);
+
+            var loanOutItem = ddlLoanType.Items.FindByValue("LOAN-OUT");
+            var loanInItem = ddlLoanType.Items.FindByValue("LOAN-IN");
+
+            if (loanOutItem == null || loanInItem == null)
+            {
+                ShowToast("Loan type options are not configured correctly.", "error");
+                return;
+            }
+
+            if (isLoanInOnly)
+            {
+                loanOutItem.Enabled = false;
+                loanInItem.Enabled = true;
+                ddlLoanType.SelectedValue = "LOAN-IN";
+            }
+            else
+            {
+                loanOutItem.Enabled = true;
+                loanInItem.Enabled = true;
+                ddlLoanType.SelectedValue = "LOAN-OUT";
+            }
+        }
+
+        // ============================================================
         //  RESET / FEED / HELPERS
         // ============================================================
         private void ResetForm()
         {
             pnlPatronInfo.Visible = false;
             pnlBookInfo.Visible = false;
+            pnlReservedTransactions.Visible = false;
+            pnlNoReserved.Visible = false;
+            pnlActiveSummary.Visible = false;
+
+            rptReservedTransactions.DataSource = null;
+            rptReservedTransactions.DataBind();
+            rptActiveTransactions.DataSource = null;
+            rptActiveTransactions.DataBind();
+
+            litReservedCount.Text = "0";
+            litActiveCount.Text = "0";
+
             txtPatronQR.Text = "";
             txtBookBarcode.Text = "";
             txtBookBarcode.Enabled = false;
@@ -413,6 +696,8 @@ namespace spmst_lms_development.Users.Staff.Transactions
             ViewState["UserRole"] = null;
             ViewState["ScannedResourceID"] = null;
             ViewState["ScannedSection"] = null;
+            ViewState["SelectedTransactionID"] = null;
+            ViewState["SelectedAccession"] = null;
 
             txtPatronQR.Focus();
         }
@@ -475,7 +760,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
         {
             string cleanTitle = title.Replace("'", "\\'");
             string cleanMsg = message.Replace("'", "\\'");
-            string script = $"Swal.fire({{ title: '{cleanTitle}', text: '{cleanMsg}', icon: '{icon}', confirmButtonColor: '#1e3a8a' }});";
+            string script = $"Swal.fire({{ title: '{cleanTitle}', text: '{cleanMsg}', icon: '{icon}', confirmButtonColor: '#14532d' }});";
             ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(), script, true);
         }
 
@@ -504,6 +789,100 @@ namespace spmst_lms_development.Users.Staff.Transactions
                 }
             }
             catch { return ""; }
+        }
+
+        // ============================================================
+        //  COVER / DISPLAY HELPERS
+        // ============================================================
+        protected string GetCoverUrl(object coverPathObj)
+        {
+            string fallback = DefaultCoverUrl;
+            string coverPath = Convert.ToString(coverPathObj).Trim();
+
+            if (string.IsNullOrWhiteSpace(coverPath))
+                return fallback;
+
+            string normalized = coverPath.Replace('\\', '/').Trim();
+
+            // Allow fully qualified external image URLs.
+            if (normalized.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+                normalized.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                return normalized;
+
+            if (normalized.StartsWith("~/"))
+                normalized = normalized.Substring(2);
+            else
+                normalized = normalized.TrimStart('/');
+
+            // If a physical Windows path is stored, extract the Assets/... portion.
+            int assetsIndex = normalized.IndexOf("Assets/", StringComparison.OrdinalIgnoreCase);
+            if (assetsIndex >= 0)
+                normalized = normalized.Substring(assetsIndex);
+
+            // Do not expose absolute Windows paths as URLs.
+            if (normalized.Contains(":"))
+                return fallback;
+
+            try
+            {
+                string physical = Server.MapPath("~/" + normalized);
+                if (File.Exists(physical))
+                    return ResolveUrl("~/" + normalized);
+            }
+            catch { }
+
+            // Fallback attempt: use only the file name under Assets/Covers.
+            try
+            {
+                string fileName = Path.GetFileName(normalized);
+                if (!string.IsNullOrWhiteSpace(fileName))
+                {
+                    string coverRel = "Assets/Covers/" + fileName;
+                    if (File.Exists(Server.MapPath("~/" + coverRel)))
+                        return ResolveUrl("~/" + coverRel);
+                }
+            }
+            catch { }
+
+            return fallback;
+        }
+
+        protected string GetPenaltyDisplay(object penaltyTypeObj, object fineAmountObj)
+        {
+            string type = Convert.ToString(penaltyTypeObj);
+            if (string.IsNullOrWhiteSpace(type))
+                return "No Penalty";
+
+            decimal amount = 0m;
+            if (fineAmountObj != null && fineAmountObj != DBNull.Value)
+                decimal.TryParse(Convert.ToString(fineAmountObj), out amount);
+
+            return string.Format("{0} — ₱{1:N2}", type, amount);
+        }
+
+        protected string GetStatusBadgeClass(object statusObj)
+        {
+            string status = Convert.ToString(statusObj);
+
+            switch ((status ?? string.Empty).ToLowerInvariant())
+            {
+                case "reserved":
+                    return "sp-badge-reserved";
+                case "ready":
+                    return "sp-badge-ready";
+                case "borrowed":
+                    return "sp-badge-borrowed";
+                case "renewal":
+                    return "sp-badge-renewal";
+                default:
+                    return "sp-badge-neutral";
+            }
+        }
+
+        protected string DisplayText(object value)
+        {
+            string text = Convert.ToString(value);
+            return string.IsNullOrWhiteSpace(text) ? "N/A" : text;
         }
     }
 }

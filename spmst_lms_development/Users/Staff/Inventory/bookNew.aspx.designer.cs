@@ -33,6 +33,15 @@ namespace spmst_lms_development.Users.Staff.Inventory
         protected global::System.Web.UI.WebControls.LinkButton btnClose;
 
         /// <summary>
+        /// imgCover control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Image imgCover;
+
+        /// <summary>
         /// txtAccession control.
         /// </summary>
         /// <remarks>
@@ -292,6 +301,24 @@ namespace spmst_lms_development.Users.Staff.Inventory
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlCampus;
+
+        /// <summary>
+        /// txtNewCampus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNewCampus;
+
+        /// <summary>
+        /// btnAddCampus control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnAddCampus;
 
         /// <summary>
         /// txtSpecificLocation control.

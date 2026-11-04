@@ -3,6 +3,8 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <link href="<%= ResolveUrl("~/Assets/Themes/spmast-theme.css") %>" rel="stylesheet" />
+     <link href="<%= ResolveUrl("~/Assets/Themes/book_borrow-theme.css") %>" rel="stylesheet" />
 
     <script>
         let html5QrScanner = null;
@@ -10,7 +12,6 @@
         const scanSound = new Audio('https://Assets.mixkit.co/active_storage/sfx/766/766-preview.mp3');
 
         async function startScanner(target) {
-            // Audio prep
             scanSound.play().then(() => {
                 scanSound.pause();
                 scanSound.currentTime = 0;
@@ -20,7 +21,6 @@
             const scannerArea = document.getElementById('scanner-area');
             scannerArea.classList.remove('d-none');
 
-            // Clean up old instances properly to release the hardware lock
             if (html5QrScanner && isCameraActive) {
                 try { await html5QrScanner.stop(); } catch (e) { }
             }
@@ -43,7 +43,7 @@
                     onScanSuccess
                 );
                 isCameraActive = true;
-                document.getElementById('reader').style.border = "4px solid #1e3a8a";
+                document.getElementById('reader').style.border = "4px solid #14532d";
             } catch (err) {
                 console.error("Camera access error:", err);
                 alert("Camera access blocked or failed. Please check your browser permissions.");
@@ -53,11 +53,8 @@
 
         function onScanSuccess(decodedText) {
             scanSound.play();
-
-            // 1. Instantly hide the scanner UI from the user so it looks closed immediately
             document.getElementById('scanner-area').classList.add('d-none');
 
-            // 2. Stop the camera hardware safely in the background
             if (html5QrScanner && isCameraActive) {
                 html5QrScanner.stop().then(() => {
                     isCameraActive = false;
@@ -65,7 +62,7 @@
                 }).catch((err) => {
                     console.warn("Camera stop error:", err);
                     isCameraActive = false;
-                    processScan(decodedText); // Proceed anyway even if hardware stop lags
+                    processScan(decodedText);
                 });
             } else {
                 processScan(decodedText);
@@ -76,18 +73,14 @@
             if (window.activeScannerTarget === 'patron') {
                 const txtPatron = document.getElementById('<%= txtPatronQR.ClientID %>');
                 txtPatron.value = decodedText;
-
-                // Dispatch a native change event so ASP.NET registers that the text changed
                 txtPatron.dispatchEvent(new Event('change', { bubbles: true }));
 
-                // Trigger the PostBack after a tiny delay to ensure the DOM updated
                 setTimeout(() => {
                     __doPostBack('<%= txtPatronQR.UniqueID %>', '');
                 }, 50);
             } else {
                 const txtBook = document.getElementById('<%= txtBookBarcode.ClientID %>');
                 txtBook.value = decodedText;
-
                 txtBook.dispatchEvent(new Event('change', { bubbles: true }));
 
                 setTimeout(() => {
@@ -97,7 +90,6 @@
         }
 
         function stopScanner() {
-            // Hide UI immediately on manual close
             document.getElementById('scanner-area').classList.add('d-none');
 
             if (html5QrScanner && isCameraActive) {
@@ -120,94 +112,30 @@
             }
         }
 
-        // Call this after partial postbacks
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
             enableCompleteButton();
         });
     </script>
-
-    <style>
-        .bg-light-blue {
-            background-color: #eef4ff;
-        }
-
-        .avatar-circle.small {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-        }
-
-        .card.rounded-4 {
-            border-radius: 1rem !important;
-        }
-
-        .nav-pills .nav-link.active {
-            background-color: #1e3a8a !important;
-        }
-
-        .btn-success {
-            background-color: #10b981 !important;
-            border: none;
-        }
-
-        #scanner-area {
-            max-width: 400px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .scanner-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 260px;
-            height: 260px;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .scanner-line {
-            position: absolute;
-            width: 100%;
-            height: 3px;
-            background: rgba(255, 0, 0, 0.6);
-            box-shadow: 0 0 10px 2px rgba(255, 0, 0, 0.8);
-            top: 0;
-            animation: scanLine 2s linear infinite;
-        }
-
-        #reader {
-            width: 100%;
-            border-radius: 15px;
-            overflow: hidden;
-            background: #000;
-            border: 2px solid #1e3a8a !important;
-        }
-
-        .step-locked {
-            opacity: 0.4;
-            pointer-events: none;
-            filter: grayscale(100%);
-            transition: all 0.3s ease-in-out;
-        }
-
-        @keyframes scanLine {
-            0% { top: 0%; }
-            50% { top: 100%; }
-            100% { top: 0%; }
-        }
-    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="container-fluid py-4">
-        <div class="mb-4">
-            <h2 class="fw-bold">Good Day, Librarian! 👋</h2>
-            <p class="text-muted">What would you like to help a patron with today?</p>
+    <%-- Default cover URL is written by code-behind on Page_Load. --%>
+    <asp:HiddenField ID="hfDefaultCover" runat="server" />
+
+    <%-- Pick up the hidden value early so onerror has a valid fallback. --%>
+    <script type="text/javascript">
+        var spDefaultCover = document.getElementById('<%= hfDefaultCover.ClientID %>').value;
+    </script>
+
+    <div class="container-fluid py-4 book-borrow-page">
+        <div class="page-header d-flex align-items-center gap-3 mb-4">
+            <div class="sp-logo-container" aria-label="SPAMAST Library Logo">
+                <div class="sp-logo"></div>
+            </div>
+            <div class="min-w-0">
+                <h2 class="fw-bold mb-1">Good Day, Librarian! 👋</h2>
+                <p class="text-muted mb-0">What would you like to help a patron with today?</p>
+            </div>
         </div>
 
         <div class="row g-4">
@@ -267,11 +195,11 @@
                                         <small class="text-muted"><asp:Literal ID="litPatronDept" runat="server" /></small>
                                         <div><span class="badge bg-secondary mt-1"><asp:Literal ID="litPatronRole" runat="server" /></span></div>
                                     </div>
-                                </asp:Panel>    
+                                </asp:Panel>
 
-                                <!-- Step 2: Book -->
+                                <!-- Step 2: Book / Reservation -->
                                 <div id="divBookStep" runat="server" class="mb-4 step-locked">
-                                    <label class="form-label text-uppercase fw-bold small text-muted">Step 2: Scan Book</label>
+                                    <label class="form-label text-uppercase fw-bold small text-muted">Step 2: Scan Book / Process Reservation</label>
                                     <div class="input-group input-group-lg border rounded-3 overflow-hidden">
                                         <span class="input-group-text bg-white border-0"><i class="fas fa-book"></i></span>
                                         <asp:TextBox ID="txtBookBarcode" runat="server" CssClass="form-control border-0 bg-white"
@@ -284,8 +212,64 @@
                                     </div>
                                 </div>
 
+                                <asp:Panel ID="pnlNoReserved" runat="server" Visible="false" CssClass="alert alert-light border small mb-3">
+                                    No existing <strong>Reserved</strong> transactions were found for this patron. Continue by scanning a book accession number.
+                                </asp:Panel>
+
+                                <!-- Automatically detected Reserved transactions -->
+                                <asp:Panel ID="pnlReservedTransactions" runat="server" Visible="false" CssClass="reserved-section mb-4">
+                                    <div class="section-heading">
+                                        Existing Reserved Transactions
+                                        (<asp:Literal ID="litReservedCount" runat="server" Text="0" />)
+                                    </div>
+                                    <div class="transaction-grid">
+                                        <asp:Repeater ID="rptReservedTransactions" runat="server" OnItemCommand="rptReservedTransactions_ItemCommand">
+                                            <ItemTemplate>
+                                                <div class="transaction-card reserved-card">
+                                                    <img class="txn-cover"
+                                                         src='<%# GetCoverUrl(Eval("CoverPath")) %>'
+                                                         alt="Book cover"
+                                                         onerror="this.onerror=null;this.src=spDefaultCover;" />
+                                                    <div class="txn-main">
+                                                        <div class="txn-title"><%# DisplayText(Eval("BookTitle")) %></div>
+                                                        <div class="txn-author">Author: <%# DisplayText(Eval("Author")) %></div>
+
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Acc no.</span>
+                                                            <span><%# Eval("AccessionNumber") %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Section</span>
+                                                            <span><%# DisplayText(Eval("Section")) %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Status</span>
+                                                            <span class='badge <%# GetStatusBadgeClass(Eval("Status")) %>'><%# Eval("Status") %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Loan Type</span>
+                                                            <span><%# Eval("LoanType") %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Penalty</span>
+                                                            <span><%# GetPenaltyDisplay(Eval("PenaltyType"), Eval("FineAmount")) %></span>
+                                                        </div>
+
+                                                        <asp:Button ID="btnSelectReservation" runat="server"
+                                                            Text="Process Reservation"
+                                                            CommandName="SelectReservation"
+                                                            CommandArgument='<%# Eval("TransactionID") %>'
+                                                            CssClass="btn sp-btn-primary btn-sm w-100 mt-2"
+                                                            CausesValidation="false" />
+                                                    </div>
+                                                </div>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+                                </asp:Panel>
+
                                 <!-- Book Info Panel -->
-                                <asp:Panel ID="pnlBookInfo" runat="server" Visible="false" CssClass="card border-0 bg-light p-3 rounded-4 mb-3">
+                                <asp:Panel ID="pnlBookInfo" runat="server" Visible="false" CssClass="card border-0 bg-light p-3 rounded-4 mb-3 book-info-panel">
                                     <h6 class="fw-bold mb-1"><asp:Literal ID="litBookTitle" runat="server" /></h6>
                                     <p class="small text-muted mb-0">Author: <asp:Literal ID="litBookAuthor" runat="server" /></p>
                                     <p class="small text-muted mb-0">Section: <asp:Literal ID="litBookSection" runat="server" /></p>
@@ -299,7 +283,52 @@
                                     </div>
                                     <asp:Button ID="btnComplete" runat="server" Text="Complete Transaction" CssClass="btn btn-success w-100 py-2 fw-bold shadow-sm" OnClick="btnComplete_Click" />
                                 </asp:Panel>
-                            </ContentTemplate>  
+
+                                <!-- Active Transaction Summary -->
+                                <asp:Panel ID="pnlActiveSummary" runat="server" Visible="false" CssClass="active-section mt-4">
+                                    <div class="section-heading">
+                                        Active Transactions
+                                        (<asp:Literal ID="litActiveCount" runat="server" Text="0" />)
+                                    </div>
+                                    <div class="transaction-grid">
+                                        <asp:Repeater ID="rptActiveTransactions" runat="server">
+                                            <ItemTemplate>
+                                                <div class="transaction-card">
+                                                    <img class="txn-cover"
+                                                         src='<%# GetCoverUrl(Eval("CoverPath")) %>'
+                                                         alt="Book cover"
+                                                         onerror="this.onerror=null;this.src=spDefaultCover;" />
+                                                    <div class="txn-main">
+                                                        <div class="txn-title"><%# DisplayText(Eval("BookTitle")) %></div>
+                                                        <div class="txn-author">Author: <%# DisplayText(Eval("Author")) %></div>
+
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Acc no.</span>
+                                                            <span><%# Eval("AccessionNumber") %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Section</span>
+                                                            <span><%# DisplayText(Eval("Section")) %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Status</span>
+                                                            <span class='badge <%# GetStatusBadgeClass(Eval("Status")) %>'><%# Eval("Status") %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Loan Type</span>
+                                                            <span><%# Eval("LoanType") %></span>
+                                                        </div>
+                                                        <div class="txn-row">
+                                                            <span class="txn-label">Penalty</span>
+                                                            <span><%# GetPenaltyDisplay(Eval("PenaltyType"), Eval("FineAmount")) %></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ItemTemplate>
+                                        </asp:Repeater>
+                                    </div>
+                                </asp:Panel>
+                            </ContentTemplate>
                         </asp:UpdatePanel>
                     </div>
                 </div>

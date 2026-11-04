@@ -1,0 +1,304 @@
+﻿/* ============================================================
+   Book_Borrow.aspx — Page-specific styles
+   Requires: spamast-theme.css (defines --sp-* design tokens)
+   Scope:   .book-borrow-page
+   ============================================================ */
+
+/* ---------- Bootstrap overrides (scoped) ---------- */
+.book-borrow-page .card.rounded-4 {
+    border-radius: 1rem !important;
+}
+
+.book-borrow-page .nav-pills .nav-link.active {
+    background-color: var(--sp-green-700) !important;
+}
+
+.book-borrow-page .btn-success {
+    background-color: var(--sp-green-600) !important;
+    border: none;
+}
+
+/* ---------- Page header + logo container ---------- */
+.book-borrow-page .page-header {
+    min-width: 0;
+}
+
+    .book-borrow-page .page-header .min-w-0 {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+.book-borrow-page .sp-logo-container {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: var(--sp-radius);
+    background: var(--sp-paper);
+    border: 1px solid var(--sp-line);
+    padding: 6px;
+    box-sizing: border-box;
+}
+
+.book-borrow-page .sp-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    background-image: var(--sp-logo);
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.book-borrow-page .sp-logo-container img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ---------- Step 1: patron panel ---------- */
+.book-borrow-page .bg-light-blue {
+    background-color: #eef4ff;
+}
+
+.book-borrow-page .avatar-circle.small {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* ---------- QR scanner ---------- */
+.book-borrow-page #scanner-area {
+    max-width: 400px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.book-borrow-page .scanner-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px;
+    height: 260px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.book-borrow-page .scanner-line {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 0, 0, 0.6);
+    box-shadow: 0 0 10px 2px rgba(255, 0, 0, 0.8);
+    top: 0;
+    animation: bbScanLine 2s linear infinite;
+}
+
+.book-borrow-page #reader {
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #000;
+    border: 2px solid var(--sp-green-700) !important;
+}
+
+.book-borrow-page .step-locked {
+    opacity: 0.4;
+    pointer-events: none;
+    filter: grayscale(100%);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Prefixed keyframes to avoid collisions with other pages. */
+@keyframes bbScanLine {
+    0% {
+        top: 0%;
+    }
+
+    50% {
+        top: 100%;
+    }
+
+    100% {
+        top: 0%;
+    }
+}
+
+/* ---------- Section headings ---------- */
+.book-borrow-page h2,
+.book-borrow-page h6,
+.book-borrow-page .section-heading,
+.book-borrow-page .txn-title {
+    font-family: var(--sp-serif);
+    color: var(--sp-green-900);
+}
+
+.book-borrow-page .section-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--sp-line);
+}
+
+/* ---------- Transaction grid + cards ---------- */
+.book-borrow-page .transaction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.book-borrow-page .transaction-card {
+    display: flex;
+    gap: 1rem;
+    min-width: 0;
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid var(--sp-line);
+    border-radius: var(--sp-radius);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.book-borrow-page .reserved-card {
+    border-left: 4px solid var(--sp-gold);
+}
+
+.book-borrow-page .txn-cover {
+    width: 90px;
+    height: 130px;
+    flex: 0 0 auto;
+    object-fit: contain;
+    background: var(--sp-paper);
+    border: 1px solid var(--sp-line);
+    border-radius: 6px;
+}
+
+.book-borrow-page .txn-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.book-borrow-page .txn-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 0.25rem;
+    overflow-wrap: anywhere;
+}
+
+.book-borrow-page .txn-author {
+    color: var(--sp-ink);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    overflow-wrap: anywhere;
+}
+
+.book-borrow-page .txn-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    padding-top: 0.25rem;
+    border-top: 1px dashed var(--sp-line);
+    font-size: 0.8125rem;
+}
+
+.book-borrow-page .txn-label {
+    color: #5f6f64;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ---------- Primary button ---------- */
+.book-borrow-page .sp-btn-primary {
+    background-color: var(--sp-green-700);
+    border-color: var(--sp-green-700);
+    color: #ffffff;
+}
+
+    .book-borrow-page .sp-btn-primary:hover,
+    .book-borrow-page .sp-btn-primary:focus {
+        background-color: var(--sp-green-800);
+        border-color: var(--sp-green-800);
+        color: #ffffff;
+    }
+
+/* ---------- Status badges ---------- */
+.book-borrow-page .sp-badge-reserved {
+    background-color: var(--sp-gold);
+    color: #ffffff;
+}
+
+.book-borrow-page .sp-badge-ready {
+    background-color: var(--sp-gold-200);
+    color: var(--sp-green-900);
+}
+
+.book-borrow-page .sp-badge-borrowed {
+    background-color: var(--sp-green-700);
+    color: #ffffff;
+}
+
+.book-borrow-page .sp-badge-renewal {
+    background-color: var(--sp-lime);
+    color: var(--sp-green-900);
+}
+
+.book-borrow-page .sp-badge-neutral {
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 991.98px) {
+    .book-borrow-page .transaction-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .book-borrow-page .transaction-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .book-borrow-page .transaction-card {
+        flex-direction: column;
+    }
+
+    .book-borrow-page .txn-cover {
+        width: 100%;
+        height: 180px;
+    }
+
+    .book-borrow-page .txn-row {
+        flex-wrap: wrap;
+    }
+
+    .book-borrow-page .txn-label {
+        white-space: normal;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .book-borrow-page .sp-logo-container {
+        width: 48px;
+        height: 48px;
+        padding: 4px;
+    }
+
+    .book-borrow-page .transaction-card {
+        padding: 0.75rem;
+    }
+}

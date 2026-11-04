@@ -245,7 +245,11 @@
                         <div class="btn-group" role="group">
                             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openModal('filter', event)"><i class="fas fa-filter me-1"></i> Filter</button>
                             <asp:LinkButton ID="btnExport" runat="server" CssClass="btn btn-outline-secondary btn-sm"><i class="fas fa-file-export me-1"></i> Export</asp:LinkButton>
-                            <asp:LinkButton ID="btnImport" runat="server" PostBackUrl="bookImport.aspx" CssClass="btn btn-outline-secondary btn-sm"><i class="fas fa-file-import me-1"></i> Import</asp:LinkButton>
+                           <asp:HyperLink ID="HyperLink1" runat="server"
+               NavigateUrl="~/Users/Staff/Import/bookImport.aspx"
+               CssClass="btn btn-primary btn-sm">
+    <i class="fas fa-plus me-1"></i> Import
+</asp:HyperLink>
                             <asp:LinkButton ID="btnNewBook" runat="server" PostBackUrl="bookNew.aspx" CssClass="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> New Book</asp:LinkButton>
                         </div>
                     </div>
