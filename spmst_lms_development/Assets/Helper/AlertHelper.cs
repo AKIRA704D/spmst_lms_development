@@ -1,60 +1,140 @@
-﻿using System.Web.UI;
+﻿using System;
+using System.Web;
+using System.Web.UI;
 
 namespace spmst_lms_development
 {
+    /// <summary>
+    /// Safe server-side helper for SweetAlert2 dialogs.
+    /// All dynamic strings are JavaScript-encoded to prevent injection.
+    /// Uses centralized theme colors and the reusable ProcessIndicator
+    /// JS utility when available.
+    /// </summary>
     public static class AlertHelper
     {
-        // Shows the processing spinner
-        public static void ShowProcessing(Page page)
+        // Fallback color for the SweetAlert2 confirm button if theme CSS
+        // is unavailable; matches --sp-green-700 from spamast-theme.css.
+        private const string FallbackGreen = "#14532d";
+
+        private static string Js(string s)
         {
-            string script = @"
-                Swal.fire({
-                    title: 'Processing...',
-                    allowOutsideClick: false,
-                    showConfirmButton: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });";
-            ScriptManager.RegisterStartupScript(page, page.GetType(), "ProcessingAlert", script, true);
+            return HttpUtility.JavaScriptStringEncode(s ?? string.Empty);
         }
 
-        // Closes any open SweetAlert
+        private static string UniqueKey(string prefix)
+        {
+            return prefix + "_" + Guid.NewGuid().ToString("N");
+        }
+
+        /// <summary>
+        /// Displays a SweetAlert2 loading modal. Supports optional title/message.
+        /// Existing callers using ShowProcessing(page) continue to work.
+        /// </summary>
+        public static void ShowProcessing(Page page,
+                                          string title = "Processing...",
+                                          string message = "Please wait...")
+        {
+            if (page == null) { return; }
+            string script = $@"
+                if (window.ProcessIndicator) {{
+                    ProcessIndicator.showLoading('{Js(title)}', '{Js(message)}');
+                }} else if (window.Swal) {{
+                    Swal.fire({{
+                        title: '{Js(title)}',
+                        html: '{Js(message)}',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: function () {{ Swal.showLoading(); }}
+                    }});
+                }}";
+            ScriptManager.RegisterStartupScript(
+                page, page.GetType(), UniqueKey("ProcessingAlert"), script, true);
+        }
+
+        /// <summary>
+        /// Closes any currently open loader. Only closes the *loading* dialog;
+        /// it never closes a final success/error dialog.
+        /// </summary>
         public static void CloseAlert(Page page)
         {
-            string script = "Swal.close();";
-            ScriptManager.RegisterStartupScript(page, page.GetType(), "CloseAlert", script, true);
+            if (page == null) { return; }
+            string script = @"
+                if (window.ProcessIndicator) {
+                    ProcessIndicator.hideLoading();
+                } else if (window.Swal) {
+                    Swal.close();
+                }";
+            ScriptManager.RegisterStartupScript(
+                page, page.GetType(), UniqueKey("CloseAlert"), script, true);
         }
 
-        // Shows the "Account Not Found" error
-        public static void ShowError(Page page, string message)
+        /// <summary>
+        /// Displays an error dialog (replaces any open loader).
+        /// </summary>
+        public static void ShowError(Page page, string message, string title = "Error")
         {
+            if (page == null) { return; }
             string script = $@"
-                Swal.fire({{
-                    icon: 'error',
-                    title: 'Error',
-                    text: '{message}',
-                    confirmButtonColor: '#1d4ed8'
-                }});";
-            ScriptManager.RegisterStartupScript(page, page.GetType(), "ErrorAlert", script, true);
+                if (window.ProcessIndicator) {{
+                    ProcessIndicator.showError('{Js(title)}', '{Js(message)}');
+                }} else if (window.Swal) {{
+                    Swal.fire({{
+                        icon: 'error',
+                        title: '{Js(title)}',
+                        html: '{Js(message)}',
+                        confirmButtonColor: '{FallbackGreen}'
+                    }});
+                }}";
+            ScriptManager.RegisterStartupScript(
+                page, page.GetType(), UniqueKey("ErrorAlert"), script, true);
         }
 
-        // Shows the generic Success message
-        public static void ShowSuccess(Page page, string title, string message)
+        /// <summary>
+        /// Displays a success dialog (replaces any open loader).
+        /// Optional redirectUrl will navigate the browser after redirectDelayMs.
+        /// </summary>
+        public static void ShowSuccess(Page page,
+                                       string title,
+                                       string message,
+                                       string redirectUrl = null,
+                                       int redirectDelayMs = 2000)
         {
+            if (page == null) { return; }
+
             string script = $@"
-                Swal.fire({{
-                    icon: 'success',
-                    title: '{title}',
-                    text: '{message}',
-                    showConfirmButton: false,
-                    timer: 2000
-                }});";
-            ScriptManager.RegisterStartupScript(page, page.GetType(), "SuccessAlert", script, true);
+                if (window.ProcessIndicator) {{
+                    ProcessIndicator.showSuccess(
+                        '{Js(title)}', '{Js(message)}',
+                        {{ timer: {redirectDelayMs}, showConfirmButton: false }});
+                }} else if (window.Swal) {{
+                    Swal.fire({{
+                        icon: 'success',
+                        title: '{Js(title)}',
+                        html: '{Js(message)}',
+                        showConfirmButton: false,
+                        timer: {redirectDelayMs}
+                    }});
+                }}";
+
+            if (!string.IsNullOrEmpty(redirectUrl))
+            {
+                script += $" setTimeout(function(){{ window.location.href = '{Js(redirectUrl)}'; }}, {redirectDelayMs}); ";
+            }
+
+            ScriptManager.RegisterStartupScript(
+                page, page.GetType(), UniqueKey("SuccessAlert"), script, true);
         }
 
-        // Triggers the OTP Expired prompt via JS function execution
+        /// <summary>
+        /// Invokes the page's showOtpExpired() JavaScript function, if defined.
+        /// </summary>
         public static void TriggerOtpExpired(Page page)
         {
-            ScriptManager.RegisterStartupScript(page, page.GetType(), "OtpExpired", "showOtpExpired();", true);
+            if (page == null) { return; }
+            string script = "if (typeof showOtpExpired === 'function') { showOtpExpired(); }";
+            ScriptManager.RegisterStartupScript(
+                page, page.GetType(), UniqueKey("OtpExpired"), script, true);
         }
     }
 }

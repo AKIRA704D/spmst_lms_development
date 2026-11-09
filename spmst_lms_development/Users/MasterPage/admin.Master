@@ -382,7 +382,7 @@
 
         .btn-notification-bell:hover { color: #0f172a; }
 
-        .mobile-logo-Img { height: 32px; width: auto; }
+        .mobile-logo-Logo { height: 32px; width: auto; }
 
         .mobile-action-cluster {
             display: flex;
@@ -599,7 +599,7 @@
                     <button type="button" class="btn btn-dark border-secondary px-2 py-1" onclick="toggleSidebarDrawer()">
                         <i class="fa-solid fa-bars fs-5"></i>
                     </button>
-                    <img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA Logo" class="mobile-logo-Img" />
+                    <img src='<%= ResolveUrl("~/Assets/Logo/lmsa_logo.png") %>' alt="LMSA Logo" class="mobile-logo-Img" />
                 </div>
 
                 <% 
@@ -682,7 +682,7 @@
             <nav id="lmsSidebar" class="lms-sidebar">
 
                 <div class="sidebar-brand-header">
-                    <img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA Logo" class="brand-logo me-2" />
+                    <img src='<%= ResolveUrl("~/Assets/Logo/lmsa_logo.png") %>' alt="LMSA Logo" class="brand-logo me-2" />
                     <div class="brand-text-wrapper">
                         <div class="brand-title">SPAMAST</div>
                         <div class="brand-subtitle">Library Management System</div>

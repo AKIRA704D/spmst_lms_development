@@ -3,8 +3,8 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <link href="<%= ResolveUrl("~/Assets/Themes/spmast-theme.css") %>" rel="stylesheet" />
-     <link href="<%= ResolveUrl("~/Assets/Themes/book_borrow-theme.css") %>" rel="stylesheet" />
+    <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
+    <link href="<%= ResolveUrl("~/Assets/Themes/book_borrow-theme.css") %>" rel="stylesheet" />
 
     <script>
         let html5QrScanner = null;

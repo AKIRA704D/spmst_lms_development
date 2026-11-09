@@ -3,6 +3,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Web;
 using System.Web.UI;
 using spmst_lms_development.Assets.Helper;   // AuditLog
@@ -25,8 +26,12 @@ namespace spmst_lms_development.Login
 
         protected void btnSignIn_Click(object sender, EventArgs e)
         {
+            // Email: trimming leading/trailing whitespace is fine
+            // (email addresses never legitimately carry spaces).
             string emailInput = txtEmail.Text.Trim();
-            string passwordInput = txtPassword.Text.Trim();
+
+            // Password: DO NOT trim. Whitespace may be part of the password.
+            string passwordInput = txtPassword.Text;
 
             if (string.IsNullOrEmpty(emailInput) || string.IsNullOrEmpty(passwordInput))
             {
@@ -38,6 +43,11 @@ namespace spmst_lms_development.Login
             {
                 using (MySqlConnection conn = new MySqlConnection(connString))
                 {
+                    // ---- Exact, case-sensitive email comparison ----
+                    // MySQL's default collation (utf8mb4_general_ci) is
+                    // case-insensitive. The BINARY operator forces a byte-by-
+                    // byte comparison regardless of the column's collation,
+                    // without altering the schema or stored data.
                     string query = @"
                         SELECT 
                             u.user_id, u.email, u.password_hash, u.role, u.is_active,
@@ -49,7 +59,7 @@ namespace spmst_lms_development.Login
                         LEFT JOIN Staff   st ON u.user_id = st.staff_id
                         LEFT JOIN Students s ON u.user_id = s.student_id
                         LEFT JOIN Faculty  f ON u.user_id = f.faculty_id
-                        WHERE u.email = @Email LIMIT 1;";
+                        WHERE BINARY u.email = BINARY @Email LIMIT 1;";
 
                     using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
@@ -102,11 +112,13 @@ namespace spmst_lms_development.Login
                             bool isPasswordValid = false;
                             try
                             {
+                                // BCrypt.Verify is case-sensitive and whitespace-sensitive
                                 isPasswordValid = BCrypt.Net.BCrypt.Verify(passwordInput, dbPasswordHash);
                             }
                             catch (BCrypt.Net.BcryptAuthenticationException)
                             {
-                                // Dev fallback if DB entries aren't BCrypt-formatted yet.
+                                // Legacy plaintext fallback — string == in C# is
+                                // ordinal (case-sensitive), which is what we want.
                                 isPasswordValid = (passwordInput == dbPasswordHash);
                             }
 
@@ -134,7 +146,7 @@ namespace spmst_lms_development.Login
 
                             string fullName = string.Format("{0} {1}", firstName, lastName).Trim();
                             if (string.IsNullOrEmpty(fullName)) fullName = "System User";
-                            
+
                             string profileImagePath = reader["profile_image"] != DBNull.Value
                                                 ? reader["profile_image"].ToString() : string.Empty;
 
@@ -154,7 +166,7 @@ namespace spmst_lms_development.Login
                             Session["Email"] = reader["email"].ToString();
                             Session["FullName"] = fullName;
                             Session["UserRole"] = evaluatedRoleCode;  // code, NOT display name
-                            Session["ProfileImagePath"] = profileImagePath; // drives the master avatar
+                            Session["ProfileImagePath"] = profileImagePath;
 
                             // ---------- Post-login bookkeeping ----------
                             UpdateUserLastLoginTimestamp(userId);
@@ -172,7 +184,13 @@ namespace spmst_lms_development.Login
             }
             catch (Exception ex)
             {
-                DisplayError("A connectivity infrastructure error occurred during sign-in verification processing: " + ex.Message);
+                // Log internally — do NOT leak DB/connection details to the user.
+                System.Diagnostics.Trace.TraceError("Sign-in error: " + ex);
+
+                // Show a generic error; the client-side loader will
+                // disappear automatically because the response replaces
+                // the old page's DOM (which held the SweetAlert modal).
+                DisplayError("An unexpected error occurred during sign-in. Please try again in a moment.");
             }
         }
 

@@ -349,7 +349,7 @@
         <nav class="lmsa-nav">
             <div class="container-lmsa">
                 <a class="lmsa-brand" href="<%= ResolveUrl("~/LandingPage/Home.aspx") %>">
-                    <img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA Logo" onerror="this.style.display='none'" />
+                    <img src='<%= ResolveUrl("~/Assets/Logo/lmsa_logo.png") %>' alt="LMSA Logo" onerror="this.style.display='none'" />
                     <div class="lmsa-brand-text">
                         <div class="lmsa-brand-title">SPAMAST Library</div>
                         <div class="lmsa-brand-sub">LMSA | Malita, Davao Occidental</div>
@@ -397,7 +397,7 @@
                 <div class="row gy-4">
                     <div class="col-lg-4 col-md-6">
                         <div class="d-flex align-items-center gap-2 mb-3">
-                            <img src='<%= ResolveUrl("~/Assets/Img/lmsa_logo.png") %>' alt="LMSA" style="height:38px" onerror="this.style.display='none'" />
+                            <img src='<%= ResolveUrl("~/Assets/Logo/lmsa_logo.png") %>' alt="LMSA" style="height:38px" onerror="this.style.display='none'" />
                             <span class="fw-bold text-white fs-5">LMSA</span>
                         </div>
                         <p>The Library Management System with Analytics is the digital home of the SPAMAST Library - search the catalog, track borrowing activity, and discover top resources across every institute.</p>

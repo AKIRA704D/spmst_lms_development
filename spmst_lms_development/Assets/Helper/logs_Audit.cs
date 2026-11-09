@@ -290,5 +290,60 @@ namespace spmst_lms_development.Assets.Helper
             string actionDetails = details ?? $"Reservation initiation failed for '{bookTitle}': {reason}";
             Log(userId, "RESERVE_FAILED", "BookDetails", actionDetails);
         }
+
+        // (Add these methods INSIDE the existing `public class AuditLog` class,
+        //  at the end, before the closing brace. The rest of the file is unchanged.)
+
+        public static void LogCredentialValidationInitiated(string userId, string context)
+        {
+            Log(userId, "CREDENTIAL_VALIDATION", "Users",
+                $"Credential validation initiated ({context})");
+        }
+
+        public static void LogCredentialValidationSuccess(string userId, string context)
+        {
+            Log(userId, "CREDENTIAL_VALIDATION_SUCCESS", "Users",
+                $"Credential validation successful ({context})");
+        }
+
+        public static void LogCredentialValidationFailed(string userId, string context, string reason = null)
+        {
+            string details = $"Credential validation failed ({context})";
+            if (!string.IsNullOrEmpty(reason)) { details += $": {reason}"; }
+            Log(userId, "CREDENTIAL_VALIDATION_FAILED", "Users", details);
+        }
+
+        public static void LogPasswordCreateInitiated(string userId)
+        {
+            Log(userId, "PASSWORD_CREATE", "Users",
+                "Initiated initial password creation for account verification");
+        }
+
+        public static void LogPasswordCreate(string userId, bool success, string reason = null)
+        {
+            string actionType = success ? "PASSWORD_CREATE_SUCCESS" : "PASSWORD_CREATE_FAILED";
+            string details = success
+                ? "Password created and account activated"
+                : "Password creation failed" + (string.IsNullOrEmpty(reason) ? "" : $": {reason}");
+            Log(userId, actionType, "Users", details);
+        }
+
+        public static void LogPasswordResetInitiated(string userId)
+        {
+            Log(userId, "PASSWORD_RESET", "Users", "Initiated password reset");
+        }
+
+        public static void LogPasswordResetSuccess(string userId)
+        {
+            Log(userId, "PASSWORD_RESET_SUCCESS", "Users",
+                "Password reset completed successfully");
+        }
+
+        public static void LogPasswordResetFailed(string userId, string reason = null)
+        {
+            string details = "Password reset failed";
+            if (!string.IsNullOrEmpty(reason)) { details += $": {reason}"; }
+            Log(userId, "PASSWORD_RESET_FAILED", "Users", details);
+        }
     }
 }

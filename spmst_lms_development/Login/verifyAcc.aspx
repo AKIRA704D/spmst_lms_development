@@ -6,233 +6,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Account - SPAMAST Library</title>
-    
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
+    <link href="<%= ResolveUrl("~/Assets/Themes/verify-account.css") %>" rel="stylesheet" />
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-        /* Base Page Setup & Background */
-        body, html {
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url('../Assets/Img/lmsa_bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Sticky Transparent Header */
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1030;
-            padding: 15px 30px;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(5px);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-logo {
-            height: 35px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-            transition: transform 0.3s ease;
-        }
-
-        .header-brand:hover .header-logo {
-            transform: scale(1.08);
-        }
-        .header-brand {
-            color: #ffffff;
-            font-size: 0.95rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .header-brand span {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 400;
-            color: #ced4da;
-        }
-        
-        .btn-back {
-            color: #fff; 
-            text-decoration: none; 
-            background: #4b51ac;
-            padding: 8px 18px; 
-            border-radius: 6px; 
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-back:hover { 
-            background: #3b408c; 
-            color: white; 
-            transform: translateX(-3px); 
-            box-shadow: 0 4px 12px rgba(75, 81, 172, 0.4);
-        }
-
-        /* Workspace Main Interface Layout Wrappers */
-        .page-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 100px 15px 40px 15px;
-        }
-        
-        /* Core Functional Card */
-        .auth-card {
-            display: flex;
-            background: #ffffff;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            max-width: 1050px;
-            width: 100%;
-            min-height: 580px;
-            border: none;
-            transition: all 0.3s ease;
-        }
-         
-        /* Left Split Panel */
-        .blue-panel {
-            background: #1a56db; 
-            color: white;
-            width: 45%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-            text-align: center;
-            gap: 20px;
-        }
-        .blue-panel h3 { font-weight: 700; font-size: 1.6rem; letter-spacing: 0.5px; margin: 0; }
-        .blue-panel p { opacity: 0.85; font-size: 0.9rem; max-width: 280px; margin: 0; }
-        
-        /* Animated Component Icon */
-        .animated-lock {
-            font-size: 75px;
-            animation: pulse-lock 2.5s infinite ease-in-out;
-            filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
-        }
-        @keyframes pulse-lock {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); text-shadow: 0 0 20px rgba(255,255,255,0.6); }
-            100% { transform: scale(1); }
-        }
-
-        /* Right Split Panel */
-        .form-panel {
-            width: 55%;
-            padding: 45px 55px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .form-panel h3 { color: #111827; font-weight: 700; font-size: 1.6rem; margin-bottom: 6px; }
-        .form-panel p { color: #6b7280; font-size: 0.9rem; margin-bottom: 25px; }
-        
-        /* Form Styling */
-        .form-label { font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
-        .form-control {
-            border-radius: 8px;
-            padding: 11px 16px;
-            border: 1px solid #d1d5db;
-            font-size: 0.95rem;
-            color: #1f2937;
-            transition: all 0.25s ease;
-        }
-        .form-control:hover { border-color: #9ca3af; }
-        .form-control:focus {
-            border-color: #1a56db;
-            box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.15);
-            outline: none;
-            transform: translateY(-1px);
-        }
-
-        /* Action Buttons */
-        .btn-primary {
-            background-color: #2b3244;
-            border: none;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.25s ease;
-            width: 100%;
-            margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-        .btn-primary:hover {
-            background-color: #1e2330;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(43, 50, 68, 0.3);
-        }
-        .btn-secondary {
-            background-color: #f3f4f6;
-            color: #4b5563;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            transition: all 0.25s ease;
-        }
-        .btn-secondary:hover { background-color: #e5e7eb; color: #1f2937; }
-
-        /* Timer UI Element */
-        .timer-text { 
-            color: #dc3545; 
-            font-weight: 700; 
-            font-size: 1.1rem; 
-            margin: 15px 0;
-            background: #fff5f5;
-            padding: 8px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            border: 1px dashed #feb2b2;
-        }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 991.98px) {
-            .auth-card { max-width: 750px; min-height: auto; }
-            .blue-panel { width: 40%; padding: 30px 20px; }
-            .form-panel { width: 60%; padding: 40px; }
-        }
-        
-        @media (max-width: 767.98px) {
-            body, html { background-attachment: scroll; }
-            .page-container { padding-top: 85px; }
-            .auth-card { flex-direction: column; max-width: 480px; min-height: auto; }
-            .blue-panel { width: 100%; padding: 35px 20px; flex-direction: row; text-align: left; gap: 20px; }
-            .animated-lock { font-size: 50px; }
-            .blue-panel h3 { font-size: 1.3rem; }
-            .blue-panel p { max-width: 100%; font-size: 0.85rem; }
-            .form-panel { width: 100%; padding: 35px 25px; }
-            .form-panel h3 { font-size: 1.4rem; }
-            .sticky-header { padding: 10px 20px; }
-        }
-    </style>
+    <script src="<%= ResolveUrl("~/Assets/Script/process-indicator.js") %>"></script>
 </head>
-<body>
+<body style="--sp-bg-img: url('<%= ResolveUrl("~/Assets/Logo/lmsa_bg.jpg") %>');">
     <form id="form1" runat="server">
         <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
 
         <header class="sticky-header">
             <div class="header-brand d-flex align-items-center">
-                <Img src="../Assets/Img/lmsa_logo.png" alt="LMSA Logo" class="header-logo me-2" />
+                <img src="<%= ResolveUrl("~/Assets/Logo/lmsa_logo.png") %>"
+                     alt="LMSA Logo" class="header-logo me-2" />
                 <div>
                     <strong>SPAMAST LIBRARY</strong>
                     <span>LMSA v2.0 Platform</span>
@@ -245,7 +36,6 @@
 
         <div class="page-container">
             <div class="auth-card">
-                
                 <div class="blue-panel">
                     <i class="fa-solid fa-user-shield animated-lock"></i>
                     <div>
@@ -257,36 +47,49 @@
                 <div class="form-panel">
                     <asp:UpdatePanel ID="updMain" runat="server">
                         <ContentTemplate>
-                            
+
                             <asp:Panel ID="pnlVerifyIdentity" runat="server" Visible="true">
                                 <h3>Verify Identity</h3>
                                 <p>Provide your user assignment metrics to continue.</p>
-                                
+
                                 <div class="mb-3">
                                     <label class="form-label">User ID / ID Number</label>
-                                    <asp:TextBox ID="txtUserId" runat="server" CssClass="form-control" placeholder="e.g. 2024-0001"></asp:TextBox>
+                                    <asp:TextBox ID="txtUserId" runat="server" CssClass="form-control"
+                                                 placeholder="e.g. 2024-0001"></asp:TextBox>
                                 </div>
                                 <div class="mb-4">
                                     <label class="form-label">Registered Email Address</label>
-                                    <asp:TextBox ID="txtEmail" runat="server" TextMode="Email" CssClass="form-control" data-format="lowercase" placeholder="username@lmsa.edu.ph"></asp:TextBox>
+                                    <asp:TextBox ID="txtEmail" runat="server" TextMode="Email"
+                                                 CssClass="form-control" data-format="lowercase"
+                                                 placeholder="username@lmsa.edu.ph"></asp:TextBox>
                                 </div>
-                                
-                                <asp:Button ID="btnVerifyIdentity" runat="server" Text="Verify Identity" CssClass="btn btn-primary" OnClick="btnVerifyIdentity_Click" OnClientClick="return InputHelper.validateSubmission('[id$=\'txtUserId\']', '[id$=\'txtEmail\']');" />
+
+                                <asp:Button ID="btnVerifyIdentity" runat="server"
+                                            Text="Verify Identity" CssClass="btn btn-primary"
+                                            OnClick="btnVerifyIdentity_Click"
+                                            OnClientClick="return InputHelper.validateSubmission('txtUserId', 'txtEmail', 'Verifying Account...', 'Please wait while we validate your account information.', this);" />
                             </asp:Panel>
 
                             <asp:Panel ID="pnlOtp" runat="server" Visible="false" CssClass="text-center">
                                 <h3>Verification Required</h3>
                                 <p>A 6-digit verification code was successfully processed and dispatched towards your registered profile inbox address.</p>
-                                
+
                                 <div class="timer-text" id="divTimer">Time remaining: <span id="timeDisplay">60</span>s</div>
-                                
+
                                 <div class="mb-3 mt-2">
-                                    <asp:TextBox ID="txtOtp" runat="server" CssClass="form-control text-center" placeholder="******" MaxLength="6" data-format="numeric" style="letter-spacing: 8px; font-size: 22px; font-weight: 700; max-width:260px; margin:0 auto;"></asp:TextBox>
+                                    <asp:TextBox ID="txtOtp" runat="server" CssClass="form-control text-center"
+                                                 placeholder="******" MaxLength="6" data-format="numeric"
+                                                 Style="letter-spacing:8px; font-size:22px; font-weight:700; max-width:260px; margin:0 auto;"></asp:TextBox>
                                 </div>
-                                
+
                                 <div class="d-flex gap-2 justify-content-center mt-4">
-                                    <asp:Button ID="btnVerifyOtp" runat="server" Text="Verify OTP" CssClass="btn btn-primary w-auto px-4 mt-0" OnClick="btnVerifyOtp_Click" />
-                                    <asp:Button ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-secondary w-auto px-4" OnClick="btnCancel_Click" CausesValidation="false" formnovalidate="true" />
+                                    <asp:Button ID="btnVerifyOtp" runat="server"
+                                                Text="Verify OTP" CssClass="btn btn-primary w-auto px-4 mt-0"
+                                                OnClick="btnVerifyOtp_Click"
+                                                OnClientClick="return InputHelper.validateOtpSubmission('txtOtp', 'Verifying OTP...', 'Please wait while we verify your authentication code.', this);" />
+                                    <asp:Button ID="btnCancel" runat="server"
+                                                Text="Cancel" CssClass="btn btn-secondary w-auto px-4"
+                                                OnClick="btnCancel_Click" CausesValidation="false" />
                                 </div>
 
                                 <asp:Button ID="btnHiddenResend" runat="server" OnClick="btnHiddenResend_Click" style="display:none;" />
@@ -298,138 +101,232 @@
 
                                 <div class="mb-3 position-relative">
                                     <label class="form-label">New Password</label>
-                                    <asp:TextBox ID="txtNewPass" runat="server" TextMode="Password" class="form-control" placeholder="••••••••"></asp:TextBox>
-                                    <i class="fa-solid fa-eye position-absolute end-0 top-50 translate-middle-y me-3" 
-                                       style="cursor: pointer; z-index: 10; margin-top: 15px;" 
-                                       onclick="InputHelper.togglePassword('<%= txtNewPass.ClientID %>', this)"></i>
+                                    <asp:TextBox ID="txtNewPass" runat="server" TextMode="Password"
+                                                 CssClass="form-control" placeholder="••••••••"></asp:TextBox>
+                                    <i class="fa-solid fa-eye toggle-password-icon"
+                                       onclick="InputHelper.togglePassword('txtNewPass', this)"></i>
                                 </div>
 
                                 <div class="mb-3 position-relative">
                                     <label class="form-label">Confirm New Password</label>
-                                    <asp:TextBox ID="txtConfirmPass" runat="server" TextMode="Password" class="form-control" placeholder="••••••••"></asp:TextBox>
-                                    <i class="fa-solid fa-eye position-absolute end-0 top-50 translate-middle-y me-3" 
-                                       style="cursor: pointer; z-index: 10; margin-top: 15px;" 
-                                       onclick="InputHelper.togglePassword('<%= txtConfirmPass.ClientID %>', this)"></i>
+                                    <asp:TextBox ID="txtConfirmPass" runat="server" TextMode="Password"
+                                                 CssClass="form-control" placeholder="••••••••"></asp:TextBox>
+                                    <i class="fa-solid fa-eye toggle-password-icon"
+                                       onclick="InputHelper.togglePassword('txtConfirmPass', this)"></i>
                                 </div>
 
                                 <div class="mt-4">
-                                    <asp:Button ID="btnSetupPassword" runat="server" Text="Complete Setup" CssClass="btn btn-primary w-100" OnClick="btnSetupPassword_Click" />
+                                    <asp:Button ID="btnSetupPassword" runat="server"
+                                                Text="Complete Setup" CssClass="btn btn-primary w-100"
+                                                OnClick="btnSetupPassword_Click"
+                                                OnClientClick="return InputHelper.validatePasswordSubmission('txtNewPass', 'txtConfirmPass', 'Creating Your Account...', 'Please wait while we securely create your password and activate your account.', this);" />
                                 </div>
                             </asp:Panel>
 
                         </ContentTemplate>
                     </asp:UpdatePanel>
                 </div>
-
             </div>
         </div>
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        let timerInterval;
 
-        const InputHelper = {
-            forceLowerCase: function (element) {
-                element.addEventListener('input', function () {
-                    this.value = this.value.toLowerCase();
+    <script>
+        var timerInterval;
+        window.__piSubmitInFlight = false;
+
+        function piShowLoading(title, message) {
+            if (window.ProcessIndicator && ProcessIndicator.showLoading) {
+                ProcessIndicator.showLoading(title, message);
+            } else if (window.Swal) {
+                Swal.fire({
+                    title: title, html: message,
+                    allowOutsideClick: false, allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: function () { Swal.showLoading(); }
                 });
+            }
+        }
+
+        function piShowError(title, message) {
+            if (window.ProcessIndicator && ProcessIndicator.showError) {
+                ProcessIndicator.showError(title, message);
+            } else if (window.Swal) {
+                Swal.fire({ icon: "error", title: title, html: message, confirmButtonColor: "#14532d" });
+            }
+        }
+
+        function piDisableButton(button) {
+            if (!button) return;
+            try {
+                button.dataset.piOriginalDisabled = button.disabled ? "1" : "0";
+                button.disabled = true;
+                button.classList.add("pi-loading");
+            } catch (e) { }
+        }
+
+        var InputHelper = {
+            forceLowerCase: function (el) {
+                el.addEventListener('input', function () { this.value = this.value.toLowerCase(); });
             },
-            forceNumeric: function (element) {
-                element.addEventListener('input', function () {
-                    this.value = this.value.replace(/[^0-9]/g, '');
-                });
+            forceNumeric: function (el) {
+                el.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); });
             },
             togglePassword: function (inputId, iconElement) {
-                const passwordInput = document.getElementById(inputId);
-                if (passwordInput) {
-                    if (passwordInput.type === 'password') {
-                        passwordInput.type = 'text';
-                        iconElement.classList.remove('fa-eye');
-                        iconElement.classList.add('fa-eye-slash');
-                    } else {
-                        passwordInput.type = 'password';
-                        iconElement.classList.remove('fa-eye-slash');
-                        iconElement.classList.add('fa-eye');
-                    }
+                var input = document.getElementById(inputId);
+                if (!input) input = document.querySelector('[id$="' + inputId + '"]');
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    iconElement.classList.remove('fa-eye');
+                    iconElement.classList.add('fa-eye-slash');
+                } else {
+                    input.type = 'password';
+                    iconElement.classList.remove('fa-eye-slash');
+                    iconElement.classList.add('fa-eye');
                 }
+            },
+
+            validateSubmission: function (userSelector, emailSelector, loadingTitle, loadingMessage, button) {
+                if (window.__piSubmitInFlight) { return true; }
+
+                var userEl = document.getElementById(userSelector);
+                var emailEl = document.getElementById(emailSelector);
+
+                if (!userEl) userEl = document.querySelector('[id$="' + userSelector + '"]');
+                if (!emailEl) emailEl = document.querySelector('[id$="' + emailSelector + '"]');
+
+                if (!userEl) userEl = document.querySelector('[name$="' + userSelector + '"]');
+                if (!emailEl) emailEl = document.querySelector('[name$="' + emailSelector + '"]');
+
+                var uv = userEl ? (userEl.value || '').trim() : '';
+                var ev = emailEl ? (emailEl.value || '').trim() : '';
+
+                if (!uv || !ev) {
+                    piShowError('Missing Information', 'Please enter both your User ID and Registered Email Address.');
+                    return false;
+                }
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ev)) {
+                    piShowError('Invalid Email', 'The email address format is invalid.');
+                    return false;
+                }
+
+                window.__piSubmitInFlight = true;
+                piShowLoading(loadingTitle, loadingMessage);
+
+                if (button) {
+                    setTimeout(function () { piDisableButton(button); }, 10);
+                }
+
+                return true;
+            },
+
+            validateOtpSubmission: function (otpSelector, loadingTitle, loadingMessage, button) {
+                if (window.__piSubmitInFlight) { return true; }
+                var otpEl = document.getElementById(otpSelector) || document.querySelector('[id$="' + otpSelector + '"]');
+                var v = otpEl ? (otpEl.value || '').trim() : '';
+                if (!/^\d{6}$/.test(v)) {
+                    piShowError('Invalid OTP', 'Please enter the 6-digit verification code.');
+                    return false;
+                }
+                window.__piSubmitInFlight = true;
+                piShowLoading(loadingTitle, loadingMessage);
+
+                if (button) {
+                    setTimeout(function () { piDisableButton(button); }, 10);
+                }
+
+                return true;
+            },
+
+            validatePasswordSubmission: function (newId, confirmId, loadingTitle, loadingMessage, button) {
+                if (window.__piSubmitInFlight) { return true; }
+                var nEl = document.getElementById(newId) || document.querySelector('[id$="' + newId + '"]');
+                var cEl = document.getElementById(confirmId) || document.querySelector('[id$="' + confirmId + '"]');
+                var nv = nEl ? (nEl.value || '') : '';
+                var cv = cEl ? (cEl.value || '') : '';
+                if (!nv || !cv) {
+                    piShowError('Missing Password', 'Please enter both password fields.');
+                    return false;
+                }
+                if (nv !== cv) {
+                    piShowError('Password Mismatch', 'The two password fields do not match.');
+                    return false;
+                }
+                window.__piSubmitInFlight = true;
+                piShowLoading(loadingTitle, loadingMessage);
+
+                if (button) {
+                    setTimeout(function () { piDisableButton(button); }, 10);
+                }
+
+                return true;
             }
-        };
+        }; /* ✅ ADDED THE MISSING SEMICOLON AND BRACE HERE */
 
         function initPageHelpers() {
             document.querySelectorAll('[data-format="lowercase"]').forEach(InputHelper.forceLowerCase);
             document.querySelectorAll('[data-format="numeric"]').forEach(InputHelper.forceNumeric);
         }
-
-        // Initial DOM configuration load binding
         document.addEventListener('DOMContentLoaded', initPageHelpers);
 
-        // Dynamic reinitialization handler when UpdatePanel fires partial posts
         if (typeof Sys !== 'undefined' && Sys.WebForms) {
             Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
                 initPageHelpers();
+                window.__piSubmitInFlight = false;
+                if (window.ProcessIndicator && ProcessIndicator.restoreButtons) {
+                    ProcessIndicator.restoreButtons();
+                }
             });
         }
 
         function startOtpTimer() {
             clearInterval(timerInterval);
-            let timeLeft = 60;
-            const container = document.getElementById('timeDisplay');
+            var timeLeft = 60;
+            var container = document.getElementById('timeDisplay');
             if (container) { container.innerText = timeLeft; }
-
-            timerInterval = setInterval(() => {
+            timerInterval = setInterval(function () {
                 timeLeft--;
-                const updateTarget = document.getElementById('timeDisplay');
-                if (updateTarget) { updateTarget.innerText = timeLeft; }
-
+                var t = document.getElementById('timeDisplay');
+                if (t) { t.innerText = timeLeft; }
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    showOtpExpired();
+                    deferredShowOtpExpired(0);
                 }
             }, 1000);
         }
+        function stopOtpTimer() { if (timerInterval) clearInterval(timerInterval); }
 
-        function stopOtpTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
+        function deferredShowOtpExpired(attempt) {
+            if (typeof ProcessIndicator !== 'undefined' && ProcessIndicator.isLoading()) {
+                if (attempt < 10) {
+                    setTimeout(function () { deferredShowOtpExpired(attempt + 1); }, 1000);
+                }
+                return;
             }
+            showOtpExpired();
         }
 
         function showOtpExpired() {
             Swal.fire({
                 icon: 'warning',
                 title: 'OTP Code Expired',
-                text: 'The verification timeline has expired. Would you like to re-verify or request a new code transmission?',
+                text: 'The verification timeline has expired. Would you like to request a new code?',
                 showCancelButton: true,
-                confirmButtonColor: '#1a56db',
+                confirmButtonColor: '#14532d',
                 cancelButtonColor: '#6b7280',
                 confirmButtonText: 'Resend OTP',
                 cancelButtonText: 'Back to Login'
-            }).then((result) => {
+            }).then(function (result) {
                 if (result.isConfirmed) {
+                    piShowLoading('Sending Verification Code...',
+                        'Please wait while we send your OTP to your registered email address.');
                     document.getElementById('<%= btnHiddenResend.ClientID %>').click();
                 } else if (result.dismiss === Swal.DismissReason.cancel) {
                     window.location.href = 'login.aspx';
                 }
             });
-        }
-
-        function showClientProcessing() {
-            var userId = document.getElementById('<%= txtUserId.ClientID %>').value.trim();
-            var email = document.getElementById('<%= txtEmail.ClientID %>').value.trim();
-
-            if (userId !== "" && email !== "") {
-                Swal.fire({
-                    title: 'Processing Request',
-                    text: 'Verifying credentials and preparing secure routing protocols...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
-                return true;
-            }
-            return true;
         }
     </script>
 </body>

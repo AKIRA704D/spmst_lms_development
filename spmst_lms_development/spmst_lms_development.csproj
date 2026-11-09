@@ -144,21 +144,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\Themes\book-borrow.css" />
+    <Content Include="Assets\Script\process-indicator.js" />
+    <Content Include="Assets\Themes\book_borrow-theme.css" />
     <Content Include="Assets\Themes\browse-catalog-theme.css" />
     <Content Include="Assets\Themes\history-theme.css" />
     <Content Include="Assets\Themes\patron-dashboard-theme.css" />
     <Content Include="Assets\Profile\default-cover.png" />
     <Content Include="Assets\Covers\default-cover.jpg" />
-    <Content Include="Assets\Img\lib_logo.png" />
-    <Content Include="Assets\Img\lib_logo_wbg.png" />
-    <Content Include="Assets\Img\lmsa_bg.jpg" />
-    <Content Include="Assets\Img\lmsa_logo.png" />
-    <Content Include="Assets\Img\spmst_logo.jpg" />
-    <Content Include="Assets\Img\spmst_logo_wbg.png" />
+    <Content Include="Assets\Logo\lib_logo.png" />
+    <Content Include="Assets\Logo\lib_logo_wbg.png" />
+    <Content Include="Assets\Logo\lmsa_bg.jpg" />
+    <Content Include="Assets\Logo\lmsa_logo.png" />
+    <Content Include="Assets\Logo\spmst_logo.jpg" />
+    <Content Include="Assets\Logo\spmst_logo_wbg.png" />
     <Content Include="Assets\Themes\reservations-theme.css" />
-    <Content Include="Assets\Themes\spmast-theme.css" />
+    <Content Include="Assets\Themes\spamast-theme.css" />
     <Content Include="Assets\Themes\to-pick-up-theme.css" />
+    <Content Include="Assets\Themes\verify-account.css" />
     <Content Include="LandingPage\AboutContact.aspx" />
     <Content Include="LandingPage\Home.aspx" />
     <Content Include="Users\Admin\Settings\LibrarySettings.aspx" />

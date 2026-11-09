@@ -356,8 +356,11 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             if (string.IsNullOrEmpty(dbAcc))
                                 throw new InvalidOperationException("The selected reservation was not found for this patron.");
 
-                            if (!string.Equals(dbStatus, "Reserved", StringComparison.OrdinalIgnoreCase))
-                                throw new InvalidOperationException("The selected transaction is no longer in Reserved status.");
+                            if (!string.Equals(dbStatus, "Reserved", StringComparison.OrdinalIgnoreCase) && 
+                                !string.Equals(dbStatus, "Ready", StringComparison.OrdinalIgnoreCase))
+                            {
+                                throw new InvalidOperationException("The selected transaction is no longer in Reserved or Ready status.");
+                            }
 
                             barcode = dbAcc;
 
@@ -368,7 +371,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                        due_date    = @dueDate
                                  WHERE transaction_id = @tid
                                    AND user_id = @uid
-                                   AND status = 'Reserved'";
+                                   AND status IN ('Reserved', 'Ready')";
 
                             MySqlCommand cmdUpSel = new MySqlCommand(updateSelected, conn, trans);
                             cmdUpSel.Parameters.AddWithValue("@status", status);
@@ -560,31 +563,31 @@ namespace spmst_lms_development.Users.Staff.Transactions
         private DataRow GetReservedTransaction(string patronId, int transactionId)
         {
             string query = @"
-                SELECT
-                    t.transaction_id   AS TransactionID,
-                    t.user_id          AS PatronID,
-                    t.accession_number AS AccessionNumber,
-                    t.status           AS Status,
-                    t.borrow_date      AS BorrowDate,
-                    t.due_date         AS DueDate,
-                    CASE WHEN t.due_date = t.borrow_date
-                         THEN 'LOAN-IN' ELSE 'LOAN-OUT' END AS LoanType,
-                    r.resource_id      AS ResourceID,
-                    r.title            AS BookTitle,
-                    r.author           AS Author,
-                    r.section          AS Section,
-                    r.cover_path       AS CoverPath,
-                    p.penalty_type     AS PenaltyType,
-                    p.fine_amount      AS FineAmount,
-                    p.fine_status      AS FineStatus
-                FROM Transactions t
-                JOIN Item_Copies       c ON t.accession_number = c.accession_number
-                JOIN Library_Resources r ON c.resource_id      = r.resource_id
-                LEFT JOIN Penalties    p ON p.penalty_id       = t.penalty_id
-                WHERE t.transaction_id = @tid
-                  AND t.user_id = @uid
-                  AND t.status = 'Reserved'
-                LIMIT 1";
+        SELECT
+            t.transaction_id   AS TransactionID,
+            t.user_id          AS PatronID,
+            t.accession_number AS AccessionNumber,
+            t.status           AS Status,
+            t.borrow_date      AS BorrowDate,
+            t.due_date         AS DueDate,
+            CASE WHEN t.due_date = t.borrow_date
+                 THEN 'LOAN-IN' ELSE 'LOAN-OUT' END AS LoanType,
+            r.resource_id      AS ResourceID,
+            r.title            AS BookTitle,
+            r.author           AS Author,
+            r.section          AS Section,
+            r.cover_path       AS CoverPath,
+            p.penalty_type     AS PenaltyType,
+            p.fine_amount      AS FineAmount,
+            p.fine_status      AS FineStatus
+        FROM Transactions t
+        JOIN Item_Copies       c ON t.accession_number = c.accession_number
+        JOIN Library_Resources r ON c.resource_id      = r.resource_id
+        LEFT JOIN Penalties    p ON p.penalty_id       = t.penalty_id
+        WHERE t.transaction_id = @tid
+          AND t.user_id = @uid
+          AND t.status IN ('Reserved', 'Ready')
+        LIMIT 1";
 
             DataTable dt = new DataTable();
 

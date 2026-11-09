@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="login.aspx.cs" Inherits="spmst_lms_development.Login.login" %>
+﻿﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="login.aspx.cs" Inherits="spmst_lms_development.Login.login" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -6,16 +6,22 @@
     <title>SPAMAST Library - LMSA Sign In</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    
+
+    <!-- Theme font (optional - falls back to Helvetica/Arial) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
+
+    <!-- Universal system theme (login-specific CSS is kept in this page's <style>) -->
+    <link href="../Assets/Themes/spamast-theme.css" rel="stylesheet" />
 
     <style>
         /* Base Page Setup & Library Blurred Background */
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../Assets/Img/lmsa_bg.jpg') no-repeat center center fixed;
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../Assets/Logo/lmsa_bg.jpg') no-repeat center center fixed;
             background-size: cover;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: var(--sp-sans);
+            color: var(--sp-ink);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -45,10 +51,10 @@
             transition: transform 0.3s ease;
         }
 
-        /* Subtle interactive pop when hovering over the brand area */
         .header-brand:hover .header-logo {
             transform: scale(1.08);
-}
+        }
+
         .header-brand {
             color: #ffffff;
             font-size: 0.95rem;
@@ -96,7 +102,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 100px 15px 40px 15px; /* Cushion top spacing for sticky header */
+            padding: 100px 15px 40px 15px;
         }
 
         /* Core Unified Login Card */
@@ -156,7 +162,7 @@
             transform-origin: 70% 70%;
         }
         .login-title {
-            color: #111827;
+            color: var(--sp-ink);
             font-weight: 700;
             font-size: 1.85rem;
             margin-top: 5px;
@@ -182,9 +188,9 @@
             width: 100%;
             padding: 11px 16px;
             font-size: 0.95rem;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            color: #1f2937;
+            border: 1px solid var(--sp-line);
+            border-radius: var(--sp-radius);
+            color: var(--sp-ink);
             background-color: #ffffff;
             transition: all 0.25s ease;
         }
@@ -193,7 +199,7 @@
             box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.15);
             outline: none;
         }
-        
+
         /* Interactive Visibility Password Eye Layout */
         .password-toggle-container {
             position: relative;
@@ -245,7 +251,7 @@
             padding: 12px;
             font-size: 0.95rem;
             font-weight: 600;
-            border-radius: 8px;
+            border-radius: var(--sp-radius);
             transition: all 0.25s ease;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -258,12 +264,23 @@
         .btn-signin:active {
             transform: translateY(1px);
         }
+        /* Visual disabled state used while a postback is in progress.
+           We use pointer-events / opacity instead of the "disabled"
+           attribute because disabling a submit button during its own
+           onclick can cancel the submission in some browsers. */
+        .btn-signin.btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
 
         /* Notification Banner Messages Overlay Box */
         .security-badge-banner {
             background-color: #ecfdf5;
             border: 1px solid #a7f3d0;
-            border-radius: 8px;
+            border-radius: var(--sp-radius);
             padding: 10px 14px;
             display: flex;
             align-items: center;
@@ -285,14 +302,16 @@
             color: #6b7280;
             user-select: none;
             cursor: pointer;
+            word-break: break-word;
         }
         .form-check-input-custom {
             width: 15px;
             height: 15px;
             cursor: pointer;
             border-radius: 4px;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--sp-line);
             transition: all 0.2s ease;
+            flex-shrink: 0;
         }
         .form-check-input-custom:checked {
             background-color: #1a56db;
@@ -316,7 +335,9 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Responsive Breakpoints Viewports Fixes */
+        /* =========================================================
+           Responsive Breakpoints
+           ========================================================= */
         @media (max-width: 991.98px) {
             .login-card { max-width: 720px; min-height: auto; }
             .login-sidebar { width: 40%; padding: 30px; gap: 25px; }
@@ -332,14 +353,51 @@
             .login-form-area { width: 100%; padding: 35px 25px; }
             .sticky-header { padding: 12px 20px; }
         }
+        @media (max-width: 575.98px) {
+            .login-wrapper { padding: 85px 12px 30px 12px; }
+            .login-card { max-width: 100%; border-radius: 12px; }
+            .login-sidebar { padding: 30px 15px; gap: 25px; }
+            .sidebar-logo { width: 80px; height: 80px; }
+            .login-form-area { padding: 30px 22px; }
+            .login-title { font-size: 1.55rem; }
+            .login-subtitle { font-size: 0.85rem; }
+            .wave-emoji { font-size: 1.55rem; }
+            .greetings-container { margin-bottom: 22px; }
+            .form-control-custom { padding: 10px 14px; }
+            .btn-signin { padding: 11px; }
+        }
+        @media (max-width: 400px) {
+            .sticky-header { padding: 10px 12px; }
+            .header-brand { font-size: 0.85rem; }
+            .header-brand span { font-size: 0.7rem; }
+            .header-logo { height: 28px; }
+            .btn-back { padding: 6px 12px; font-size: 0.78rem; gap: 5px; }
+            .login-wrapper { padding: 80px 10px 25px 10px; }
+            .login-sidebar { padding: 22px 12px; gap: 18px; }
+            .sidebar-logo { width: 65px; height: 65px; }
+            .login-form-area { padding: 25px 16px; }
+            .login-title { font-size: 1.35rem; }
+            .account-registration-hint { font-size: 0.82rem; }
+            .terms-checkbox-label { font-size: 0.75rem; }
+            .security-badge-banner { padding: 8px 10px; font-size: 0.78rem; gap: 8px; }
+        }
+        @media (max-width: 360px) {
+            .header-brand span { display: none; }
+            .login-form-area { padding: 22px 12px; }
+            .login-sidebar { padding: 20px 10px; gap: 14px; }
+            .sidebar-logo { width: 55px; height: 55px; }
+            .login-title { font-size: 1.25rem; }
+            .login-subtitle { font-size: 0.8rem; }
+            .action-link { font-size: 0.78rem; }
+        }
     </style>
 </head>
 <body>
     <form id="form1" runat="server">
-        
+
         <header class="sticky-header">
             <div class="header-brand d-flex align-items-center">
-                <Img src="../Assets/Img/lmsa_logo.png" alt="LMSA Logo" class="header-logo me-2" />
+                <Img src="../Assets/Logo/lmsa_logo.png" alt="LMSA Logo" class="header-logo me-2" />
                 <div>
                     <strong>SPAMAST LIBRARY</strong>
                     <span>LMSA v2.0 Platform</span>
@@ -352,14 +410,14 @@
 
         <div class="login-wrapper">
             <div class="login-card">
-                
+
                 <div class="login-sidebar">
-                    <Img src="../Assets/Img/lib_logo_wbg.png" alt="LMSA Logo" class="sidebar-logo" />
-                    <Img src="../Assets/Img/spmst_logo_wbg.png" alt="SPAMAST Logo" class="sidebar-logo" />
+                    <Img src="../Assets/Logo/lib_logo_wbg.png" alt="LMSA Logo" class="sidebar-logo" />
+                    <Img src="../Assets/Logo/spmst_logo_wbg.png" alt="SPAMAST Logo" class="sidebar-logo" />
                 </div>
 
                 <div class="login-form-area">
-                    
+
                     <div class="greetings-container">
                         <span class="wave-emoji">👋</span>
                         <h2 class="login-title">Mabuhay!</h2>
@@ -393,7 +451,9 @@
                         Don't have an active account? <a href="verifyAcc.aspx" class="action-link">Verify Account</a>
                     </div>
 
-                    <asp:Button ID="btnSignIn" runat="server" Text="Sign In" CssClass="btn-signin" OnClick="btnSignIn_Click" />
+                    <asp:Button ID="btnSignIn" runat="server" Text="Sign In" CssClass="btn-signin"
+                                OnClick="btnSignIn_Click"
+                                OnClientClick="return handleSignIn(this);" />
 
                     <div class="security-badge-banner">
                         <i class="fa-solid fa-shield-halved"></i>
@@ -401,7 +461,7 @@
                     </div>
 
                     <div class="d-flex align-items-start gap-2 mt-2">
-                        <input type="checkbox" id="chkTerms" class="form-check-input form-check-input-custom" required="required" />
+                        <input type="checkbox" id="chkTerms" name="chkTerms" class="form-check-input form-check-input-custom" required="required" />
                         <label for="chkTerms" class="terms-checkbox-label">
                             By signing in, you agree to our <a href="termsServices.aspx" class="action-link" style="font-size: 0.8rem;">Terms of Service</a>
                         </label>
@@ -413,12 +473,14 @@
 
     </form>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 is required for the loading indicator -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const passwordInput = document.getElementById('<%= txtPassword.ClientID %>');
-            const toggleButton = document.getElementById('btnTogglePassword');
-            const eyeIcon = document.getElementById('eyeIcon');
+            var passwordInput = document.getElementById('<%= txtPassword.ClientID %>');
+            var toggleButton = document.getElementById('btnTogglePassword');
+            var eyeIcon = document.getElementById('eyeIcon');
 
             if (toggleButton && passwordInput) {
                 toggleButton.addEventListener('click', function () {
@@ -426,7 +488,6 @@
                         passwordInput.type = 'text';
                         eyeIcon.classList.remove('fa-eye');
                         eyeIcon.classList.add('fa-eye-slash');
-                        // Micro interaction animation
                         eyeIcon.style.transform = 'scale(1.1)';
                     } else {
                         passwordInput.type = 'password';
@@ -435,11 +496,48 @@
                         eyeIcon.style.transform = 'scale(1)';
                     }
                 });
-                
-                // Reset eye scale transition
-                eyeIcon.addEventListener('transitionend', () => { eyeIcon.style.transform = 'scale(1)'; });
+                eyeIcon.addEventListener('transitionend', function () { eyeIcon.style.transform = 'scale(1)'; });
             }
         });
+
+        // Runs BEFORE the form is posted. Returning false blocks submission;
+        // returning true allows the browser to post the form normally.
+        function handleSignIn(btn) {
+            try {
+                var form = document.forms[0];
+
+                // 1) Show browser validation UI for required controls (Terms checkbox).
+                if (form && typeof form.reportValidity === 'function' && !form.reportValidity()) {
+                    return false;
+                }
+
+                // 2) Show the SweetAlert processing modal immediately.
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Processing...',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        showConfirmButton: false,
+                        didOpen: function () { Swal.showLoading(); }
+                    });
+                }
+
+                // 3) Visual feedback + duplicate-submit protection.
+                //    Do NOT set btn.disabled = true (this can cancel the form
+                //    submit in some browsers). pointer-events:none is enough.
+                if (btn) {
+                    btn.value = 'Signing In...';
+                    btn.classList.add('btn-loading');
+                    btn.setAttribute('aria-busy', 'true');
+                }
+            } catch (err) {
+                if (window.console && console.error) {
+                    console.error('Sign-in handler error:', err);
+                }
+                // Continue with normal submission even if JS hiccups.
+            }
+            return true;
+        }
     </script>
 </body>
 </html>
