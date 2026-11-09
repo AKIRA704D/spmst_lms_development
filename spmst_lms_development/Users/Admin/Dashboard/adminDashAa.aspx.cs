@@ -13,6 +13,29 @@ namespace spmst_lms_development.Users.Admin.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // =============================================================
+            // ACCESS CONTROL: only Admin & Staff-M may view this page.
+            // =============================================================
+            string role = sessionHelper.UserRole;
+            bool isAuthorized = role == sessionHelper.RoleAdmin || role == sessionHelper.RoleStaffM;
+
+            if (!isAuthorized)
+            {
+                Response.Clear();
+                Response.ContentType = "text/html";
+                Response.Write(@"<!DOCTYPE html><html><head>
+                    <title>Access Denied</title>
+                    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' />
+                    <style>body{background:#f8faf7;font-family:Segoe UI,sans-serif;}</style>
+                    </head><body class='d-flex align-items-center justify-content-center' style='min-height:100vh;'>
+                    <div class='text-center'>
+                        <h3 style='color:#c0392b;font-weight:700;'>Access Denied</h3>
+                        <p class='text-muted'>You do not have permission to view this page.</p>
+                    </div></body></html>");
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             if (!IsPostBack)
             {
                 RefreshUI();
@@ -61,7 +84,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
 
                             double total = facMin + stuMin;
                             double facPercent = (total > 0) ? (facMin / total) * 100 : 50;
-                            chartCircle.Style["background"] = $"conic-gradient(#0d6efd 0% {facPercent}%, #198754 {facPercent}% 100%)";
+                            chartCircle.Style["background"] = $"conic-gradient(#14532d 0% {facPercent}%, #1b7a3d {facPercent}% 100%)";
                         }
                     }
                 }
@@ -74,8 +97,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
 
         private string FormatDuration(double minutes)
         {
-            if (minutes >= 60)
-                return (minutes / 60.0).ToString("0.#") + "h";
+            if (minutes >= 60) return (minutes / 60.0).ToString("0.#") + "h";
             return Math.Round(minutes) + "m";
         }
 
@@ -115,7 +137,8 @@ namespace spmst_lms_development.Users.Admin.Dashboard
             }
         }
 
-        private void UpdateBar(System.Web.UI.HtmlControls.HtmlGenericControl bar, Literal lit, System.Web.UI.HtmlControls.HtmlGenericControl percentLbl, int count, int capacity)
+        private void UpdateBar(System.Web.UI.HtmlControls.HtmlGenericControl bar, Literal lit,
+                               System.Web.UI.HtmlControls.HtmlGenericControl percentLbl, int count, int capacity)
         {
             double percentage = (capacity > 0) ? ((double)count / capacity) * 100 : 0;
             if (percentage > 100) percentage = 100;
@@ -199,7 +222,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
         {
             string cleanTitle = title.Replace("'", "\\'");
             string cleanMsg = message.Replace("'", "\\'");
-            string script = $"Swal.fire({{ title: '{cleanTitle}', text: '{cleanMsg}', icon: '{icon}', confirmButtonColor: '#0d6efd' }});";
+            string script = $"Swal.fire({{ title: '{cleanTitle}', text: '{cleanMsg}', icon: '{icon}', confirmButtonColor: '#14532d' }});";
             ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(), script, true);
         }
     }

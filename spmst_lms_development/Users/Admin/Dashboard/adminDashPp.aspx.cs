@@ -14,6 +14,29 @@ namespace spmst_lms_development.Users.Admin.Dashboard
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            // =============================================================
+            // ACCESS CONTROL: only Admin & Staff-M may view this page.
+            // =============================================================
+            string role = sessionHelper.UserRole;
+            bool isAuthorized = role == sessionHelper.RoleAdmin || role == sessionHelper.RoleStaffM;
+
+            if (!isAuthorized)
+            {
+                Response.Clear();
+                Response.ContentType = "text/html";
+                Response.Write(@"<!DOCTYPE html><html><head>
+                    <title>Access Denied</title>
+                    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css' rel='stylesheet' />
+                    <style>body{background:#f8faf7;font-family:Segoe UI,sans-serif;}</style>
+                    </head><body class='d-flex align-items-center justify-content-center' style='min-height:100vh;'>
+                    <div class='text-center'>
+                        <h3 style='color:#c0392b;font-weight:700;'>Access Denied</h3>
+                        <p class='text-muted'>You do not have permission to view this page.</p>
+                    </div></body></html>");
+                Context.ApplicationInstance.CompleteRequest();
+                return;
+            }
+
             if (!IsPostBack)
             {
                 RefreshDashboard();
@@ -34,7 +57,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                 try
                 {
                     conn.Open();
-                    // Top Programs (only Students)
                     string progQuery = @"
                         SELECT course, COUNT(*) as Count,
                                ROUND(COUNT(*) * 100 / (SELECT NULLIF(COUNT(*), 0) FROM Students), 0) as Percentage
@@ -45,7 +67,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                     rptPrograms.DataSource = dtP;
                     rptPrograms.DataBind();
 
-                    // Top Institutes (from Students + Faculty, unified)
                     string instQuery = @"
                         SELECT institute, COUNT(*) as Count,
                                ROUND(COUNT(*) * 100 / (SELECT NULLIF(COUNT(*), 0) FROM (SELECT institute FROM Students UNION ALL SELECT institute FROM Faculty) AS allInst), 0) as Percentage
@@ -111,11 +132,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                 try
                 {
                     conn.Open();
-                    // CHANGES:
-                    //  • Source of truth is now Penalties (fine_amount, fine_status, penalty_type).
-                    //  • Join Transactions to keep borrow_date available as PenaltyDate context.
-                    //  • PenaltyType displays the actual enum value from Penalties.penalty_type.
-                    //  • All filter/sort columns come from the Penalties row (p.penalty_id PK ordering is stable).
                     string query = @"
                 SELECT 
                     t.borrow_date        AS PenaltyDate,
@@ -138,9 +154,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                 WHERE p.fine_amount > 0";
 
                     if (!string.IsNullOrEmpty(search))
-                    {
                         query += " AND (u.first_name LIKE @s OR u.last_name LIKE @s OR u.user_id LIKE @s)";
-                    }
                     query += " ORDER BY p.created_at DESC";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -176,7 +190,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
         {
             string cleanTitle = title.Replace("'", "\\'");
             string cleanMsg = message.Replace("'", "\\'");
-            string script = $"Swal.fire({{ title: '{cleanTitle}', text: '{cleanMsg}', icon: '{icon}', confirmButtonColor: '#0d6efd' }});";
+            string script = $"Swal.fire({{ title: '{cleanTitle}', text: '{cleanMsg}', icon: '{icon}', confirmButtonColor: '#14532d' }});";
             ScriptManager.RegisterStartupScript(this, GetType(), Guid.NewGuid().ToString(), script, true);
         }
     }

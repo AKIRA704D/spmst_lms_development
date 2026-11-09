@@ -87,6 +87,42 @@ namespace spmst_lms_development.Users.Admin.Dashboard
         protected global::System.Web.UI.WebControls.Literal litFinesCollected;
 
         /// <summary>
+        /// phTabCirc control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phTabCirc;
+
+        /// <summary>
+        /// phTabPatron control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phTabPatron;
+
+        /// <summary>
+        /// phTabAttend control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phTabAttend;
+
+        /// <summary>
+        /// phCircPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phCircPanel;
+
+        /// <summary>
         /// txtDateFrom control.
         /// </summary>
         /// <remarks>
@@ -166,5 +202,23 @@ namespace spmst_lms_development.Users.Admin.Dashboard
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptrTopBooks;
+
+        /// <summary>
+        /// phPatronPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phPatronPanel;
+
+        /// <summary>
+        /// phAttendPanel control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.PlaceHolder phAttendPanel;
     }
 }

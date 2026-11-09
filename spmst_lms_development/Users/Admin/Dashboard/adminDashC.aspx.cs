@@ -14,33 +14,115 @@ namespace spmst_lms_development.Users.Admin.Dashboard
     {
         private readonly string _connStr = ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
+        // =================================================================
+        // ROLE-BASED TAB VISIBILITY
+        // =================================================================
+        protected bool ShowCircTab
+        {
+            get
+            {
+                string r = sessionHelper.UserRole;
+                return r == sessionHelper.RoleAdmin || r == sessionHelper.RoleStaffC;
+            }
+        }
+
+        protected bool ShowPatronTab
+        {
+            get
+            {
+                string r = sessionHelper.UserRole;
+                return r == sessionHelper.RoleAdmin || r == sessionHelper.RoleStaffM;
+            }
+        }
+
+        protected bool ShowAttendTab
+        {
+            get
+            {
+                string r = sessionHelper.UserRole;
+                return r == sessionHelper.RoleAdmin || r == sessionHelper.RoleStaffM;
+            }
+        }
+
+        /// <summary>Returns the key of the first visible tab for this role.</summary>
+        protected string PrimaryTab
+        {
+            get
+            {
+                if (ShowCircTab) return "circ";
+                if (ShowPatronTab) return "patron";
+                if (ShowAttendTab) return "attend";
+                return "";
+            }
+        }
+
+        /// <summary>Returns "active" if the supplied tab is the primary tab for this role.</summary>
+        protected string ActiveTabClass(string tabKey)
+        {
+            return PrimaryTab == tabKey ? "active" : "";
+        }
+
+        /// <summary>Returns "show active" if the supplied pane is the primary pane for this role.</summary>
+        protected string ActivePaneClass(string tabKey)
+        {
+            return PrimaryTab == tabKey ? "show active" : "";
+        }
+
+        // =================================================================
+        // PAGE LOAD
+        // =================================================================
         protected void Page_Load(object sender, EventArgs e)
         {
+            // --- Access check: only Admin / StaffC / StaffM may view this page ---
+            string role = sessionHelper.UserRole;
+            bool isAuthorized = role == sessionHelper.RoleAdmin
+                             || role == sessionHelper.RoleStaffC
+                             || role == sessionHelper.RoleStaffM;
+
+            if (!isAuthorized)
+            {
+                Response.Redirect(sessionHelper.GetDashboardPath());
+                return;
+            }
+
+            // --- Apply tab visibility (every request, so postbacks keep state) ---
+            phTabCirc.Visible = ShowCircTab;
+            phTabPatron.Visible = ShowPatronTab;
+            phTabAttend.Visible = ShowAttendTab;
+            phCircPanel.Visible = ShowCircTab;
+            phPatronPanel.Visible = ShowPatronTab;
+            phAttendPanel.Visible = ShowAttendTab;
+
             if (!IsPostBack)
             {
                 txtDateFrom.Text = DateTime.Now.AddDays(-30).ToString("yyyy-MM-dd");
                 txtDateTo.Text = DateTime.Now.ToString("yyyy-MM-dd");
-                LoadDashboardStats();
-                LoadUnifiedAnalytics(txtDateFrom.Text, txtDateTo.Text);
-                LoadTopBorrowedData();
 
-                analyticsFrame.Attributes["src"] = "Analytics/Analytics_LowCirc.aspx";
+                // --- Only load Circulation data if the role is allowed to see it ---
+                if (ShowCircTab)
+                {
+                    LoadDashboardStats();
+                    LoadUnifiedAnalytics(txtDateFrom.Text, txtDateTo.Text);
+                    LoadTopBorrowedData();
+                    if (analyticsFrame != null)
+                        analyticsFrame.Attributes["src"] = "Analytics/Analytics_LowCirc.aspx";
+                }
             }
         }
 
         protected void btnFilter_Click(object sender, EventArgs e)
         {
+            if (!ShowCircTab) return; // defence-in-depth
             LoadUnifiedAnalytics(txtDateFrom.Text, txtDateTo.Text);
         }
 
+        // =================================================================
+        // DATA LOADERS (unchanged logic)
+        // =================================================================
         private void LoadDashboardStats()
         {
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
-                // Notes on the changes:
-                //  • PendingTotal & Collected now come from `Penalties` (source of truth).
-                //  • Transactions.status no longer has an 'Overdue' value.
-                //    "Overdue" = still Borrowed and past due_date.
                 string query = @"
                     SELECT 
                         (SELECT COUNT(*) FROM Library_Attendance la 
@@ -79,7 +161,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
             {
                 conn.Open();
 
-                // 1. Top Sections – count transactions per section
                 string sectionJson = GetJsonData(
                     @"SELECT lr.section, COUNT(t.transaction_id) as count 
                       FROM Transactions t 
@@ -90,7 +171,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                       ORDER BY count DESC 
                       LIMIT 10", conn, "section", start, end);
 
-                // 2. Top Subjects (DDC) – count transactions per dewey_decimal
                 string subjectJson = GetJsonData(
                     @"SELECT lr.dewey_decimal, COUNT(t.transaction_id) as count 
                       FROM Transactions t 
@@ -101,8 +181,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                       ORDER BY count DESC 
                       LIMIT 10", conn, "dewey_decimal", start, end);
 
-                // 3. Borrowing Distribution – by Institute
-                //    NOTE: 'Overdue' is no longer a status; borrowed-but-not-returned = status 'Borrowed'.
                 string instJson = GetStackedJsonDataWithRoles(
                     @"SELECT 
                         COALESCE(s.institute, f.institute, st.office_department) AS institute,
@@ -120,7 +198,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                       WHERE t.borrow_date BETWEEN @start AND @end
                       GROUP BY institute", conn, "institute", start, end);
 
-                // 4. Borrowing Distribution – by Program
                 string progJson = GetStackedJsonDataWithRoles(
                     @"SELECT 
                         COALESCE(s.course, f.institute, st.office_department) AS program,
@@ -138,12 +215,6 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                       WHERE t.borrow_date BETWEEN @start AND @end
                       GROUP BY program", conn, "program", start, end);
 
-                // 5. Penalty Breakdown – now sourced entirely from the Penalties table.
-                //    penalty_type is a combined enum:
-                //      'Overdue','Damaged','Lost',
-                //      'Overdue_Damaged','Overdue_Lost','Damaged_Lost','Overdue_Damaged_Lost','Other'
-                //    Using LIKE '%...%' lets a combined penalty contribute to each relevant bucket,
-                //    matching the previous behaviour of summing damage/lost/overdue independently.
                 string sqlFine = @"
                     SELECT 
                         SUM(CASE WHEN p.penalty_type LIKE '%Damaged%' THEN p.fine_amount ELSE 0 END) AS DamageAmount,
@@ -198,20 +269,11 @@ namespace spmst_lms_development.Users.Admin.Dashboard
             }
         }
 
-        // Helper methods for safe conversion
         private decimal SafeGetDecimal(MySqlDataReader reader, string columnName)
-        {
-            return reader[columnName] == DBNull.Value ? 0m : Convert.ToDecimal(reader[columnName]);
-        }
+            => reader[columnName] == DBNull.Value ? 0m : Convert.ToDecimal(reader[columnName]);
 
         private int SafeGetInt(MySqlDataReader reader, string columnName)
-        {
-            return reader[columnName] == DBNull.Value ? 0 : Convert.ToInt32(reader[columnName]);
-        }
-
-        // -----------------------------------------------------------------
-        // Helper methods
-        // -----------------------------------------------------------------
+            => reader[columnName] == DBNull.Value ? 0 : Convert.ToInt32(reader[columnName]);
 
         private string GetJsonData(string query, MySqlConnection conn, string labelField, string start, string end)
         {
@@ -290,12 +352,14 @@ namespace spmst_lms_development.Users.Admin.Dashboard
 
         protected string GetBookIconClass(int index)
         {
-            int mod = index % 5;
-            if (mod == 0) return "icon-book-purple";
-            else if (mod == 1) return "icon-book-green";
-            else if (mod == 2) return "icon-book-blue";
-            else if (mod == 3) return "icon-book-orange";
-            else return "icon-book-red";
+            switch (index % 5)
+            {
+                case 0: return "icon-book-purple";
+                case 1: return "icon-book-green";
+                case 2: return "icon-book-blue";
+                case 3: return "icon-book-orange";
+                default: return "icon-book-red";
+            }
         }
 
         protected void rptrTopBooks_ItemDataBound(object sender, RepeaterItemEventArgs e)
