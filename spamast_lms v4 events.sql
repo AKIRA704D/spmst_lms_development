@@ -204,9 +204,7 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS trg_staff_users_upd;
 DROP TRIGGER IF EXISTS trg_students_users_upd;
 DROP TRIGGER IF EXISTS trg_faculty_users_upd;
-
 DELIMITER $$
-
 CREATE TRIGGER trg_staff_users_upd
 AFTER UPDATE ON Staff
 FOR EACH ROW
@@ -230,7 +228,6 @@ FOR EACH ROW
 BEGIN
     UPDATE Users SET email = NEW.email WHERE user_id = OLD.faculty_id;
 END$$
-
 DELIMITER ;
 -- ===========================================================
 DROP TRIGGER IF EXISTS trg_transaction_reserved_item_unavailable;
@@ -353,11 +350,6 @@ DELIMITER ;
 -- ----------------------------------------------------------------------------
 -- 4. Verification queries (run after deployment)
 -- ----------------------------------------------------------------------------
-SHOW TRIGGERS FROM SPAMAST_LMSv4
-WHERE `Trigger` IN
-      ('trg_students_archive_user',
-       'trg_faculty_archive_user',
-       'trg_staff_archive_user');
 
 -- Sanity check: no schema additions required — is_active / archived_at /
 -- archived_reason already exist in the shipped schema.
@@ -374,5 +366,5 @@ show triggers from spamast_lmsv4 ;
 -- ===========================================================
 -- Insert Data
 -- ===========================================================
--- insert into staff ( staff_id, first_name, middle_name, last_name, extension_name, gender, mobile_number, email, office_department, is_head_librarian, address, profile_path, created_at, updated_at)
--- values ('2023-114000', 'Mary Claire', 'Lumansoc', 'Fernandez', '', 'Female', '09932960062', 'mc.fernandez@spamast.edu.ph', 'Head Office', '1', 'Poblacion, Malita, Davao Occidental', 'Assets/Profile/2023-114000_20260923170216256.jpg', current_date(), current_date());
+insert into staff ( staff_id, first_name, middle_name, last_name, extension_name, gender, mobile_number, email, office_department, is_head_librarian, address, profile_path, created_at, updated_at)
+values ('2023-114000', 'Mary Claire', 'Lumansoc', 'Fernandez', '', 'Female', '09932960062', 'mc.fernandez@spamast.edu.ph', 'Head Office', '1', 'Poblacion, Malita, Davao Occidental', 'Assets/Profile/2023-114000_20260923170216256.jpg', current_date(), current_date());

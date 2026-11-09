@@ -1,0 +1,202 @@
+﻿/* ============================================================
+   SettlePay.aspx — page-scoped styles.
+   Universal theme is in Assets/Themes/spmast-theme.css.
+   ============================================================ */
+.settlepay-page {
+    --sp-navy: #002447;
+    --sp-gold: #ffc107;
+    --sp-danger: #dc3545;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+.settlepay-page.form-shell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100vh;
+}
+
+    .settlepay-page .header-bar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .settlepay-page .icon-badge {
+        width: 40px;
+        height: 40px;
+    }
+
+    .settlepay-page .content-area {
+        padding: 1rem;
+        background: #f5f7fb;
+    }
+
+    /* ---------- Summary bar ---------- */
+    .settlepay-page .summary-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        background: #fff;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .settlepay-page .summary-item {
+        text-align: center;
+    }
+
+    .settlepay-page .summary-label {
+        display: block;
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #6c757d;
+    }
+
+    .settlepay-page .summary-value {
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    /* ---------- Section headers ---------- */
+    .settlepay-page .form-section {
+        border-left: 4px solid var(--sp-gold);
+        background: #f8f9fa;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+    }
+
+        .settlepay-page .form-section h6 {
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--sp-navy);
+            margin: 0;
+        }
+
+    .settlepay-page .required-star {
+        color: var(--sp-danger);
+        font-weight: 700;
+        margin-left: 2px;
+    }
+
+    /* ---------- Component rows ---------- */
+    .settlepay-page .component-row {
+        border-bottom: 1px solid #e9ecef;
+        padding: 0.75rem 0;
+    }
+
+        .settlepay-page .component-row:last-child {
+            border-bottom: none;
+        }
+
+    /* ---------- Replacement cards ---------- */
+    .settlepay-page .replacement-card {
+        border: 2px dashed var(--sp-gold);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        background: #fffdf5;
+        margin-bottom: 0.75rem;
+    }
+
+    /* ---------- Cashier panel ---------- */
+    .settlepay-page .cashier-panel {
+        background: #fff8e1;
+        border: 2px dashed var(--sp-gold);
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+
+    .settlepay-page .change-display {
+        background: #d1e7dd;
+        border: 2px solid #198754;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 700;
+        transition: background .15s, border-color .15s;
+    }
+
+        .settlepay-page .change-display.insufficient {
+            background: #f8d7da;
+            border-color: var(--sp-danger);
+        }
+
+    .settlepay-page .change-amount {
+        font-size: 1.5rem;
+        color: #0f5132;
+    }
+
+    .settlepay-page .change-display.insufficient .change-amount {
+        color: #842029;
+    }
+
+    /* ---------- Footer ---------- */
+    .settlepay-page .footer-bar {
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        background: #fff;
+        box-shadow: 0 -2px 6px rgba(0,0,0,0.05);
+    }
+
+    .settlepay-page .btn-custom-primary {
+        background-color: var(--sp-navy);
+        border: none;
+    }
+
+        .settlepay-page .btn-custom-primary:hover {
+            background-color: #001a33;
+        }
+
+    /* ---------- Loading ---------- */
+    .settlepay-page .loading-spinner {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    /* ---------- Inputs ---------- */
+    .settlepay-page .form-control:focus,
+    .settlepay-page .form-select:focus {
+        border-color: var(--sp-gold);
+        box-shadow: 0 0 0 0.2rem rgba(255,193,7,0.25);
+    }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 575.98px) {
+    .settlepay-page .summary-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .settlepay-page .summary-item {
+        text-align: left;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .settlepay-page .content-area {
+        padding: 0.75rem;
+    }
+
+    .settlepay-page .footer-bar {
+        flex-wrap: wrap;
+    }
+
+        .settlepay-page .footer-bar .btn {
+            flex: 1 1 100%;
+        }
+}

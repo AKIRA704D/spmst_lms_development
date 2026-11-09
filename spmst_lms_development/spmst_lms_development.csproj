@@ -157,7 +157,9 @@
     <Content Include="Assets\Logo\lmsa_logo.png" />
     <Content Include="Assets\Logo\spmst_logo.jpg" />
     <Content Include="Assets\Logo\spmst_logo_wbg.png" />
+    <Content Include="Assets\Themes\Penalties.css" />
     <Content Include="Assets\Themes\reservations-theme.css" />
+    <Content Include="Assets\Themes\SettlePay.css" />
     <Content Include="Assets\Themes\spamast-theme.css" />
     <Content Include="Assets\Themes\to-pick-up-theme.css" />
     <Content Include="Assets\Themes\verify-account.css" />
@@ -243,6 +245,7 @@
     <Compile Include="Assets\Helper\Notifications\PenaltySmsService.cs" />
     <Compile Include="Assets\Helper\ProfileHelper.cs" />
     <Compile Include="Assets\Helper\ReservationSmsService.cs" />
+    <Compile Include="Assets\Helper\ReplacementService.cs" />
     <Compile Include="Assets\Helper\Reservations\ReservationNoticeEmailService.cs" />
     <Compile Include="Assets\Helper\Reservations\ReservationNoticePushService.cs" />
     <Compile Include="Assets\Helper\Reservations\ReservationNoticeSmsService.cs" />
@@ -666,6 +669,8 @@
     <Content Include="Assets\Helper\Handlers\ReservationStatusHandler.ashx" />
     <None Include="packages.config" />
     <Content Include="SmsTick.ashx" />
+    <None Include="Properties\PublishProfiles\spamastlibrary-001-site1 - FTP.pubxml" />
+    <None Include="Properties\PublishProfiles\spamastlibrary-001-site1 - Web Deploy.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -673,7 +678,9 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Assets\SQL\" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

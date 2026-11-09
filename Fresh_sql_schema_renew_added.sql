@@ -394,4 +394,16 @@ CREATE TABLE IF NOT EXISTS Penalty_Notification_Log (
         FOREIGN KEY (penalty_id) REFERENCES Penalties(penalty_id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+CREATE TABLE IF NOT EXISTS Campuses (
+    campus_id   INT AUTO_INCREMENT PRIMARY KEY,
+    campus_name VARCHAR(100) NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_campus_name (campus_name)
+) ENGINE=InnoDB;
 
+-- Seed from existing Item_Copies data (idempotent, preserves prior records)
+INSERT IGNORE INTO Campuses (campus_name)
+SELECT DISTINCT campus
+  FROM Item_Copies
+ WHERE campus IS NOT NULL
+   AND campus <> '';
