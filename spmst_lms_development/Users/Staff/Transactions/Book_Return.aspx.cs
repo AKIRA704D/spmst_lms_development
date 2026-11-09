@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using spmst_lms_development.Assets.Helper;
 using spmst_lms_development.Assets.Helper.Notifications;
 using spmst_lms_development.Assets.Services;
 using System;
@@ -144,6 +145,13 @@ namespace spmst_lms_development.Users.Staff.Transactions
                                ? (DateTime)ViewState["CurrentDueDate"]
                                : DateTime.Today;
 
+            // We keep this for the success UI message later
+            var penalty = FinePolicy.Calculate(
+                dueDate: dueDate,
+                returnDate: DateTime.Today,
+                isDamaged: isDamaged == 1,
+                isLost: isLost == 1);
+
             using (MySqlConnection conn = new MySqlConnection(_connStr))
             {
                 conn.Open();
@@ -182,48 +190,24 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         cmdCopy.Parameters.AddWithValue("@acc", accession);
                         cmdCopy.ExecuteNonQuery();
 
-                        // ---------- 3. Create Penalties row (if applicable) ----------
-                        //  All fine logic delegates to the unified FinePolicy.
-                        PenaltyResult penalty = FinePolicy.Calculate(
-                            dueDate: dueDate,
-                            returnDate: DateTime.Today,
-                            isDamaged: isDamaged == 1,
-                            isLost: isLost == 1);
-
-                        if (penalty.HasPenalty)
-                        {
-                            string insertPenalty = @"
-                                INSERT INTO Penalties
-                                    (transaction_id, user_id, accession_number,
-                                     penalty_type, reason, fine_amount, fine_status)
-                                VALUES
-                                    (@tid, @uid, @acc, @ptype, @reason, @amt, @status);
-                                SELECT LAST_INSERT_ID();";
-
-                            MySqlCommand cmdPen = new MySqlCommand(insertPenalty, conn, trans);
-                            cmdPen.Parameters.AddWithValue("@tid", transactionId);
-                            cmdPen.Parameters.AddWithValue("@uid", userId);
-                            cmdPen.Parameters.AddWithValue("@acc", accession);
-                            cmdPen.Parameters.AddWithValue("@ptype", penalty.PenaltyType);
-                            cmdPen.Parameters.AddWithValue("@reason", penalty.Reason);
-                            cmdPen.Parameters.AddWithValue("@amt", penalty.FineAmount);
-                            cmdPen.Parameters.AddWithValue("@status",
-                                PenaltyStatuses.FromAmounts(penalty.FineAmount, 0m));
-
-                            int newPenaltyId = Convert.ToInt32(cmdPen.ExecuteScalar());
-
-                            // Back-reference on the transaction
-                            string linkPenalty =
-                                "UPDATE Transactions SET penalty_id = @pid WHERE transaction_id = @tid";
-                            MySqlCommand cmdLink = new MySqlCommand(linkPenalty, conn, trans);
-                            cmdLink.Parameters.AddWithValue("@pid", newPenaltyId);
-                            cmdLink.Parameters.AddWithValue("@tid", transactionId);
-                            cmdLink.ExecuteNonQuery();
-                        }
+                        // ---------- 3. REMOVED MANUAL PENALTY INSERT ----------
+                        // The old INSERT INTO Penalties is deleted here.
+                        // We will let PenaltyService.SyncPenalties() do it after commit.
 
                         trans.Commit();
 
-                        // ---------- 4. Append to per-session live feed ----------
+                        // ---------- 4. SYNC PENALTIES ----------
+                        // This safely creates/updates the Penalties and Penalty_Components
+                        try
+                        {
+                            PenaltyService.SyncPenalties();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Trace.TraceError("[Book_Return] SyncPenalties failed: " + ex.Message);
+                        }
+
+                        // ---------- 5. Append to per-session live feed ----------
                         FeedItems.Insert(0, new FeedEntry
                         {
                             PatronName = litPatronName.Text,
@@ -238,7 +222,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         ResetForm();
                         BindFeed();
 
-                        // ===== 5: queue penalty notification in background =====
+                        // ---------- 6. Queue background notification ----------
                         if (penalty.HasPenalty)
                         {
                             int txnSnapshot = transactionId;
@@ -256,7 +240,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                             });
                         }
 
-                        // Show fine summary in the success alert when applicable
+                        // Show fine summary in the success alert
                         if (penalty.HasPenalty)
                         {
                             ShowSweetAlert("Success",

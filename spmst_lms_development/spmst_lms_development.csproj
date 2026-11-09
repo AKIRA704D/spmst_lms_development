@@ -144,7 +144,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Script\admin-master-notifications.js" />
     <Content Include="Assets\Script\process-indicator.js" />
+    <Content Include="Assets\Themes\admin-master.css" />
     <Content Include="Assets\Themes\book_borrow-theme.css" />
     <Content Include="Assets\Themes\browse-catalog-theme.css" />
     <Content Include="Assets\Themes\history-theme.css" />
@@ -243,6 +245,7 @@
     <Compile Include="Assets\Helper\Notifications\PenaltyNotificationService.cs" />
     <Compile Include="Assets\Helper\Notifications\PenaltyPushService.cs" />
     <Compile Include="Assets\Helper\Notifications\PenaltySmsService.cs" />
+    <Compile Include="Assets\Helper\Notifications\WorkflowNotificationService.cs" />
     <Compile Include="Assets\Helper\ProfileHelper.cs" />
     <Compile Include="Assets\Helper\ReservationSmsService.cs" />
     <Compile Include="Assets\Helper\ReplacementService.cs" />
