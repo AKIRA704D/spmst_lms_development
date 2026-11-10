@@ -1,5 +1,5 @@
 ﻿/* ============================================================
-   SPAMAST Library – Browse Catalog Theme
+   SPAMAST Library - Browse Catalog Theme
    Path: Assets/Themes/browse-catalog-theme.css
    ============================================================ */
 
@@ -215,7 +215,7 @@
         transform: translateY(-2px);
     }
 
-/* Cover container – consistent size, image centered & contained */
+/* Cover container - consistent size, image centered & contained */
 .book-cover-container {
     width: 100%;
     height: 220px;

@@ -436,7 +436,7 @@ namespace spmst_lms_development.Users.Staff.Import
             alertPlaceholder.InnerHtml = $@"
                 <div class='alert alert-{type} alert-dismissible fade show' role='alert'>
                     <i class='fas {icon} me-2'></i>
-                    <strong>{title}</strong> – {message}
+                    <strong>{title}</strong> - {message}
                     <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
                 </div>";
         }

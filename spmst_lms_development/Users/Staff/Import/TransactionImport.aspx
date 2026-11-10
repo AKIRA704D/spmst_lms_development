@@ -23,7 +23,7 @@
                         <small class="text-muted">
                             <i class="fas fa-info-circle"></i> Required: <strong>user_id</strong>, <strong>accession_number</strong>,
                             <strong>borrow_date</strong>, <strong>due_date</strong>. All other fields are optional.
-                            &nbsp;–&nbsp;
+                            &nbsp;-&nbsp;
                             <a href="#" onclick="downloadSampleCSV(); return false;" class="text-primary">
                                 <i class="fas fa-download"></i> Download Sample CSV
                             </a>

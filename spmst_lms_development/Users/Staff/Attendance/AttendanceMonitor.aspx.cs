@@ -321,7 +321,7 @@ namespace spmst_lms_development.Users.Staff.Attendance
         protected void TimerRefresh_Tick(object sender, EventArgs e)
         {
             string currentUser = Session["UserID"]?.ToString() ?? "SYSTEM";
-            // Auto-refresh every 30 seconds – log occasionally
+            // Auto-refresh every 30 seconds - log occasionally
             if (DateTime.Now.Second % 30 == 0)
                 AuditLog.Log(currentUser, "AUTO_REFRESH", "AttendanceMonitor", "Auto-refresh triggered");
             LoadDashboardStats();

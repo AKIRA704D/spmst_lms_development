@@ -128,7 +128,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                         <div class='card bg-light'>
                             <div class='card-body text-center'>
                                 <h6 class='card-title'>Peak Entry Hour</h6>
-                                <h4 class='text-primary'>{peakEntryHour:00}:00 – {peakEntryHour + 1:00}:00</h4>
+                                <h4 class='text-primary'>{peakEntryHour:00}:00 - {peakEntryHour + 1:00}:00</h4>
                                 <p class='small text-muted'>{maxEntries} entries</p>
                             </div>
                         </div>
@@ -137,7 +137,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                         <div class='card bg-light'>
                             <div class='card-body text-center'>
                                 <h6 class='card-title'>Peak Exit Hour</h6>
-                                <h4 class='text-warning'>{peakExitHour:00}:00 – {peakExitHour + 1:00}:00</h4>
+                                <h4 class='text-warning'>{peakExitHour:00}:00 - {peakExitHour + 1:00}:00</h4>
                                 <p class='small text-muted'>{maxExits} exits</p>
                             </div>
                         </div>

@@ -19,7 +19,7 @@
     <form id="form1" runat="server">
         <div class="page-container">
             <h4 class="mb-3"><i class="fas fa-fire text-danger me-2"></i>Trending Books</h4>
-            <p class="text-muted small">Books with the highest circulation – diagnostic insights on why they are popular.</p>
+            <p class="text-muted small">Books with the highest circulation - diagnostic insights on why they are popular.</p>
             <asp:GridView ID="gvTrendingBooks" runat="server" AutoGenerateColumns="False" CssClass="table table-hover table-bordered" GridLines="None">
                 <Columns>
                     <asp:TemplateField HeaderText="TITLE">

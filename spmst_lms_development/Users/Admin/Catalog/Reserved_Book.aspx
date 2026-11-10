@@ -638,7 +638,7 @@
                                 <span class="info-label">Pickup Deadline</span>
                                 <span class="info-value pending">
                                     <i class="fas fa-hourglass-half"></i>
-                                    Pending – Waiting for Pickup-Ready Notification
+                                    Pending - Waiting for Pickup-Ready Notification
                                 </span>
                             </div>
                         </div>

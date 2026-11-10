@@ -196,7 +196,7 @@ namespace spmst_lms_development.Assets.Helper
                         if (dict != null && dict.ContainsKey("id"))
                             id = Convert.ToString(dict["id"]);
                     }
-                    catch { /* response shape changed – not fatal */ }
+                    catch { /* response shape changed - not fatal */ }
 
                     return SmsResult.Ok(id, "Pending", body);
                 }

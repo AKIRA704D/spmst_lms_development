@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <title>Terms &amp; Services – SPAMAST Library</title>
+    <title>Terms &amp; Services - SPAMAST Library</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -12,7 +12,7 @@
 
     <style>
         /* ============================================
-           1. Base – lock viewport, no page scroll
+           1. Base - lock viewport, no page scroll
            ============================================ */
         html, body {
             height: 100vh;
@@ -97,7 +97,7 @@
         }
 
         /* ============================================
-           3. Content Wrapper – fill remaining space, center card
+           3. Content Wrapper - fill remaining space, center card
            ============================================ */
         .content-wrapper {
             height: 100vh;
@@ -109,7 +109,7 @@
         }
 
         /* ============================================
-           4. Uniform Card – stretches to fit, no overflow
+           4. Uniform Card - stretches to fit, no overflow
            ============================================ */
         .uniform-card {
             background-color: #ffffff;
@@ -127,7 +127,7 @@
         }
 
         /* ============================================
-           5. Left Sidebar – fill height
+           5. Left Sidebar - fill height
            ============================================ */
         .sidebar-brand {
             background-color: #1a56db;
@@ -152,7 +152,7 @@
         }
 
         /* ============================================
-           6. Right Content Area – flex column, fill height
+           6. Right Content Area - flex column, fill height
            ============================================ */
         .content-area {
             width: 55%;
@@ -230,7 +230,7 @@
         }
 
         /* ============================================
-           7. Responsive – keep card fitting
+           7. Responsive - keep card fitting
            ============================================ */
         @media (max-width: 991.98px) {
             .uniform-card { max-width: 720px; height: auto; max-height: 90vh; min-height: auto; }

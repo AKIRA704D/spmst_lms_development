@@ -19,7 +19,7 @@
     <form id="form1" runat="server">
         <div class="page-container">
             <h4 class="mb-3"><i class="fas fa-clock text-warning me-2"></i>Overdue Patterns</h4>
-            <p class="text-muted small">Books that are frequently overdue – with diagnostic insights into why.</p>
+            <p class="text-muted small">Books that are frequently overdue - with diagnostic insights into why.</p>
             <asp:GridView ID="gvOverduePatterns" runat="server" AutoGenerateColumns="False" CssClass="table table-hover table-bordered" GridLines="None">
                 <Columns>
 

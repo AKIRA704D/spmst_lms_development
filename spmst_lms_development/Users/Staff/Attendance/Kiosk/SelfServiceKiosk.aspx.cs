@@ -37,7 +37,7 @@ namespace spmst_lms_development.Users.Staff.Attendance.Kiosk   // ← changed to
                              : "Summer";
                 int sy1 = month >= 8 ? ph.Year : ph.Year - 1;
                 int sy2 = sy1 + 1;
-                litSemHeader.Text = $"SY: {sy1}–{sy2} | {sem}";
+                litSemHeader.Text = $"SY: {sy1}-{sy2} | {sem}";
 
                 string staffId = Request.QueryString["staff"];
                 string sessionId = Request.QueryString["session"];

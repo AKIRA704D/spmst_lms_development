@@ -9,28 +9,6 @@ using MySql.Data.MySqlClient;
 
 namespace spmst_lms_development.LandingPage
 {
-    /// <summary>
-    /// JSON data endpoint that powers the public LMSA landing page (Home.aspx).
-    /// All actions are read-only, public-facing aggregate queries — no
-    /// session/auth is required since this feeds the anonymous landing page.
-    ///
-    /// Usage: LandingData.ashx?action=stats
-    ///        LandingData.ashx?action=topborrowers&amp;count=20
-    ///        LandingData.ashx?action=topinstitutes&amp;role=All|Student|Faculty&amp;count=20
-    ///        LandingData.ashx?action=topresources&amp;count=20
-    ///        LandingData.ashx?action=topsections&amp;count=20
-    ///        LandingData.ashx?action=catalogfilters
-    ///        LandingData.ashx?action=catalog&amp;q=&amp;type=All&amp;section=All&amp;page=1&amp;pageSize=12
-    ///        LandingData.ashx?action=contactinfo
-    ///        LandingData.ashx?action=aboutus
-    ///        LandingData.ashx?action=services
-    ///        LandingData.ashx?action=termsactive
-    ///
-    /// Content behind these last four actions is managed from the admin-side
-    /// Library Settings page (Users/Admin/Settings/LibrarySettings.aspx), which
-    /// writes to library_contact_info / library_about_us / library_services /
-    /// library_terms via LibrarySettingsData.ashx.
-    /// </summary>
     public class LandingData : IHttpHandler
     {
         public bool IsReusable { get { return false; } }
@@ -87,6 +65,9 @@ namespace spmst_lms_development.LandingPage
                         break;
                     case "termsactive":
                         result = GetActiveTerms();
+                        break;
+                    case "logos":
+                        result = GetOrganizationLogos(GetStringParam(context, "entityType", null));
                         break;
                     default:
                         WriteJson(context, new { success = false, message = "Unknown action." });
@@ -591,6 +572,54 @@ namespace spmst_lms_development.LandingPage
             return null;
         }
 
+        // --------------------------------------------------------------------------
+        // NEW: organization_logos
+        // Returns [] gracefully if the table has not been created yet — the
+        // master page's LogoHelper already falls back to static assets.
+        // --------------------------------------------------------------------------
+        private object GetOrganizationLogos(string entityType)
+        {
+            var list = new List<object>();
+            try
+            {
+                using (var conn = OpenConnection())
+                {
+                    string sql = @"SELECT logo_id, entity_type, entity_name, logo_path, sort_order
+                                   FROM organization_logos
+                                   WHERE is_active = 1";
+                    if (!string.IsNullOrWhiteSpace(entityType))
+                        sql += " AND entity_type = @entityType";
+                    sql += " ORDER BY sort_order ASC, logo_id ASC";
+
+                    using (var cmd = new MySqlCommand(sql, conn))
+                    {
+                        if (!string.IsNullOrWhiteSpace(entityType))
+                            cmd.Parameters.AddWithValue("@entityType", entityType);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                list.Add(new
+                                {
+                                    logoId = ReadInt(reader, "logo_id"),
+                                    entityType = ReadString(reader, "entity_type"),
+                                    entityName = ReadString(reader, "entity_name"),
+                                    logoPath = NormalizeAssetPath(ReadString(reader, "logo_path"), false),
+                                    sortOrder = ReadInt(reader, "sort_order")
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Table may not exist yet — degrade to empty list rather than error.
+            }
+            return list;
+        }
+
         // ==========================================================================
         // HELPERS
         // ==========================================================================
@@ -629,7 +658,6 @@ namespace spmst_lms_development.LandingPage
             return ti.ToTitleCase(s.Trim().ToLowerInvariant());
         }
 
-        /// <summary>Builds "First M. Last" in sentence case from raw name parts.</summary>
         private static string BuildFullName(string first, string middle, string last)
         {
             string f = ToProperCase(first);
@@ -643,11 +671,6 @@ namespace spmst_lms_development.LandingPage
             return string.Join(" ", parts);
         }
 
-        /// <summary>
-        /// Returns a project-relative asset path, falling back to the standard
-        /// default placeholder used across the LMS (Assets/Profile/... for
-        /// borrower photos, Assets/Covers/... for resource covers).
-        /// </summary>
         private static string NormalizeAssetPath(string rawPath, bool isProfile)
         {
             if (!string.IsNullOrWhiteSpace(rawPath)) return rawPath.Replace('\\', '/');

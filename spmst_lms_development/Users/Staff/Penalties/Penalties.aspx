@@ -89,12 +89,12 @@
                     var line;
                     if (c.Type === 'Overdue') {
                         line = (c.LoanType === 'LoanIn')
-                            ? 'Overdue – Loan-in | ' + c.OverdueHours + ' hours overdue × ₱5.00/hour'
-                            : 'Overdue – Loan-out | ' + c.OverdueDays + ' days overdue × ₱5.00/day';
+                            ? 'Overdue - Loan-in | ' + c.OverdueHours + ' hours overdue × ₱5.00/hour'
+                            : 'Overdue - Loan-out | ' + c.OverdueDays + ' days overdue × ₱5.00/day';
                     } else if (c.Type === 'Damaged') {
-                        line = 'Damaged Book – Physical damage reported during return inspection.';
+                        line = 'Damaged Book - Physical damage reported during return inspection.';
                     } else if (c.Type === 'Lost') {
-                        line = 'Lost Book – Book was reported missing and has not been returned.';
+                        line = 'Lost Book - Book was reported missing and has not been returned.';
                     } else {
                         line = c.Type;
                     }

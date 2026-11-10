@@ -18,7 +18,7 @@
 <body>
     <form id="form1" runat="server">
         <div class="page-container">
-            <h4 class="mb-3"><i class="fas fa-clock text-primary me-2"></i>Peak Hours – Library Attendance</h4>
+            <h4 class="mb-3"><i class="fas fa-clock text-primary me-2"></i>Peak Hours - Library Attendance</h4>
             <p class="text-muted small">Analysis of entries (time_in) and exits (time_out) by hour of day.</p>
 
             <div class="row mb-4">

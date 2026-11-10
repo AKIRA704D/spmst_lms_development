@@ -166,7 +166,7 @@ namespace spmst_lms_development.Users.Patron.Notifications
 
         private void SetActiveFilterButton(string activeClientId)
         {
-            // Server-side: we set CSS classes manually – but we also rely on client-side JS after postback
+            // Server-side: we set CSS classes manually - but we also rely on client-side JS after postback
             btnFilterAll.CssClass = "filter-pill";
             btnFilterDue.CssClass = "filter-pill";
             btnFilterRes.CssClass = "filter-pill";

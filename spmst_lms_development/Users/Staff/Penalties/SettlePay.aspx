@@ -274,14 +274,14 @@
             var reasonHtml = '';
             if (c.Type === 'Overdue') {
                 if (c.LoanType === 'LoanIn') {
-                    reasonHtml = 'Overdue – Loan-in | ' + c.OverdueHours + ' hours overdue × ₱5.00/hour';
+                    reasonHtml = 'Overdue - Loan-in | ' + c.OverdueHours + ' hours overdue × ₱5.00/hour';
                 } else {
-                    reasonHtml = 'Overdue – Loan-out | ' + c.OverdueDays + ' days overdue × ₱5.00/day';
+                    reasonHtml = 'Overdue - Loan-out | ' + c.OverdueDays + ' days overdue × ₱5.00/day';
                 }
             } else if (c.Type === 'Damaged') {
-                reasonHtml = 'Damaged Book – Physical damage reported during return inspection.';
+                reasonHtml = 'Damaged Book - Physical damage reported during return inspection.';
             } else if (c.Type === 'Lost') {
-                reasonHtml = 'Lost Book – Book was reported missing and has not been returned.';
+                reasonHtml = 'Lost Book - Book was reported missing and has not been returned.';
             }
 
             var badge = '';

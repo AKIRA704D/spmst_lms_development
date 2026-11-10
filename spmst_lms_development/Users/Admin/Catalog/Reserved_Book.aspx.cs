@@ -143,7 +143,7 @@ namespace spmst_lms_development.Users.Admin.Catalog
                         string acc = SafeStr(dr["first_copy"]);
                         int count = Convert.ToInt32(dr["available_count"]);
 
-                        string text = string.Format("{0} – {1} ({2} Available)",
+                        string text = string.Format("{0} - {1} ({2} Available)",
                                                     campus, loc, count);
 
                         rblLocations.Items.Add(new ListItem(text, acc));

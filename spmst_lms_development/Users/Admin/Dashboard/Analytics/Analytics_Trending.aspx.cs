@@ -37,10 +37,10 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                             ELSE 'Rising Popularity'
                         END AS Reason,
                         CASE 
-                            WHEN COUNT(t.transaction_id) >= 20 THEN 'This book is in extremely high demand – likely a core textbook or popular title.'
+                            WHEN COUNT(t.transaction_id) >= 20 THEN 'This book is in extremely high demand - likely a core textbook or popular title.'
                             WHEN COUNT(t.transaction_id) >= 10 THEN 'Consistently borrowed; may be required reading or a frequently referenced work.'
-                            WHEN MAX(t.borrow_date) > DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN 'Recently gained popularity – possibly due to new course adoption or current events.'
-                            ELSE 'Steady interest – a reliable resource for users.'
+                            WHEN MAX(t.borrow_date) > DATE_SUB(NOW(), INTERVAL 1 MONTH) THEN 'Recently gained popularity - possibly due to new course adoption or current events.'
+                            ELSE 'Steady interest - a reliable resource for users.'
                         END AS Explanation
                     FROM Library_Resources lr
                     INNER JOIN Item_Copies ic ON lr.resource_id = ic.resource_id

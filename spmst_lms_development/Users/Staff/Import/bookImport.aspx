@@ -45,7 +45,7 @@
                         <small class="text-muted">
                             <i class="fas fa-info-circle"></i> Required: <strong>Title</strong> (resource).
                             <strong>Barcode</strong> (accession_number) is optional and auto-generated if blank.
-                            &nbsp;–&nbsp;
+                            &nbsp;-&nbsp;
                             <a href="#" onclick="downloadSampleCSV(); return false;" class="text-primary">
                                 <i class="fas fa-download"></i> Download Sample CSV (multi-copy)
                             </a>

@@ -661,7 +661,7 @@ namespace spmst_lms_development.Users.Staff.Import
             alertPlaceholder.InnerHtml = string.Format(
                 "<div class='alert alert-{0} alert-dismissible fade show' role='alert'>" +
                 "<i class='fas {1} me-2'></i>" +
-                "<strong>{2}</strong> – {3}" +
+                "<strong>{2}</strong> - {3}" +
                 "<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>" +
                 "</div>",
                 type, icon, title, message);

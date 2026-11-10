@@ -132,7 +132,7 @@
                     </button>
                 </div>
 
-                <!-- Library Status Panel – dynamic list -->
+                <!-- Library Status Panel - dynamic list -->
                 <div class="info-panel mt-3">
                     <div class="d-flex align-items-center gap-2 mb-2">
                         <i class="fas fa-book-open text-success fa-2x"></i>

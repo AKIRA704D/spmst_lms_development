@@ -24,7 +24,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
                 }
                 else
                 {
-                    // No ID – close modal
+                    // No ID - close modal
                     ShowSweetAlert("Error", "No resource ID provided.", "error");
                     BtnExit_Click(null, null);
                 }

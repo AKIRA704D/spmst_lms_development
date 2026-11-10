@@ -36,7 +36,7 @@ namespace spmst_lms_development.Users.Staff.Attendance.Kiosk
         {
             try
             {
-                // Attempt decryption (if QR contains encrypted data) – otherwise treat as plain ID
+                // Attempt decryption (if QR contains encrypted data) - otherwise treat as plain ID
                 string userId = DecryptIfNeeded(inputData);
                 if (string.IsNullOrEmpty(userId)) userId = inputData;
 

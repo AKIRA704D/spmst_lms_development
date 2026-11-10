@@ -29,8 +29,8 @@ INSERT INTO library_contact_info (address, phone, email, hours_weekdays, hours_s
 SELECT 'Poblacion, Malita, Davao Occidental, Philippines 8012',
        '(082) 272-3725',
        'library@spamast.edu.ph',
-       'Mon – Fri: 8:00 AM – 5:00 PM',
-       'Saturday: 8:00 AM – 12:00 PM',
+       'Mon - Fri: 8:00 AM - 5:00 PM',
+       'Saturday: 8:00 AM - 12:00 PM',
        'Sunday & Holidays: Closed',
        '',
        'https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d991.2029031222396!2d125.60769499574207!3d6.41824697173699!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sph!4v1785921070592!5m2!1sen!2sph'

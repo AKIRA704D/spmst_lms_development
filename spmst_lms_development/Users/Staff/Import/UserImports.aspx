@@ -23,7 +23,7 @@
                             Required: <strong>user_id</strong>, <strong>email</strong>, <strong>role</strong>,
                             <strong>first_name</strong>, <strong>last_name</strong>.
                             Role must be one of <em>student, faculty, staff, admin</em>.
-                            &nbsp;–&nbsp;
+                            &nbsp;-&nbsp;
                             <a href="#" onclick="downloadSampleCSV(); return false;" class="text-primary">
                                 <i class="fas fa-download"></i> Download Sample CSV
                             </a>
