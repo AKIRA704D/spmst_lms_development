@@ -4,7 +4,7 @@
 
 /* Base Page Setup & Library Blurred Background */
 body {
-    background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../../Assets/Logo/lmsa_bg.jpg') no-repeat center center fixed;
+    background: linear-gradient(rgba(11, 61, 44, 0.4), rgba(11, 61, 44, 0.4)), url('../../Assets/Logo/lmsa_bg.jpg') no-repeat center center fixed;
     background-size: cover;
     font-family: var(--sp-sans);
     color: var(--sp-ink);
@@ -22,11 +22,12 @@ body {
     width: 100%;
     z-index: 1030;
     padding: 15px 30px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(11, 61, 44, 0.85); /* SPAMAST Green 900 with opacity */
     backdrop-filter: blur(5px);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 2px solid var(--sp-gold);
 }
 
 .header-logo {
@@ -52,14 +53,14 @@ body {
         display: block;
         font-size: 0.75rem;
         font-weight: 400;
-        color: #ced4da;
+        color: var(--sp-gold-200);
     }
 
 /* Back Button Interaction */
 .btn-back {
-    background-color: #4b51ac;
+    background-color: transparent;
     color: #ffffff;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 8px 20px;
     border-radius: 6px;
     font-size: 0.85rem;
@@ -72,10 +73,11 @@ body {
 }
 
     .btn-back:hover {
-        background-color: #3b408c;
-        color: #ffffff;
+        background-color: var(--sp-gold);
+        color: var(--sp-green-900);
+        border-color: var(--sp-gold);
         transform: translateX(-3px);
-        box-shadow: 0 4px 12px rgba(75, 81, 172, 0.4);
+        box-shadow: 0 4px 12px rgba(212, 160, 23, 0.4);
     }
 
     .btn-back i {
@@ -108,9 +110,9 @@ body {
     border: none;
 }
 
-/* Left Split Panel - Brand Blue Identity Section */
+/* Left Split Panel - Brand Green Identity Section */
 .login-sidebar {
-    background-color: #1a56db;
+    background: linear-gradient(135deg, var(--sp-green-900) 0%, var(--sp-green-700) 100%);
     width: 45%;
     padding: 40px;
     display: flex;
@@ -156,7 +158,7 @@ body {
 }
 
 .login-title {
-    color: var(--sp-ink);
+    color: var(--sp-green-900);
     font-weight: 700;
     font-size: 1.85rem;
     margin-top: 5px;
@@ -172,7 +174,7 @@ body {
 .form-label {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--sp-ink);
     margin-bottom: 6px;
 }
 
@@ -193,8 +195,8 @@ body {
 }
 
     .form-control-custom:focus {
-        border-color: #1a56db;
-        box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.15);
+        border-color: var(--sp-green-600);
+        box-shadow: 0 0 0 4px rgba(27, 122, 61, 0.15);
         outline: none;
     }
 
@@ -219,20 +221,20 @@ body {
 }
 
     .password-toggle-btn:hover {
-        color: #4b5563;
+        color: var(--sp-green-700);
     }
 
 /* Inline Action Links Navigation Styles */
 .action-link {
     font-size: 0.82rem;
-    color: #1a56db;
+    color: var(--sp-green-600);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.2s ease;
 }
 
     .action-link:hover {
-        color: #1145b5;
+        color: var(--sp-green-800);
         text-decoration: underline;
     }
 
@@ -246,13 +248,13 @@ body {
 
 /* Action Buttons Interaction Handlers */
 .btn-signin {
-    background-color: #2b3244;
-    color: #ffffff;
+    background-color: var(--sp-gold);
+    color: var(--sp-green-900);
     border: none;
     width: 100%;
     padding: 12px;
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     border-radius: var(--sp-radius);
     transition: all 0.25s ease;
     margin-bottom: 20px;
@@ -260,9 +262,10 @@ body {
 }
 
     .btn-signin:hover {
-        background-color: #1e2330;
+        background-color: var(--sp-gold-200);
+        color: var(--sp-green-900);
         transform: translateY(-1px);
-        box-shadow: 0 6px 15px rgba(43, 50, 68, 0.3);
+        box-shadow: 0 6px 15px rgba(212, 160, 23, 0.3);
     }
 
     .btn-signin:active {
@@ -279,22 +282,22 @@ body {
 
 /* Notification Banner Messages Overlay Box */
 .security-badge-banner {
-    background-color: #ecfdf5;
-    border: 1px solid #a7f3d0;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
     border-radius: var(--sp-radius);
     padding: 10px 14px;
     display: flex;
     align-items: center;
     gap: 10px;
     font-size: 0.82rem;
-    color: #065f46;
+    color: var(--sp-green-800);
     font-weight: 500;
     margin-bottom: 22px;
 }
 
     .security-badge-banner i {
         font-size: 1rem;
-        color: #10b981;
+        color: var(--sp-green-600);
         animation: shieldPulse 2s infinite ease-in-out;
     }
 
@@ -318,8 +321,8 @@ body {
 }
 
     .form-check-input-custom:checked {
-        background-color: #1a56db;
-        border-color: #1a56db;
+        background-color: var(--sp-green-600);
+        border-color: var(--sp-green-600);
     }
 
 /* Keyframes CSS Component Micro-Animations */

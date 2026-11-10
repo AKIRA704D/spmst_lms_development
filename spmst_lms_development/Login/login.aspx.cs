@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Web;
 using System.Web.UI;
 using spmst_lms_development.Assets.Helper;   // AuditLog
+using spmst_lms_development.Helpers;         // LogoHelper
 
 namespace spmst_lms_development.Login
 {
@@ -15,22 +16,35 @@ namespace spmst_lms_development.Login
         private readonly string connString =
             ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
+        // Dynamic logo properties
+        protected string SchoolLogoUrl { get; set; }
+        protected string LibraryLogoUrl { get; set; }
+
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
                 pnlAlert.Visible = false;
                 Session.Clear();
+
+                // Load logos from database
+                SchoolLogoUrl = ResolveLogoPath(LogoHelper.GetHeaderLogo("School"));
+                LibraryLogoUrl = ResolveLogoPath(LogoHelper.GetHeaderLogo("Library"));
             }
+        }
+
+        private string ResolveLogoPath(string relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+                relativePath = LogoHelper.DefaultSchoolLogo;
+
+            string clean = relativePath.Replace('\\', '/').TrimStart('~', '/');
+            return ResolveUrl("~/" + clean);
         }
 
         protected void btnSignIn_Click(object sender, EventArgs e)
         {
-            // Email: trimming leading/trailing whitespace is fine
-            // (email addresses never legitimately carry spaces).
             string emailInput = txtEmail.Text.Trim();
-
-            // Password: DO NOT trim. Whitespace may be part of the password.
             string passwordInput = txtPassword.Text;
 
             if (string.IsNullOrEmpty(emailInput) || string.IsNullOrEmpty(passwordInput))
@@ -43,11 +57,6 @@ namespace spmst_lms_development.Login
             {
                 using (MySqlConnection conn = new MySqlConnection(connString))
                 {
-                    // ---- Exact, case-sensitive email comparison ----
-                    // MySQL's default collation (utf8mb4_general_ci) is
-                    // case-insensitive. The BINARY operator forces a byte-by-
-                    // byte comparison regardless of the column's collation,
-                    // without altering the schema or stored data.
                     string query = @"
                         SELECT 
                             u.user_id, u.email, u.password_hash, u.role, u.is_active,
@@ -75,7 +84,6 @@ namespace spmst_lms_development.Login
                                 return;
                             }
 
-                            // ---------- Account status gate ----------
                             int isActiveStatus = Convert.ToInt32(reader["is_active"]);
                             if (isActiveStatus != 1)
                             {
@@ -107,18 +115,14 @@ namespace spmst_lms_development.Login
                                 return;
                             }
 
-                            // ---------- Password verification ----------
                             string dbPasswordHash = reader["password_hash"].ToString();
                             bool isPasswordValid = false;
                             try
                             {
-                                // BCrypt.Verify is case-sensitive and whitespace-sensitive
                                 isPasswordValid = BCrypt.Net.BCrypt.Verify(passwordInput, dbPasswordHash);
                             }
                             catch (BCrypt.Net.BcryptAuthenticationException)
                             {
-                                // Legacy plaintext fallback — string == in C# is
-                                // ordinal (case-sensitive), which is what we want.
                                 isPasswordValid = (passwordInput == dbPasswordHash);
                             }
 
@@ -129,7 +133,6 @@ namespace spmst_lms_development.Login
                                 return;
                             }
 
-                            // ---------- Extract profile fields ----------
                             string userId = reader["user_id"].ToString();
                             string dbRole = reader["role"].ToString();
                             string dept = reader["office_department"] != DBNull.Value
@@ -150,7 +153,6 @@ namespace spmst_lms_development.Login
                             string profileImagePath = reader["profile_image"] != DBNull.Value
                                                 ? reader["profile_image"].ToString() : string.Empty;
 
-                            // ---------- Canonical role resolution ----------
                             string evaluatedRoleCode =
                                 sessionHelper.ResolveRole(dbRole, dept, isHeadLibrarian);
 
@@ -161,18 +163,15 @@ namespace spmst_lms_development.Login
                                 return;
                             }
 
-                            // ---------- Persist session ----------
                             Session["UserID"] = userId;
                             Session["Email"] = reader["email"].ToString();
                             Session["FullName"] = fullName;
-                            Session["UserRole"] = evaluatedRoleCode;  // code, NOT display name
+                            Session["UserRole"] = evaluatedRoleCode;
                             Session["ProfileImagePath"] = profileImagePath;
 
-                            // ---------- Post-login bookkeeping ----------
                             UpdateUserLastLoginTimestamp(userId);
                             AuditLog.LogLogin(userId, true);
 
-                            // ---------- Redirect ----------
                             string targetDashboardRedirectPath =
                                 sessionHelper.GetDashboardPath(evaluatedRoleCode);
 
@@ -184,12 +183,7 @@ namespace spmst_lms_development.Login
             }
             catch (Exception ex)
             {
-                // Log internally — do NOT leak DB/connection details to the user.
                 System.Diagnostics.Trace.TraceError("Sign-in error: " + ex);
-
-                // Show a generic error; the client-side loader will
-                // disappear automatically because the response replaces
-                // the old page's DOM (which held the SweetAlert modal).
                 DisplayError("An unexpected error occurred during sign-in. Please try again in a moment.");
             }
         }
@@ -209,7 +203,7 @@ namespace spmst_lms_development.Login
                     }
                 }
             }
-            catch { /* swallow — not critical to login flow */ }
+            catch { }
         }
 
         private void DisplayError(string message)

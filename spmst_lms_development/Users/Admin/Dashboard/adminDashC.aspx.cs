@@ -117,7 +117,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
         }
 
         // =================================================================
-        // DATA LOADERS (unchanged logic)
+        // DATA LOADERS
         // =================================================================
         private void LoadDashboardStats()
         {
@@ -136,21 +136,35 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                         (SELECT COUNT(*) FROM Item_Copies WHERE status_condition = 'Damage') as DamageCount,
                         (SELECT COUNT(*) FROM Item_Copies WHERE status_condition = 'Lost') as LostCount,
                         (SELECT IFNULL(SUM(amount_paid), 0) FROM Penalties) as Collected";
-                conn.Open();
-                using (MySqlCommand cmd = new MySqlCommand(query, conn))
-                using (MySqlDataReader dr = cmd.ExecuteReader())
+
+                try
                 {
-                    if (dr.Read())
+                    conn.Open();
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
                     {
-                        litFacultyVisits.Text = dr["FacultyVisits"].ToString();
-                        litCirculated.Text = dr["Circulated"].ToString();
-                        litOverdue.Text = dr["OverdueCount"].ToString();
-                        litPendingFines.Text = Convert.ToDecimal(dr["PendingTotal"]).ToString("N0");
-                        litActivePatrons.Text = dr["ActivePatrons"].ToString();
-                        litDamageFines.Text = dr["DamageCount"].ToString();
-                        litLostBooks.Text = dr["LostCount"].ToString();
-                        litFinesCollected.Text = (Convert.ToDouble(dr["Collected"]) / 1000.0).ToString("N1") + "k";
+                        // Extended timeout for remote database
+                        cmd.CommandTimeout = 60;
+
+                        using (MySqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            if (dr.Read())
+                            {
+                                litFacultyVisits.Text = dr["FacultyVisits"].ToString();
+                                litCirculated.Text = dr["Circulated"].ToString();
+                                litOverdue.Text = dr["OverdueCount"].ToString();
+                                litPendingFines.Text = Convert.ToDecimal(dr["PendingTotal"]).ToString("N0");
+                                litActivePatrons.Text = dr["ActivePatrons"].ToString();
+                                litDamageFines.Text = dr["DamageCount"].ToString();
+                                litLostBooks.Text = dr["LostCount"].ToString();
+                                litFinesCollected.Text = (Convert.ToDouble(dr["Collected"]) / 1000.0).ToString("N1") + "k";
+                            }
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    // Prevent the entire page from crashing if the DB is slow
+                    System.Diagnostics.Trace.TraceError("Dashboard DB Error: " + ex.Message);
                 }
             }
         }
@@ -235,6 +249,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                 {
                     cmd.Parameters.AddWithValue("@start", start);
                     cmd.Parameters.AddWithValue("@end", end);
+                    cmd.CommandTimeout = 60; // Extended timeout
 
                     using (MySqlDataReader dr = cmd.ExecuteReader())
                     {
@@ -282,6 +297,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
             {
                 cmd.Parameters.AddWithValue("@start", start);
                 cmd.Parameters.AddWithValue("@end", end);
+                cmd.CommandTimeout = 60; // Extended timeout
                 new MySqlDataAdapter(cmd).Fill(dt);
             }
             var labels = new List<string>();
@@ -301,6 +317,7 @@ namespace spmst_lms_development.Users.Admin.Dashboard
             {
                 cmd.Parameters.AddWithValue("@start", start);
                 cmd.Parameters.AddWithValue("@end", end);
+                cmd.CommandTimeout = 60; // Extended timeout
                 new MySqlDataAdapter(cmd).Fill(dt);
             }
             var labels = new List<string>();
@@ -344,7 +361,13 @@ namespace spmst_lms_development.Users.Admin.Dashboard
                     LIMIT 5";
                 conn.Open();
                 DataTable dt = new DataTable();
-                new MySqlDataAdapter(query, conn).Fill(dt);
+
+                using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                {
+                    cmd.CommandTimeout = 60; // Extended timeout
+                    new MySqlDataAdapter(cmd).Fill(dt);
+                }
+
                 rptrTopBooks.DataSource = dt;
                 rptrTopBooks.DataBind();
             }
