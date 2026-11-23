@@ -6,36 +6,16 @@ using System.Web;
 using System.Web.Script.Serialization;
 using System.Web.SessionState;
 using MySql.Data.MySqlClient;
+using spmst_lms_development.Assets.Helper;
 
 namespace spmst_lms_development.Users.Admin.Settings
 {
-    /// <summary>
-    /// Admin-only CRUD endpoint backing the Library Settings page
-    /// (Users/Admin/Settings/LibrarySettings.aspx). Manages the four
-    /// admin-editable content sources used by the public landing page:
-    /// library_contact_info, library_about_us, library_services, library_terms.
-    ///
-    /// Every action — including the "get" reads — re-verifies the caller is
-    /// an authenticated admin via sessionHelper before touching the database,
-    /// so this handler cannot be used to bypass the page-level gate.
-    ///
-    /// GET  ?action=getcontact
-    /// GET  ?action=getabout
-    /// GET  ?action=listservices
-    /// GET  ?action=listterms
-    /// POST ?action=savecontact      (form: address, phone, email, hoursWeekdays, hoursSaturday, hoursSunday, facebookUrl, mapEmbedUrl)
-    /// POST ?action=saveabout        (form: heading, body, stat1Label, stat1Value, stat2Label, stat2Value, stat3Label, stat3Value)
-    /// POST ?action=saveservice      (form: serviceId [blank = new], iconClass, title, description, sortOrder, isActive)
-    /// POST ?action=deleteservice    (form: serviceId)
-    /// POST ?action=uploadterms      (multipart: file, title, versionLabel, isActive)
-    /// POST ?action=setactiveterms   (form: termsId)
-    /// POST ?action=deleteterms      (form: termsId)
-    /// </summary>
     public class LibrarySettingsData : IHttpHandler, IRequiresSessionState
     {
         public bool IsReusable { get { return false; } }
 
         private static readonly string[] TermsAllowedExtensions = { ".pdf" };
+        private static readonly string[] ImageAllowedExtensions = { ".png", ".jpg", ".jpeg", ".webp" };
 
         public void ProcessRequest(HttpContext context)
         {
@@ -56,39 +36,30 @@ namespace spmst_lms_development.Users.Admin.Settings
 
                 switch (action)
                 {
-                    case "getcontact":
-                        result = GetContact();
-                        break;
-                    case "getabout":
-                        result = GetAbout();
-                        break;
-                    case "listservices":
-                        result = ListServices();
-                        break;
-                    case "listterms":
-                        result = ListTerms();
-                        break;
-                    case "savecontact":
-                        result = SaveContact(context);
-                        break;
-                    case "saveabout":
-                        result = SaveAbout(context);
-                        break;
-                    case "saveservice":
-                        result = SaveService(context);
-                        break;
-                    case "deleteservice":
-                        result = DeleteService(context);
-                        break;
-                    case "uploadterms":
-                        result = UploadTerms(context);
-                        break;
-                    case "setactiveterms":
-                        result = SetActiveTerms(context);
-                        break;
-                    case "deleteterms":
-                        result = DeleteTerms(context);
-                        break;
+                    // Contact
+                    case "getcontact": result = GetContact(); break;
+                    case "savecontact": result = SaveContact(context); break;
+
+                    // About
+                    case "getabout": result = GetAbout(); break;
+                    case "saveabout": result = SaveAbout(context); break;
+
+                    // Services
+                    case "listservices": result = ListServices(); break;
+                    case "saveservice": result = SaveService(context); break;
+                    case "deleteservice": result = DeleteService(context); break;
+
+                    // Terms
+                    case "listterms": result = ListTerms(); break;
+                    case "uploadterms": result = UploadTerms(context); break;
+                    case "setactiveterms": result = SetActiveTerms(context); break;
+                    case "deleteterms": result = DeleteTerms(context); break;
+
+                    // Branding (Logo)
+                    case "getbranding": result = GetBranding(); break;
+                    case "uploadlogo": result = UploadLogo(context); break;
+                    case "resetlogo": result = ResetLogo(); break;
+
                     default:
                         WriteJson(context, new { success = false, message = "Unknown action." });
                         return;
@@ -103,7 +74,95 @@ namespace spmst_lms_development.Users.Admin.Settings
         }
 
         // ==========================================================================
-        // CONTACT INFO (single row)
+        // BRANDING (Uses organization_logos and existing LogoHelper)
+        // ==========================================================================
+
+        private object GetBranding()
+        {
+            string currentLogoPath = LogoHelper.GetHeaderLogo("School");
+            // Strip the leading "~/" if present so it matches frontend expectations
+            currentLogoPath = currentLogoPath.TrimStart('~', '/');
+            return new { logoPath = currentLogoPath };
+        }
+
+        private object UploadLogo(HttpContext context)
+        {
+            if (context.Request.Files.Count == 0) throw new ArgumentException("No file uploaded.");
+            HttpPostedFile file = context.Request.Files[0];
+            if (file == null || file.ContentLength <= 0) throw new ArgumentException("The uploaded file is empty.");
+
+            string ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (Array.IndexOf(ImageAllowedExtensions, ext) < 0) throw new ArgumentException("Invalid format. Only PNG, JPG, JPEG, and WebP are allowed.");
+
+            if (file.ContentLength > 5 * 1024 * 1024) throw new ArgumentException("File size exceeds 5MB limit.");
+
+            // Magic byte validation
+            byte[] buffer = new byte[4];
+            using (var stream = file.InputStream)
+            {
+                stream.Read(buffer, 0, 4);
+                stream.Position = 0;
+                string hex = BitConverter.ToString(buffer).Replace("-", "");
+                bool isValid = hex.StartsWith("89504E47") || hex.StartsWith("FFD8FF") || hex.StartsWith("52494646");
+                if (!isValid) throw new ArgumentException("Invalid image file signature.");
+            }
+
+            string folder = context.Server.MapPath("~/Assets/Branding/");
+            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
+
+            string newFileName = "logo_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ext;
+            string physicalPath = Path.Combine(folder, newFileName);
+            file.SaveAs(physicalPath);
+
+            string relativePath = "Assets/Branding/" + newFileName;
+
+            using (var conn = OpenConnection())
+            {
+                using (var cmd = new MySqlCommand(@"
+                    UPDATE organization_logos 
+                    SET logo_path = @path, updated_at = CURRENT_TIMESTAMP 
+                    WHERE entity_type = 'School' AND entity_name = 'SPAMAST' AND is_active = 1", conn))
+                {
+                    cmd.Parameters.AddWithValue("@path", relativePath);
+                    int rowsAffected = cmd.ExecuteNonQuery();
+
+                    if (rowsAffected == 0)
+                    {
+                        using (var insertCmd = new MySqlCommand(@"
+                            INSERT INTO organization_logos (entity_type, entity_name, logo_path, is_active, sort_order) 
+                            VALUES ('School', 'SPAMAST', @path, 1, 1)", conn))
+                        {
+                            insertCmd.Parameters.AddWithValue("@path", relativePath);
+                            insertCmd.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
+
+            LogoHelper.InvalidateCache("School");
+            return GetBranding();
+        }
+
+        private object ResetLogo()
+        {
+            using (var conn = OpenConnection())
+            {
+                using (var cmd = new MySqlCommand(@"
+                    UPDATE organization_logos 
+                    SET logo_path = @path, updated_at = CURRENT_TIMESTAMP 
+                    WHERE entity_type = 'School' AND entity_name = 'SPAMAST' AND is_active = 1", conn))
+                {
+                    cmd.Parameters.AddWithValue("@path", LogoHelper.DefaultSchoolLogo);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            LogoHelper.InvalidateCache("School");
+            return GetBranding();
+        }
+
+        // ==========================================================================
+        // EXISTING METHODS (Contact, About, Services, Terms)
         // ==========================================================================
 
         private object GetContact()
@@ -138,7 +197,6 @@ namespace spmst_lms_development.Users.Admin.Settings
         {
             var f = context.Request.Form;
             string adminId = CurrentUserId();
-
             int? existingId = GetSingleRowId("library_contact_info", "contact_id");
 
             using (var conn = OpenConnection())
@@ -172,13 +230,8 @@ namespace spmst_lms_development.Users.Admin.Settings
 
                 using (cmd) cmd.ExecuteNonQuery();
             }
-
             return GetContact();
         }
-
-        // ==========================================================================
-        // ABOUT US (single row)
-        // ==========================================================================
 
         private object GetAbout()
         {
@@ -212,7 +265,6 @@ namespace spmst_lms_development.Users.Admin.Settings
         {
             var f = context.Request.Form;
             string adminId = CurrentUserId();
-
             int? existingId = GetSingleRowId("library_about_us", "about_id");
 
             using (var conn = OpenConnection())
@@ -225,8 +277,7 @@ namespace spmst_lms_development.Users.Admin.Settings
                         stat1_label=@s1l, stat1_value=@s1v,
                         stat2_label=@s2l, stat2_value=@s2v,
                         stat3_label=@s3l, stat3_value=@s3v,
-                        updated_by=@by
-                        WHERE about_id=@id", conn);
+                        updated_by=@by WHERE about_id=@id", conn);
                     cmd.Parameters.AddWithValue("@id", existingId.Value);
                 }
                 else
@@ -248,13 +299,8 @@ namespace spmst_lms_development.Users.Admin.Settings
 
                 using (cmd) cmd.ExecuteNonQuery();
             }
-
             return GetAbout();
         }
-
-        // ==========================================================================
-        // SERVICES (multi-row)
-        // ==========================================================================
 
         private object ListServices()
         {
@@ -291,10 +337,7 @@ namespace spmst_lms_development.Users.Admin.Settings
             if (!int.TryParse(f["sortOrder"], out sortOrder)) sortOrder = 0;
 
             string title = (f["title"] ?? "").Trim();
-            if (string.IsNullOrEmpty(title))
-            {
-                throw new ArgumentException("Service title is required.");
-            }
+            if (string.IsNullOrEmpty(title)) throw new ArgumentException("Service title is required.");
 
             using (var conn = OpenConnection())
             {
@@ -321,17 +364,13 @@ namespace spmst_lms_development.Users.Admin.Settings
 
                 using (cmd) cmd.ExecuteNonQuery();
             }
-
             return ListServices();
         }
 
         private object DeleteService(HttpContext context)
         {
             int serviceId;
-            if (!int.TryParse(context.Request.Form["serviceId"], out serviceId))
-            {
-                throw new ArgumentException("A valid serviceId is required.");
-            }
+            if (!int.TryParse(context.Request.Form["serviceId"], out serviceId)) throw new ArgumentException("A valid serviceId is required.");
 
             using (var conn = OpenConnection())
             using (var cmd = new MySqlCommand("DELETE FROM library_services WHERE service_id=@id", conn))
@@ -339,13 +378,8 @@ namespace spmst_lms_development.Users.Admin.Settings
                 cmd.Parameters.AddWithValue("@id", serviceId);
                 cmd.ExecuteNonQuery();
             }
-
             return ListServices();
         }
-
-        // ==========================================================================
-        // TERMS & CONDITIONS (PDF uploads)
-        // ==========================================================================
 
         private object ListTerms()
         {
@@ -374,24 +408,14 @@ namespace spmst_lms_development.Users.Admin.Settings
 
         private object UploadTerms(HttpContext context)
         {
-            if (context.Request.Files.Count == 0)
-            {
-                throw new ArgumentException("No file was uploaded.");
-            }
-
+            if (context.Request.Files.Count == 0) throw new ArgumentException("No file was uploaded.");
             HttpPostedFile file = context.Request.Files["file"] ?? context.Request.Files[0];
-            if (file == null || file.ContentLength <= 0)
-            {
-                throw new ArgumentException("The uploaded file is empty.");
-            }
+            if (file == null || file.ContentLength <= 0) throw new ArgumentException("The uploaded file is empty.");
 
             string ext = Path.GetExtension(file.FileName).ToLowerInvariant();
             bool extOk = false;
             foreach (var allowed in TermsAllowedExtensions) if (ext == allowed) extOk = true;
-            if (!extOk)
-            {
-                throw new ArgumentException("Only PDF files are allowed for Terms & Conditions.");
-            }
+            if (!extOk) throw new ArgumentException("Only PDF files are allowed.");
 
             string title = context.Request.Form["title"];
             if (string.IsNullOrWhiteSpace(title)) title = Path.GetFileNameWithoutExtension(file.FileName);
@@ -429,17 +453,13 @@ namespace spmst_lms_development.Users.Admin.Settings
                     cmd.ExecuteNonQuery();
                 }
             }
-
             return ListTerms();
         }
 
         private object SetActiveTerms(HttpContext context)
         {
             int termsId;
-            if (!int.TryParse(context.Request.Form["termsId"], out termsId))
-            {
-                throw new ArgumentException("A valid termsId is required.");
-            }
+            if (!int.TryParse(context.Request.Form["termsId"], out termsId)) throw new ArgumentException("A valid termsId is required.");
 
             using (var conn = OpenConnection())
             {
@@ -452,17 +472,13 @@ namespace spmst_lms_development.Users.Admin.Settings
                     act.ExecuteNonQuery();
                 }
             }
-
             return ListTerms();
         }
 
         private object DeleteTerms(HttpContext context)
         {
             int termsId;
-            if (!int.TryParse(context.Request.Form["termsId"], out termsId))
-            {
-                throw new ArgumentException("A valid termsId is required.");
-            }
+            if (!int.TryParse(context.Request.Form["termsId"], out termsId)) throw new ArgumentException("A valid termsId is required.");
 
             string filePath = null;
             using (var conn = OpenConnection())
@@ -488,13 +504,8 @@ namespace spmst_lms_development.Users.Admin.Settings
                     string physical = context.Server.MapPath("~/" + filePath.TrimStart('/'));
                     if (File.Exists(physical)) File.Delete(physical);
                 }
-                catch
-                {
-                    // Best-effort cleanup — the DB row is already gone even if the
-                    // physical file couldn't be removed (e.g. locked/permissions).
-                }
+                catch { }
             }
-
             return ListTerms();
         }
 
@@ -502,25 +513,16 @@ namespace spmst_lms_development.Users.Admin.Settings
         // HELPERS
         // ==========================================================================
 
-        /// <summary>
-        /// Confirms the current session belongs to a signed-in admin. Mirrors the
-        /// role check already used in admin.Master
-        /// (currentRole.Equals("admin", StringComparison.OrdinalIgnoreCase)).
-        /// </summary>
         private static bool IsCallerAdmin()
         {
             try
             {
                 string userId = spmst_lms_development.sessionHelper.UserID;
                 if (string.IsNullOrEmpty(userId)) return false;
-
                 string role = spmst_lms_development.sessionHelper.GetRoleDisplayName() ?? "";
                 return role.Equals("admin", StringComparison.OrdinalIgnoreCase);
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
 
         private static string CurrentUserId()
@@ -549,11 +551,7 @@ namespace spmst_lms_development.Users.Admin.Settings
         private static MySqlConnection OpenConnection()
         {
             var connStringSetting = ConfigurationManager.ConnectionStrings["LmsDb"];
-            if (connStringSetting == null)
-            {
-                throw new ConfigurationErrorsException("No connection string named 'LmsDb' was found in Web.config.");
-            }
-
+            if (connStringSetting == null) throw new ConfigurationErrorsException("No connection string named 'LmsDb' was found.");
             var conn = new MySqlConnection(connStringSetting.ConnectionString);
             conn.Open();
             return conn;

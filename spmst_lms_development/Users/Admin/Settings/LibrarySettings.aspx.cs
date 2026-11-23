@@ -2,16 +2,10 @@ using System;
 
 namespace spmst_lms_development.Users.Admin.Settings
 {
-    public partial class LibrarySettings : System.Web.UI.Page
+    public partial class LibrarySettings : System.Web.UI.Page // <-- Change the class name for each page to match its filename
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Mirrors the role check already used in admin.Master's header badge
-            // (currentRole.Equals("admin", StringComparison.OrdinalIgnoreCase)).
-            // Everything else on this page loads client-side via
-            // LibrarySettingsData.ashx, which independently re-checks this same
-            // condition on every call — this Page_Load gate just keeps
-            // non-admins from ever seeing the settings screen itself.
             string userId = spmst_lms_development.sessionHelper.UserID;
             if (string.IsNullOrEmpty(userId))
             {

@@ -1,7 +1,7 @@
 <%@ Page Title="" Language="C#" MasterPageFile="~/LandingPage/LandingPage.Master" AutoEventWireup="true" CodeBehind="Home.aspx.cs" Inherits="spmst_lms_development.LandingPage.Home" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <title>LMSA | SPAMAST Library — Home</title>
+    <title>LMSA | SPAMAST Library - Home</title>
     <style>
         /* ---- Hero ---- */
         .lmsa-hero {
@@ -70,10 +70,36 @@
         .lmsa-bar-fill.gold { background: linear-gradient(90deg, #f5d576, var(--lmsa-gold-dark)); }
 
         /* ---- Resource cards ---- */
-        .lmsa-resource-card { padding: 0; overflow: hidden; position: relative; }
-        .lmsa-resource-cover { width: 100%; aspect-ratio: 3/4; object-fit: cover; background-color: #eef2f7; display: block; }
+        .lmsa-resource-card {
+            padding: 0;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .lmsa-resource-cover-container {
+            width: 100%;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            padding: 8px;
+        }
+        .lmsa-resource-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            background-color: transparent;
+        }
         .lmsa-resource-rank { position: absolute; top: 10px; left: 10px; z-index: 2; }
-        .lmsa-resource-body { padding: 14px; }
+        .lmsa-resource-body { padding: 14px; display: flex; flex-direction: column; flex: 1; }
         .lmsa-resource-title { font-weight: 700; font-size: 0.88rem; color: var(--lmsa-navy); line-height: 1.3; min-height: 46px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .lmsa-resource-author { font-size: 0.76rem; color: var(--lmsa-text-muted); margin: 4px 0 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .lmsa-resource-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
@@ -82,8 +108,24 @@
         .lmsa-resource-copies.none-available { background-color: #fef2f2; color: #dc2626; }
         .lmsa-resource-copies i { margin-right: 3px; }
 
-        .lmsa-resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px; }
-        @media (max-width: 575.98px) { .lmsa-resource-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+        .lmsa-resource-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 18px;
+        }
+        @media (max-width: 767.98px) {
+            .lmsa-resource-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .lmsa-resource-cover-container {
+                height: 170px;
+                padding: 6px;
+            }
+            .lmsa-resource-body { padding: 10px; }
+            .lmsa-resource-title { font-size: 0.82rem; min-height: 42px; }
+            .lmsa-resource-author { font-size: 0.72rem; margin: 3px 0 8px; }
+        }
 
         /* ---- Catalog toolbar ---- */
         .lmsa-catalog-toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; background: #fff; border: 1px solid var(--lmsa-border); border-radius: var(--lmsa-radius); padding: 14px 16px; margin-bottom: 24px; box-shadow: var(--lmsa-shadow); }
@@ -92,11 +134,18 @@
         .lmsa-search-box input { width: 100%; border: 1.5px solid var(--lmsa-border); border-radius: 999px; padding: 10px 16px 10px 38px; font-size: 0.9rem; }
         .lmsa-search-box input:focus { outline: none; border-color: var(--lmsa-blue); box-shadow: 0 0 0 3px rgba(14,165,233,0.15); }
 
-        .lmsa-pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 30px; }
-        .lmsa-page-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--lmsa-border); background: #fff; display: flex; align-items: center; justify-content: center; color: var(--lmsa-navy-2); font-weight: 700; }
-        .lmsa-page-btn:disabled { opacity: 0.4; }
+        .lmsa-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
+        .lmsa-page-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--lmsa-border); background: #fff; display: flex; align-items: center; justify-content: center; color: var(--lmsa-navy-2); font-weight: 700; cursor: pointer; }
+        .lmsa-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .lmsa-page-btn:not(:disabled):hover { border-color: var(--lmsa-blue); color: var(--lmsa-blue-dark); }
-        .lmsa-page-info { font-size: 0.86rem; font-weight: 600; color: var(--lmsa-text-muted); }
+        .lmsa-page-info { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: 0.86rem; font-weight: 600; color: var(--lmsa-text-muted); }
+        .lmsa-page-headline { font-weight: 800; font-size: 0.92rem; color: var(--lmsa-navy); }
+        .lmsa-page-detail { font-size: 0.78rem; color: var(--lmsa-text-muted); font-weight: 600; }
+        @media (max-width: 575.98px) {
+            .lmsa-pagination { gap: 10px; }
+            .lmsa-page-headline { font-size: 0.86rem; }
+            .lmsa-page-detail { font-size: 0.72rem; }
+        }
 
         /* ---- CTA band ---- */
         .lmsa-cta-band { background: linear-gradient(135deg, var(--lmsa-navy) 0%, var(--lmsa-navy-2) 100%); border-radius: 24px; padding: 46px 40px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; color: #fff; }
@@ -129,11 +178,11 @@
 
             <div class="lmsa-stat-strip" id="statStrip">
                 <!-- filled by JS; skeleton below -->
-                <div class="lmsa-stat-card"><div class="num">—</div><div class="lbl">Titles</div></div>
-                <div class="lmsa-stat-card"><div class="num">—</div><div class="lbl">Available Copies</div></div>
-                <div class="lmsa-stat-card"><div class="num">—</div><div class="lbl">Active Borrowers</div></div>
-                <div class="lmsa-stat-card"><div class="num">—</div><div class="lbl">Sections</div></div>
-                <div class="lmsa-stat-card"><div class="num">—</div><div class="lbl">Institutes Engaged</div></div>
+                <div class="lmsa-stat-card"><div class="num">-</div><div class="lbl">Titles</div></div>
+                <div class="lmsa-stat-card"><div class="num">-</div><div class="lbl">Available Copies</div></div>
+                <div class="lmsa-stat-card"><div class="num">-</div><div class="lbl">Active Borrowers</div></div>
+                <div class="lmsa-stat-card"><div class="num">-</div><div class="lbl">Sections</div></div>
+                <div class="lmsa-stat-card"><div class="num">-</div><div class="lbl">Institutes Engaged</div></div>
             </div>
         </div>
     </section>
@@ -269,8 +318,23 @@
 
 <asp:Content ID="Content3" ContentPlaceHolderID="scripts" runat="server">
     <script>
-        var catalogState = { q: '', type: 'All', section: 'All', page: 1, pageSize: 12 };
+        // ---------- Responsive page size ----------
+        function getPageSize() {
+            if (window.matchMedia && window.matchMedia('(max-width: 767.98px)').matches) {
+                return 10;
+            }
+            return 25;
+        }
+
+        var catalogState = {
+            q: '',
+            type: 'All',
+            section: 'All',
+            page: 1,
+            pageSize: getPageSize()
+        };
         var searchDebounce = null;
+        var resizeDebounce = null;
 
         function roleBadgeClass(role) {
             if (role === 'Faculty') return 'role-faculty';
@@ -302,6 +366,19 @@
             if (s.indexOf('circulat') !== -1) return 'fa-arrows-rotate';
             if (s.indexOf('refer') !== -1) return 'fa-magnifying-glass-plus';
             return 'fa-layer-group';
+        }
+
+        // ---------- Cover fallback ----------
+        // Replaces a broken cover with the placeholder exactly once. If the
+        // placeholder itself fails, the handler detaches so we never loop.
+        function handleCoverFallback(img) {
+            if (!img) return;
+            var fallback = appRoot + 'Assets/Covers/default-cover.jpg';
+            if (img.src.indexOf('default-cover.jpg') === -1) {
+                img.src = fallback;
+            } else {
+                img.onerror = null;
+            }
         }
 
         // ---------- Quick stats ----------
@@ -401,13 +478,18 @@
                     '    </div>';
             }
 
+            var safeTitle = lmsaEscape(r.title);
+            var safeAuthor = lmsaEscape(r.author || 'Unknown author');
+
             return '' +
                 '<div class="lmsa-card lmsa-resource-card">' +
                 rankHtml +
-                '  <img class="lmsa-resource-cover" src="' + assetUrl(r.coverPath) + '" alt="" onerror="this.src=appRoot+\'Assets/Covers/default-cover.jpg\'" />' +
+                '  <div class="lmsa-resource-cover-container">' +
+                '    <img class="lmsa-resource-cover" src="' + assetUrl(r.coverPath) + '" alt="' + safeTitle + '" onerror="handleCoverFallback(this)" />' +
+                '  </div>' +
                 '  <div class="lmsa-resource-body">' +
-                '    <div class="lmsa-resource-title" title="' + lmsaEscape(r.title) + '">' + lmsaEscape(r.title) + '</div>' +
-                '    <div class="lmsa-resource-author">' + lmsaEscape(r.author || 'Unknown author') + '</div>' +
+                '    <div class="lmsa-resource-title" title="' + safeTitle + '">' + safeTitle + '</div>' +
+                '    <div class="lmsa-resource-author">' + safeAuthor + '</div>' +
                 '    <div class="lmsa-resource-foot">' +
                 '      <span class="lmsa-badge-soft"><i class="fa-solid ' + itemTypeIcon(r.itemType) + '"></i> ' + lmsaEscape(r.itemType || 'Item') + '</span>' +
                 (isCatalogCard
@@ -480,14 +562,58 @@
 
         function renderPagination(data) {
             var el = document.getElementById('catalogPagination');
-            if (data.totalPages <= 1) { el.innerHTML = ''; return; }
+            if (!data.items || data.items.length === 0) { el.innerHTML = ''; return; }
+
+            var startIdx = (data.page - 1) * data.pageSize + 1;
+            var endIdx = startIdx + data.items.length - 1;
+            var itemWord = data.items.length === 1 ? 'item' : 'items';
+            var resWord = data.total === 1 ? 'resource' : 'resources';
+
+            var infoHtml =
+                '<div class="lmsa-page-info">' +
+                '  <div class="lmsa-page-headline">Page ' + data.page + ' of ' + data.totalPages + '</div>' +
+                '  <div class="lmsa-page-detail">Showing ' + startIdx + '\u2013' + endIdx + ' of ' + data.total + ' ' + resWord + '</div>' +
+                '  <div class="lmsa-page-detail">' + data.items.length + ' ' + itemWord + ' on this page</div>' +
+                '</div>';
+
+            if (data.totalPages <= 1) {
+                el.innerHTML = infoHtml;
+                return;
+            }
+
+            // type="button" prevents the default submit behavior inside the
+            // ASP.NET Web Forms server form wrapper, which would otherwise
+            // cause a full-page postback on every click.
             el.innerHTML =
-                '<button class="lmsa-page-btn" id="pgPrev" ' + (data.page <= 1 ? 'disabled' : '') + '><i class="fa-solid fa-chevron-left"></i></button>' +
-                '<span class="lmsa-page-info">Page ' + data.page + ' of ' + data.totalPages + ' · ' + data.total + ' items</span>' +
-                '<button class="lmsa-page-btn" id="pgNext" ' + (data.page >= data.totalPages ? 'disabled' : '') + '><i class="fa-solid fa-chevron-right"></i></button>';
+                '<button type="button" class="lmsa-page-btn" id="pgPrev" aria-label="Previous page" ' + (data.page <= 1 ? 'disabled' : '') + '><i class="fa-solid fa-chevron-left"></i></button>' +
+                infoHtml +
+                '<button type="button" class="lmsa-page-btn" id="pgNext" aria-label="Next page" ' + (data.page >= data.totalPages ? 'disabled' : '') + '><i class="fa-solid fa-chevron-right"></i></button>';
+
             var prev = document.getElementById('pgPrev'), next = document.getElementById('pgNext');
-            if (prev) prev.addEventListener('click', function () { catalogState.page--; loadCatalog(); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }); });
-            if (next) next.addEventListener('click', function () { catalogState.page++; loadCatalog(); document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' }); });
+            if (prev) prev.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (catalogState.page <= 1) return;
+                catalogState.page--;
+                loadCatalog();
+                document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+            });
+            if (next) next.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (catalogState.page >= data.totalPages) return;
+                catalogState.page++;
+                loadCatalog();
+                document.getElementById('catalog').scrollIntoView({ behavior: 'smooth' });
+            });
+        }
+
+        // ---------- Viewport resize handling ----------
+        function handleViewportChange() {
+            var newSize = getPageSize();
+            if (newSize !== catalogState.pageSize) {
+                catalogState.pageSize = newSize;
+                catalogState.page = 1;
+                loadCatalog();
+            }
         }
 
         // ---------- Init ----------
@@ -516,6 +642,15 @@
             });
             document.getElementById('catalogSectionFilter').addEventListener('change', function (e) {
                 catalogState.section = e.target.value; catalogState.page = 1; loadCatalog();
+            });
+
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeDebounce);
+                resizeDebounce = setTimeout(handleViewportChange, 200);
+            });
+            window.addEventListener('orientationchange', function () {
+                clearTimeout(resizeDebounce);
+                resizeDebounce = setTimeout(handleViewportChange, 200);
             });
         });
     </script>

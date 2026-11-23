@@ -1,0 +1,80 @@
+﻿.ls-table {
+    width: 100%;
+    font-size: 0.88rem;
+}
+
+    .ls-table th {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: .4px;
+        color: #64748b;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 10px 12px;
+        text-align: left;
+    }
+
+    .ls-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+.ls-icon-preview {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: #eef6ff;
+    color: #0284c7;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.ls-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 999px;
+}
+
+    .ls-badge.on {
+        background: #f0fdf4;
+        color: #16a34a;
+    }
+
+    .ls-badge.off {
+        background: #f1f5f9;
+        color: #64748b;
+    }
+
+.ls-row-actions {
+    display: flex;
+    gap: 6px;
+}
+
+    .ls-row-actions button {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        border-radius: 7px;
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .ls-row-actions button:hover {
+            background: #f1f5f9;
+            color: var(--sp-green-900);
+        }
+
+        .ls-row-actions button.danger:hover {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }

@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using spmst_lms_development.Helpers;
+using spmst_lms_development.Assets.Helper;
 
 namespace spmst_lms_development.LandingPage
 {

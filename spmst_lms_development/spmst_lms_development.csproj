@@ -144,11 +144,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Script\library-settings-common.js" />
     <Content Include="Assets\Script\process-indicator.js" />
     <Content Include="Assets\Themes\book_borrow-theme.css" />
     <Content Include="Assets\Themes\browse-catalog-theme.css" />
     <Content Include="Assets\Themes\history-theme.css" />
     <Content Include="Assets\Themes\LandingPage.css" />
+    <Content Include="Assets\Themes\library-branding-settings.css" />
+    <Content Include="Assets\Themes\library-services-settings.css" />
+    <Content Include="Assets\Themes\library-settings.css" />
+    <Content Include="Assets\Themes\library-terms-settings.css" />
     <Content Include="Assets\Themes\LoginPage.css" />
     <Content Include="Assets\Themes\patron-dashboard-theme.css" />
     <Content Include="Assets\Profile\default-cover.png" />
@@ -168,6 +173,10 @@
     <Content Include="favicon.ico" />
     <Content Include="LandingPage\AboutContact.aspx" />
     <Content Include="LandingPage\Home.aspx" />
+    <Content Include="Users\Admin\Settings\LibraryAboutSettings.aspx" />
+    <Content Include="Users\Admin\Settings\LibraryBrandingSettings.aspx" />
+    <Content Include="Users\Admin\Settings\LibraryContactSettings.aspx" />
+    <Content Include="Users\Admin\Settings\LibraryServicesSettings.aspx" />
     <Content Include="Users\Admin\Settings\LibrarySettings.aspx" />
     <Content Include="LandingPage\library_settings_migration.sql" />
     <Content Include="LandingPage\Services.aspx" />
@@ -190,6 +199,7 @@
     <Content Include="Users\Admin\Reports\adminReports.aspx" />
     <Content Include="Users\Admin\Reports\generateReports.aspx" />
     <Content Include="Users\Admin\Reports\PrintReports.aspx" />
+    <Content Include="Users\Admin\Settings\LibraryTermsSettings.aspx" />
     <Content Include="Users\MasterPage\admin.Master" />
     <Content Include="Users\Patron\Dashboard\PatronDash.aspx" />
     <Content Include="Users\Patron\FeedReq\Feedback.aspx" />
@@ -285,6 +295,34 @@
     <Compile Include="Assets\Services\FinePolicy.cs" />
     <Compile Include="SmsTick.ashx.cs">
       <DependentUpon>SmsTick.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryAboutSettings.aspx.cs">
+      <DependentUpon>LibraryAboutSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryAboutSettings.aspx.designer.cs">
+      <DependentUpon>LibraryAboutSettings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryBrandingSettings.aspx.cs">
+      <DependentUpon>LibraryBrandingSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryBrandingSettings.aspx.designer.cs">
+      <DependentUpon>LibraryBrandingSettings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryContactSettings.aspx.cs">
+      <DependentUpon>LibraryContactSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryContactSettings.aspx.designer.cs">
+      <DependentUpon>LibraryContactSettings.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryServicesSettings.aspx.cs">
+      <DependentUpon>LibraryServicesSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryServicesSettings.aspx.designer.cs">
+      <DependentUpon>LibraryServicesSettings.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\Admin\Settings\LibrarySettings.aspx.cs">
       <DependentUpon>LibrarySettings.aspx</DependentUpon>
@@ -437,6 +475,13 @@
     </Compile>
     <Compile Include="Users\Admin\Reports\PrintReports.aspx.designer.cs">
       <DependentUpon>PrintReports.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryTermsSettings.aspx.cs">
+      <DependentUpon>LibraryTermsSettings.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Users\Admin\Settings\LibraryTermsSettings.aspx.designer.cs">
+      <DependentUpon>LibraryTermsSettings.aspx</DependentUpon>
     </Compile>
     <Compile Include="Users\MasterPage\admin.Master.cs">
       <DependentUpon>admin.Master</DependentUpon>

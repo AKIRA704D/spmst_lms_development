@@ -6,8 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Web;
 using System.Web.UI;
-using spmst_lms_development.Assets.Helper;   // AuditLog
-using spmst_lms_development.Helpers;         // LogoHelper
+using spmst_lms_development.Assets.Helper;
 
 namespace spmst_lms_development.Login
 {

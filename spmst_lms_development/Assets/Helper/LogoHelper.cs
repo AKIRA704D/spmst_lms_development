@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.Caching;
 using MySql.Data.MySqlClient;
 
-namespace spmst_lms_development.Helpers
+namespace spmst_lms_development.Assets.Helper
 {
     public static class LogoHelper
     {
