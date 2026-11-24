@@ -352,7 +352,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/chartjs/4.4.4/chart.umd.min.js") %>"></script>
     <script>
         let charts = {};
 

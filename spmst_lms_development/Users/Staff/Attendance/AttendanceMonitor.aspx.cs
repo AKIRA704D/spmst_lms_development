@@ -53,23 +53,27 @@ namespace spmst_lms_development.Users.Staff.Attendance
                 using (var conn = new MySqlConnection(connStrLocal))
                 {
                     conn.Open();
-                    // Generate hourly data from 7 AM to 9 PM
+                    // One grouped query instead of 15 round trips (7 AM - 9 PM).
+                    // Range filter (instead of DATE(time_in) = CURDATE()) lets MySQL use an index on time_in.
+                    var perHour = new Dictionary<int, int>();
+                    const string query = @"
+                        SELECT HOUR(time_in) AS h, COUNT(*) AS c
+                        FROM Library_Attendance
+                        WHERE time_in >= CURDATE() AND time_in < CURDATE() + INTERVAL 1 DAY
+                        GROUP BY HOUR(time_in)";
+                    using (var cmd = new MySqlCommand(query, conn))
+                    using (var rdr = cmd.ExecuteReader())
+                    {
+                        while (rdr.Read())
+                            perHour[Convert.ToInt32(rdr["h"])] = Convert.ToInt32(rdr["c"]);
+                    }
+
                     for (int i = 7; i <= 21; i++)
                     {
                         string label = i == 12 ? "12 PM" : (i < 12 ? $"{i} AM" : $"{i - 12} PM");
                         labels.Add(label);
-
-                        string query = @"
-                            SELECT COUNT(*) 
-                            FROM Library_Attendance 
-                            WHERE DATE(time_in) = CURDATE() 
-                            AND HOUR(time_in) = @hour";
-                        using (var cmd = new MySqlCommand(query, conn))
-                        {
-                            cmd.Parameters.AddWithValue("@hour", i);
-                            int count = Convert.ToInt32(cmd.ExecuteScalar());
-                            values.Add(count);
-                        }
+                        int count;
+                        values.Add(perHour.TryGetValue(i, out count) ? count : 0);
                     }
                 }
                 AuditLog.Log(currentUser, "API_CALL", "AttendanceMonitor", "GetHourlyChartData success");

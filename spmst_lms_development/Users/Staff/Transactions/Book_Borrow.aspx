@@ -1,15 +1,14 @@
 ﻿<%@ Page Title="Book Circulation" Language="C#" MasterPageFile="~/Users/MasterPage/Admin.Master" AutoEventWireup="true" CodeBehind="Book_Borrow.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Transactions.Book_Borrow" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/html5-qrcode/2.3.8/html5-qrcode.min.js") %>"></script>
     <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
     <link href="<%= ResolveUrl("~/Assets/Themes/book_borrow-theme.css") %>" rel="stylesheet" />
 
     <script>
         let html5QrScanner = null;
         let isCameraActive = false;
-        const scanSound = new Audio('https://Assets.mixkit.co/active_storage/sfx/766/766-preview.mp3');
+        const scanSound = new Audio('<%= ResolveUrl("~/Assets/Audio/scan-beep.wav") %>');
 
         async function startScanner(target) {
             scanSound.play().then(() => {

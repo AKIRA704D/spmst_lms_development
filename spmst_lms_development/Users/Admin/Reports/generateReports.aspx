@@ -1,11 +1,7 @@
 <%@ Page Title="Generate Report" Language="C#" MasterPageFile="~/Users/MasterPage/admin.master" AutoEventWireup="true" CodeBehind="generateReports.aspx.cs" Inherits="spmst_lms_development.Users.Admin.Reports.generateReports" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
     <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/chartjs/4.4.4/chart.umd.min.js") %>"></script>
     
     <style>
         /* ===== CSS Variables ===== */

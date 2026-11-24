@@ -144,8 +144,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\Script\admin-dashboard.js" />
     <Content Include="Assets\Script\library-settings-common.js" />
+    <Content Include="Assets\Script\lmsa-analytics.js" />
+    <Content Include="Assets\Script\lmsa-dash-core.js" />
+    <Content Include="Assets\Script\lmsa-pager.js" />
     <Content Include="Assets\Script\process-indicator.js" />
+    <Content Include="Assets\Themes\admin-dashboard.css" />
     <Content Include="Assets\Themes\book_borrow-theme.css" />
     <Content Include="Assets\Themes\browse-catalog-theme.css" />
     <Content Include="Assets\Themes\history-theme.css" />
@@ -154,6 +159,7 @@
     <Content Include="Assets\Themes\library-services-settings.css" />
     <Content Include="Assets\Themes\library-settings.css" />
     <Content Include="Assets\Themes\library-terms-settings.css" />
+    <Content Include="Assets\Themes\lmsa-pager.css" />
     <Content Include="Assets\Themes\LoginPage.css" />
     <Content Include="Assets\Themes\patron-dashboard-theme.css" />
     <Content Include="Assets\Profile\default-cover.png" />
@@ -233,6 +239,43 @@
     <Content Include="Users\Staff\Attendance\Kiosk\Kiosk.aspx" />
     <Content Include="Users\Staff\Attendance\Kiosk\SelfServiceKiosk.aspx" />
     <Content Include="Web.config" />
+    <Content Include="Assets\Audio\scan-beep.wav" />
+    <Content Include="Assets\Script\offline-guard.js" />
+    <Content Include="Assets\Vendor\web.config" />
+    <Content Include="Assets\Vendor\bootstrap-icons\1.11.0\bootstrap-icons.css" />
+    <Content Include="Assets\Vendor\bootstrap-icons\1.11.0\fonts\bootstrap-icons.woff" />
+    <Content Include="Assets\Vendor\bootstrap-icons\1.11.0\fonts\bootstrap-icons.woff2" />
+    <Content Include="Assets\Vendor\bootstrap\5.3.3\css\bootstrap.min.css" />
+    <Content Include="Assets\Vendor\bootstrap\5.3.3\js\bootstrap.bundle.min.js" />
+    <Content Include="Assets\Vendor\chartjs\4.4.4\chart.umd.min.js" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\css\all.min.css" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-brands-400.ttf" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-brands-400.woff2" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-regular-400.ttf" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-regular-400.woff2" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-solid-900.ttf" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-solid-900.woff2" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-v4compatibility.ttf" />
+    <Content Include="Assets\Vendor\fontawesome\6.5.2\webfonts\fa-v4compatibility.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\cinzel-latin-600-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\cinzel-latin-700-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\inter-latin-wght-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\lato-latin-300-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\lato-latin-400-italic.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\lato-latin-400-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\lato-latin-700-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\roboto-latin-300-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\roboto-latin-400-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\roboto-latin-500-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\roboto-latin-700-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\files\roboto-latin-900-normal.woff2" />
+    <Content Include="Assets\Vendor\fonts\fonts.css" />
+    <Content Include="Assets\Vendor\html5-qrcode\2.3.8\html5-qrcode.min.js" />
+    <Content Include="Assets\Vendor\jquery\3.6.0\jquery.min.js" />
+    <Content Include="Assets\Vendor\qrcode-generator\1.4.4\qrcode.js" />
+    <Content Include="Assets\Vendor\sweetalert2\11.26.25\sweetalert2.all.min.js" />
+    <Content Include="offline.html" />
+    <Content Include="sw.js" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Helper\AlertHelper.cs" />
@@ -240,6 +283,7 @@
     <Compile Include="Assets\Helper\EmailHelper.cs" />
     <Compile Include="Assets\Helper\Handlers\AttendanceHelper.cs" />
     <Compile Include="Assets\Helper\Handlers\CirculationHelper.cs" />
+    <Compile Include="Assets\Helper\Handlers\DashboardAccess.cs" />
     <Compile Include="Assets\Helper\Handlers\NotificationPoll.ashx.cs">
       <DependentUpon>NotificationPoll.ashx</DependentUpon>
     </Compile>
@@ -267,6 +311,9 @@
     <Compile Include="Assets\Helper\Reservations\ReservationNotificationService.cs" />
     <Compile Include="Assets\Helper\Reservations\ReservationStatusService.cs" />
     <Compile Include="Assets\Helper\sessionHelper.cs" />
+    <Compile Include="Assets\Helper\TimeoutWebClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Assets\Helper\SmsHelper.cs" />
     <Compile Include="LandingPage\AboutContact.aspx.cs">
       <DependentUpon>AboutContact.aspx</DependentUpon>
@@ -295,6 +342,9 @@
     <Compile Include="Assets\Services\FinePolicy.cs" />
     <Compile Include="SmsTick.ashx.cs">
       <DependentUpon>SmsTick.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="Users\Admin\Dashboard\DashboardData.ashx.cs">
+      <DependentUpon>DashboardData.ashx</DependentUpon>
     </Compile>
     <Compile Include="Users\Admin\Settings\LibraryAboutSettings.aspx.cs">
       <DependentUpon>LibraryAboutSettings.aspx</DependentUpon>
@@ -720,6 +770,7 @@
     <Content Include="SmsTick.ashx" />
     <None Include="Properties\PublishProfiles\spamastlibrary-001-site1 - FTP.pubxml" />
     <None Include="Properties\PublishProfiles\spamastlibrary-001-site1 - Web Deploy.pubxml" />
+    <Content Include="Users\Admin\Dashboard\DashboardData.ashx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

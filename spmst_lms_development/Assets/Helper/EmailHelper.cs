@@ -33,6 +33,7 @@ namespace spmst_lms_development
                     {
                         smtp.Credentials = new NetworkCredential(SmtpUser, SmtpPass);
                         smtp.EnableSsl = SmtpEnableSsl;
+                        smtp.Timeout = 15000;   // ms; default is 100 000 and would hang the request if SMTP is unreachable
                         smtp.Send(mail);
                     }
                 }

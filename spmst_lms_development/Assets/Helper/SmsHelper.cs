@@ -36,7 +36,7 @@ namespace spmst_lms_development.Assets.Helper
     public static class SmsHelper
     {
         private static readonly HttpClient Client =
-            new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+            new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
 
         // ---------------- config ----------------
 

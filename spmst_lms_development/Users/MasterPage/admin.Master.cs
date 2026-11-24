@@ -87,10 +87,7 @@ namespace spmst_lms_development.Users.MasterPage
         private void ApplyRoleBasedNavigation()
         {
             // ---------- Core Operations → Dashboards ----------
-            Allow(lnkAdminDashboard, RoleAdmin);
-            Allow(lnkPatronDashboard, PatronsOnly);
-            Allow(lnkMgtDashboard, RoleAdmin, RoleStaffM);
-            Allow(lnkCirDashboard, RoleAdmin, RoleStaffC);
+            Allow(lnkAdminDashboard, RoleAdmin, RoleStaffC);
 
             // ---------- Core Operations → Circulation / Transactions ----------
             Allow(lnkBookBorrow, RoleAdmin, RoleStaffC);
@@ -99,7 +96,6 @@ namespace spmst_lms_development.Users.MasterPage
             Allow(lnkPenalties, RoleAdmin, RoleStaffC);
             Allow(lnkHistory, PatronsOnly);
             Allow(lnkAttendance, RoleAdmin, RoleStaffM);
-
 
             // ---------- Core Operations → Catalog ----------
             Allow(lnkCatalog, Everyone);

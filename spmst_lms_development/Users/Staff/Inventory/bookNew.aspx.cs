@@ -493,12 +493,16 @@ namespace spmst_lms_development.Users.Staff.Inventory
         private void FetchAndPopulateFromAPIs(string cleanIsbn, string cleanIssn)
         {
             var metadata = new BookMetadata();
+            // Total time budget for all providers: when the internet is down or slow we stop
+            // trying further providers instead of waiting for each one in turn.
+            var budget = System.Diagnostics.Stopwatch.StartNew();
+            Func<bool> withinBudget = () => budget.ElapsedMilliseconds < 12000;
             if (!string.IsNullOrEmpty(cleanIsbn))
             {
                 metadata = GetMetadataFromGoogleBooks(cleanIsbn);
-                if (string.IsNullOrEmpty(metadata.Title))
+                if (string.IsNullOrEmpty(metadata.Title) && withinBudget())
                     metadata = GetMetadataFromOpenLibrary(cleanIsbn);
-                if (string.IsNullOrEmpty(metadata.Title))
+                if (string.IsNullOrEmpty(metadata.Title) && withinBudget())
                     metadata = GetMetadataFromCrossRef(cleanIsbn);
                 if (!string.IsNullOrEmpty(metadata.Title))
                     txtISBN.Text = string.IsNullOrEmpty(metadata.Isbn) ? cleanIsbn : metadata.Isbn;
@@ -506,7 +510,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
             else if (!string.IsNullOrEmpty(cleanIssn))
             {
                 metadata = GetMetadataFromCrossRef(cleanIssn);
-                if (string.IsNullOrEmpty(metadata.Title))
+                if (string.IsNullOrEmpty(metadata.Title) && withinBudget())
                     metadata = GetMetadataFromOpenLibraryByIssn(cleanIssn);
                 if (!string.IsNullOrEmpty(metadata.Title))
                     txtISSN.Text = string.IsNullOrEmpty(metadata.Issn) ? cleanIssn : metadata.Issn;
@@ -536,7 +540,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
             try
             {
                 string url = $"https://www.googleapis.com/books/v1/volumes?q=isbn:{cleanIsbn}";
-                using (WebClient client = new WebClient())
+                using (WebClient client = new spmst_lms_development.Assets.Helper.TimeoutWebClient())
                 {
                     client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     string json = client.DownloadString(url);
@@ -630,7 +634,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
             try
             {
                 string url = $"https://openlibrary.org/api/books?bibkeys=ISBN:{cleanIsbn}&format=json&jscmd=data";
-                using (WebClient client = new WebClient())
+                using (WebClient client = new spmst_lms_development.Assets.Helper.TimeoutWebClient())
                 {
                     client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     string json = client.DownloadString(url);
@@ -736,7 +740,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
             {
                 string cleanIssn = issn.Replace("-", "").Trim();
                 string url = $"https://openlibrary.org/search.json?q=issn:{cleanIssn}&limit=1";
-                using (WebClient client = new WebClient())
+                using (WebClient client = new spmst_lms_development.Assets.Helper.TimeoutWebClient())
                 {
                     client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     string json = client.DownloadString(url);
@@ -790,7 +794,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
             try
             {
                 string url = $"https://api.crossref.org/works/{cleanIdentifier}";
-                using (WebClient client = new WebClient())
+                using (WebClient client = new spmst_lms_development.Assets.Helper.TimeoutWebClient())
                 {
                     client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     client.Headers.Add("Accept", "application/json");
@@ -1048,7 +1052,7 @@ namespace spmst_lms_development.Users.Staff.Inventory
                     return $"Assets/Covers/{fileName}";
 
                 string httpsUrl = url.Replace("http://", "https://");
-                using (WebClient client = new WebClient())
+                using (WebClient client = new spmst_lms_development.Assets.Helper.TimeoutWebClient())
                 {
                     client.Headers.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                     client.DownloadFile(httpsUrl, fullPath);

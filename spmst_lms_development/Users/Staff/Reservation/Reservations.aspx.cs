@@ -335,35 +335,28 @@ namespace spmst_lms_development.Users.Staff.Reservation
                 return;
             }
 
-            /* 2. Fire the existing notification service (SMS + Email + In-App). */
-            ReservationNotificationResult nr = null;
-            try
+            /* 2. Fire the existing notification service (SMS + Email + In-App) in the BACKGROUND.
+                  SMS (up to 15s) and SMTP are network calls; running them inside this click made the
+                  page wait for them. Same pattern already used by Book_Return / Book_Renew / SettlePay.
+                  The book is already marked Ready; delivery results are recorded by the service's own
+                  notification log. */
+            int txnSnapshot = txnId;
+            System.Web.Hosting.HostingEnvironment.QueueBackgroundWorkItem(ct =>
             {
-                nr = ReservationNotificationService.SendReservationReadyNotifications(txnId);
-            }
-            catch
-            {
-                /* Notification failures must not break the UI flow. */
-            }
+                try
+                {
+                    ReservationNotificationService.SendReservationReadyNotifications(txnSnapshot);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Trace.TraceError(
+                        "[Reservations] BG ready-notify failed txn=" + txnSnapshot + ": " + ex.Message);
+                }
+            });
 
-            if (nr != null)
-            {
-                bool anyOk = nr.Sms.Status == "Success"
-                          || nr.Email.Status == "Success"
-                          || nr.Push.Status == "Success";
-
-                string summary = string.Format(
-                    "SMS: {0} | Email: {1} | In-App: {2}",
-                    nr.Sms.Status, nr.Email.Status, nr.Push.Status);
-
-                ShowSweetAlert(anyOk ? "Success" : "Warning",
-                    "Book marked as Ready. " + summary,
-                    anyOk ? "success" : "warning");
-            }
-            else
-            {
-                ShowSweetAlert("Success", "Book marked as Ready.", "success");
-            }
+            ShowSweetAlert("Success",
+                "Book marked as Ready. Notifications (SMS, email, in-app) are being sent in the background.",
+                "success");
 
             LoadData();
             LoadExpiringSoon();

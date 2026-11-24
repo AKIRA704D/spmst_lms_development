@@ -66,6 +66,43 @@ namespace spmst_lms_development.Assets.Helper
             return path;
         }
 
+        /// <summary>
+        /// Same lookup as <see cref="GetHeaderLogo"/> (database logo first), but the file is
+        /// verified to exist and be non-empty on disk. If the database logo is missing,
+        /// empty or corrupt, the built-in default for that entity is returned instead, so
+        /// callers never receive a path that would render as a broken image.
+        /// Returns an app-relative path without a leading "~" or "/" (e.g. "Assets/Logo/x.png").
+        /// </summary>
+        public static string GetVerifiedLogo(string entityType)
+        {
+            string candidate = NormalizeRelative(GetHeaderLogo(entityType));
+            if (IsUsableAsset(candidate)) return candidate;
+
+            string fallback = NormalizeRelative(FallbackForEntity(entityType));
+            return fallback;
+        }
+
+        private static string NormalizeRelative(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return string.Empty;
+            string p = path.Trim().Replace('\\', '/');
+            if (p.StartsWith("~/")) p = p.Substring(2);
+            else if (p.StartsWith("~")) p = p.Substring(1);
+            return p.TrimStart('/');
+        }
+
+        private static bool IsUsableAsset(string relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath) || relativePath.Contains("..")) return false;
+            try
+            {
+                string physical = System.Web.Hosting.HostingEnvironment.MapPath("~/" + relativePath);
+                if (string.IsNullOrEmpty(physical) || !System.IO.File.Exists(physical)) return false;
+                return new System.IO.FileInfo(physical).Length > 0;
+            }
+            catch { return false; }
+        }
+
         public static List<OrganizationLogo> GetActiveLogos(string entityType = null)
         {
             var list = new List<OrganizationLogo>();

@@ -1,4 +1,4 @@
-﻿r<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.Master.cs" Inherits="spmst_lms_development.Users.MasterPage.admin" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="admin.Master.cs" Inherits="spmst_lms_development.Users.MasterPage.admin" %>
 <%@ Import Namespace="spmst_lms_development.Assets.Helper" %>
 
 <!DOCTYPE html>
@@ -8,14 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - LMSA</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fonts/fonts.css") %>" />
+    <script src="<%= ResolveUrl("~/Assets/Vendor/sweetalert2/11.26.25/sweetalert2.all.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 
     <!-- SPAMAST Centralized Theme -->
     <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -724,7 +725,7 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
+        <asp:ScriptManager AsyncPostBackTimeout="60" ID="ScriptManager1" runat="server"></asp:ScriptManager>
 
         <div class="lms-wrapper">
 
@@ -843,18 +844,6 @@
                             <asp:HyperLink ID="lnkAdminDashboard" runat="server"
                                 NavigateUrl="~/Users/Admin/Dashboard/adminDashC.aspx" CssClass="nav-menu-item">
                                 <i class="fa-solid fa-chart-pie"></i><span>Admin Dashboard</span>
-                            </asp:HyperLink>
-                            <asp:HyperLink ID="lnkPatronDashboard" runat="server"
-                                NavigateUrl="~/Users/Patron/Dashboard/patronDash.aspx" CssClass="nav-menu-item">
-                                <i class="fa-solid fa-chart-pie"></i><span>Patron Dashboard</span>
-                            </asp:HyperLink>
-                            <asp:HyperLink ID="lnkMgtDashboard" runat="server"
-                                NavigateUrl="~/Users/Staff/Dashboard/MgtDash.aspx" CssClass="nav-menu-item">
-                                <i class="fa-solid fa-chart-pie"></i><span>Management Dashboard</span>
-                            </asp:HyperLink>
-                            <asp:HyperLink ID="lnkCirDashboard" runat="server"
-                                NavigateUrl="~/Users/Staff/Dashboard/CirDash.aspx" CssClass="nav-menu-item">
-                                <i class="fa-solid fa-chart-pie"></i><span>Circulation Dashboard</span>
                             </asp:HyperLink>
                         </div>
                     </div>
@@ -1132,7 +1121,6 @@
         </div>
     </form>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         function toggleSidebarDrawer() {
@@ -1244,14 +1232,53 @@
                 });
             }
 
-            function pollNotifications() {
-                fetch(pollEndpoint, { credentials: 'same-origin' })
-                    .then(function (r) { return r.ok ? r.json() : null; })
-                    .then(function (data) { if (data) applyBellState(data.count || 0); })
-                    .catch(function () { /* silent */ });
+            // Polling is paused while the tab is hidden or the browser is offline,
+            // times out after 8s, and backs off (20s -> 40s -> ... max 5 min) on failures
+            // so a slow/unreachable server is never hammered and the UI never waits on it.
+            var pollDelay = POLL_INTERVAL_MS, pollTimer = null, pollBusy = false;
+            var POLL_MAX_DELAY_MS = 300000;
+
+            function schedulePoll(ms) {
+                clearTimeout(pollTimer);
+                pollTimer = setTimeout(pollNotifications, ms);
             }
 
-            setInterval(pollNotifications, POLL_INTERVAL_MS);
+            function pollNotifications() {
+                if (document.hidden || navigator.onLine === false) { schedulePoll(POLL_INTERVAL_MS); return; }
+                if (pollBusy) { return; }
+                pollBusy = true;
+
+                var request = (window.LMSA && LMSA.fetchWithTimeout)
+                    ? LMSA.fetchWithTimeout(pollEndpoint, { credentials: 'same-origin', cache: 'no-store' }, 8000)
+                    : fetch(pollEndpoint, { credentials: 'same-origin', cache: 'no-store' });
+
+                request
+                    .then(function (r) {
+                        if (window.LMSA) { LMSA.reportServerReachable(true); }
+                        if (!r.ok) { throw new Error('HTTP ' + r.status); }
+                        return r.json();
+                    })
+                    .then(function (data) {
+                        if (data) { applyBellState(data.count || 0); }
+                        pollDelay = POLL_INTERVAL_MS;
+                    })
+                    .catch(function (err) {
+                        // Network/timeouts raise the connectivity notice; HTTP errors just back off.
+                        if (window.LMSA && !(err && /^HTTP /.test(err.message))) { LMSA.reportServerReachable(false); }
+                        pollDelay = Math.min(pollDelay * 2, POLL_MAX_DELAY_MS);
+                    })
+                    .then(function () {
+                        pollBusy = false;
+                        schedulePoll(pollDelay);
+                    });
+            }
+
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) { pollDelay = POLL_INTERVAL_MS; schedulePoll(0); }
+            });
+            window.addEventListener('online', function () { pollDelay = POLL_INTERVAL_MS; schedulePoll(0); });
+
+            schedulePoll(POLL_INTERVAL_MS);
         });
 
         function triggerClientLogout() {

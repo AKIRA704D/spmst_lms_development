@@ -5,9 +5,10 @@
 <head runat="server">
     <title>Filter Patrons</title>
     <!-- Bootstrap 5 CSS + Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
+     <script src="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 
     <style>
         body {
@@ -74,7 +75,7 @@
 </head>
 <body>
     <form id="form1" runat="server" class="d-flex flex-column">
-        <asp:ScriptManager ID="ScriptManager1" runat="server" />
+        <asp:ScriptManager AsyncPostBackTimeout="60" ID="ScriptManager1" runat="server" />
 
         <!-- Header with Close Button -->
         <div class="filter-header px-4 py-3 d-flex justify-content-between align-items-center flex-shrink-0">

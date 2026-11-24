@@ -127,16 +127,17 @@ namespace spmst_lms_development.Assets.Helper.Handlers
                             WHEN t.is_lost    = 1 THEN 'Lost'
                             ELSE 'Overdue'
                         END                                                    AS PenaltyType,
-                        t.fine_amount                                          AS Amount,
-                        t.fine_status                                          AS Status
+                        p.fine_amount                                          AS Amount,
+                        p.fine_status                                          AS Status
                     FROM Transactions t
+                    INNER JOIN Penalties        p  ON p.transaction_id   = t.transaction_id   -- fines live in Penalties (Transactions has no fine columns)
                     INNER JOIN Users            u  ON t.user_id          = u.user_id
                     LEFT  JOIN Students         s  ON t.user_id          = s.student_id
                     LEFT  JOIN Faculty          f  ON t.user_id          = f.faculty_id
                     LEFT  JOIN Staff            st ON t.user_id          = st.staff_id
                     INNER JOIN Item_Copies      c  ON t.accession_number = c.accession_number
                     INNER JOIN Library_Resources r ON c.resource_id      = r.resource_id
-                    WHERE t.fine_amount > 0";
+                    WHERE p.fine_amount > 0";
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     sql += @" AND (s.first_name LIKE @s OR s.last_name LIKE @s

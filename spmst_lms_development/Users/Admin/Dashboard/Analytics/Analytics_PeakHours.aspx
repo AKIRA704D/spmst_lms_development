@@ -4,9 +4,10 @@
 <head>
     <meta charset="utf-8" />
     <title>Peak Hours</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
+    <script src="<%= ResolveUrl("~/Assets/Vendor/chartjs/4.4.4/chart.umd.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
     <style>
         body { background: transparent; padding: 15px; }
         .page-container { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -69,7 +70,7 @@
             </div>
         </div>
     </form>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js") %>"></script>
     <script>
         // Render chart using data from server-side
         function renderPeakChart(labels, entries, exits) {

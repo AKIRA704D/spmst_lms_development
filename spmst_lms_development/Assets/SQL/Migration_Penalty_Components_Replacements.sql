@@ -1,9 +1,9 @@
 -- ============================================================
 -- Migration: Penalty Component Settlement & Book Replacement
--- Target:    SPAMAST_LMSv4
+-- Target:    db_ad0eb7_libraryspamast
 -- Safe:      Idempotent, no destructive changes to existing data
 -- ============================================================
-USE SPAMAST_LMSv4;
+USE db_ad0eb7_libraryspamast;
 
 -- ------------------------------------------------------------
 -- 1. Penalty_Policy — reserve table (service uses C# constants

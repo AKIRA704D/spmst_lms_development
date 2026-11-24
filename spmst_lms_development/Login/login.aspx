@@ -8,14 +8,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <!-- Theme font (optional - falls back to Helvetica/Arial) -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fonts/fonts.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
 
     <!-- Universal system theme -->
     <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
     <!-- Page-specific theme -->
     <link href="<%= ResolveUrl("~/Assets/Themes/LoginPage.css") %>" rel="stylesheet" />
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -100,9 +101,9 @@
 
     </form>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js") %>"></script>
     <!-- SweetAlert2 is required for the loading indicator -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/sweetalert2/11.26.25/sweetalert2.all.min.js") %>"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             var passwordInput = document.getElementById('<%= txtPassword.ClientID %>');

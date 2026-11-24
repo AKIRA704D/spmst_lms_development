@@ -1,10 +1,8 @@
 ﻿<%@ Page Title="My Borrowing History" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="History.aspx.cs" Inherits="spmst_lms_development.Users.Patron.History.History" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
     <link rel="stylesheet" href='<%: ResolveUrl("~/Assets/Themes/history-theme.css") %>' />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         /* ==== Page-specific styles (theme-dependent) ==== */
@@ -323,7 +321,6 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript">
         // ---------- Renewal & Detail button handlers ----------
         (function () {

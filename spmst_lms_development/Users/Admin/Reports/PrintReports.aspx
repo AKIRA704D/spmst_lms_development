@@ -3,7 +3,8 @@
 <html>
 <head runat="server">
     <title>Print Report</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/chartjs/4.4.4/chart.umd.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; margin: 0; background: #F0F0F0; }

@@ -1,9 +1,7 @@
 ﻿<%@ Page Title="My Profile" Language="C#" MasterPageFile="~/Users/MasterPage/admin.Master" AutoEventWireup="true" CodeBehind="Profile.aspx.cs" Inherits="spmst_lms_development.Users.Patron.Profile" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
 
     <style>
         /* ============================================
@@ -259,7 +257,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/qrcode-generator/1.4.4/qrcode.js") %>"></script>
     <script type="text/javascript">
         // ============================================
         // 1. SWEETALERT FOR SERVER-SIDE MESSAGES
@@ -279,6 +277,40 @@
         Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
             // Icons are already in markup, no extra action needed
         });
+
+        // ============================================
+        // 2b. LOCAL QR RENDERING (no external service; works offline)
+        // Encodes the same value (the user ID) the old web-service QR encoded.
+        // ============================================
+        function renderLocalQr() {
+            var img = document.getElementById('<%= imgQRCode.ClientID %>');
+            if (!img || typeof qrcode !== 'function') return;
+            var value = img.getAttribute('data-qr-value');
+            if (!value || img.getAttribute('data-qr-done') === value) return;
+            try {
+                var qr = qrcode(0, 'M');
+                qr.addData(value);
+                qr.make();
+                var n = qr.getModuleCount(), margin = 4, scale = 10;
+                var size = (n + margin * 2) * scale;
+                var canvas = document.createElement('canvas');
+                canvas.width = canvas.height = size;
+                var ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, size, size);
+                ctx.fillStyle = '#000000';
+                for (var r = 0; r < n; r++)
+                    for (var c = 0; c < n; c++)
+                        if (qr.isDark(r, c))
+                            ctx.fillRect((c + margin) * scale, (r + margin) * scale, scale, scale);
+                img.src = canvas.toDataURL('image/png');
+                img.setAttribute('data-qr-done', value);
+            } catch (e) {
+                console.error('QR render failed:', e);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', renderLocalQr);
+        Sys.WebForms.PageRequestManager.getInstance().add_endRequest(renderLocalQr);
 
         // ============================================
         // 3. QR CODE DOWNLOAD FUNCTIONALITY
@@ -329,7 +361,7 @@
                 })
                 .catch(error => {
                     console.error('Error downloading QR:', error);
-                    Swal.fire('Download Failed', 'Could not download the QR code. Please check your internet connection and try again.', 'error');
+                    Swal.fire('Download Failed', 'Could not download the QR code. Please try again.', 'error');
                 });
         }
     </script>

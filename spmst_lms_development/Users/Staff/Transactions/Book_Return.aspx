@@ -1,10 +1,8 @@
 ﻿<%@ Page Title="Book Returns" Language="C#" MasterPageFile="~/Users/MasterPage/Admin.Master" AutoEventWireup="true" CodeBehind="Book_Return.aspx.cs" Inherits="spmst_lms_development.Users.Staff.Transactions.Book_Return" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="head" runat="server">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <script src="<%= ResolveUrl("~/Assets/Vendor/html5-qrcode/2.3.8/html5-qrcode.min.js") %>"></script>
 
     <style>
         /* ============================================
@@ -83,7 +81,7 @@
         // Scanner logic (same as Book_Borrow, but target is book barcode only)
         let html5QrScanner = null;
         let isCameraActive = false;
-        const scanSound = new Audio('https://Assets.mixkit.co/active_storage/sfx/766/766-preview.mp3');
+        const scanSound = new Audio('<%= ResolveUrl("~/Assets/Audio/scan-beep.wav") %>');
 
         async function startScanner() {
             scanSound.play().then(() => {

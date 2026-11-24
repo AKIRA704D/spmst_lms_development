@@ -200,7 +200,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         // This safely creates/updates the Penalties and Penalty_Components
                         try
                         {
-                            PenaltyService.SyncPenalties();
+                            PenaltyService.SyncPenalties(transactionId);
                         }
                         catch (Exception ex)
                         {

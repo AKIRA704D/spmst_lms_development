@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <title>Overdue Patterns</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
     <style>
         body { background: transparent; padding: 15px; }
         .table th { background: #f8f9fa; position: sticky; top: 0; z-index: 1; }
@@ -14,6 +14,7 @@
         .title-details span { margin-right: 8px; }
         .badge-overdue { background-color: #f8d7da; color: #721c24; }
     </style>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -60,6 +61,6 @@
             </asp:GridView>
         </div>
     </form>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js") %>"></script>
 </body>
 </html>

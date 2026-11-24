@@ -98,6 +98,39 @@ namespace spmst_lms_development.Assets.Helper
         // =============================================================
         public static void SyncPenalties()
         {
+            SyncCore(null);
+            _lastFullSyncUtc = DateTime.UtcNow;
+        }
+
+        /// <summary>
+        /// Same logic as SyncPenalties() but limited to ONE transaction. Use this whenever
+        /// only that transaction's penalty is needed (lookup, notification, after a return/renewal):
+        /// cost is constant instead of growing with every transaction ever recorded.
+        /// </summary>
+        public static void SyncPenalties(int transactionId)
+        {
+            SyncCore(transactionId);
+        }
+
+        // The DB event auto_update_overdue_penalties already recomputes overdue fines every minute,
+        // so list views only need an in-app full sync if the last one is older than this.
+        private static readonly TimeSpan FullSyncMinInterval = TimeSpan.FromSeconds(45);
+        private static DateTime _lastFullSyncUtc = DateTime.MinValue;
+        private static readonly object _fullSyncLock = new object();
+
+        /// <summary>Full sync, skipped if one completed within FullSyncMinInterval.</summary>
+        public static void SyncPenaltiesThrottled()
+        {
+            if (DateTime.UtcNow - _lastFullSyncUtc < FullSyncMinInterval) return;
+            lock (_fullSyncLock)
+            {
+                if (DateTime.UtcNow - _lastFullSyncUtc < FullSyncMinInterval) return;
+                SyncPenalties();
+            }
+        }
+
+        private static void SyncCore(int? onlyTransactionId)
+        {
             using (var conn = new MySqlConnection(_connStr))
             {
                 conn.Open();
@@ -105,7 +138,7 @@ namespace spmst_lms_development.Assets.Helper
                 {
                     var rows = new List<TransactionRow>();
 
-                    const string selectSql = @"
+                    string selectSql = @"
                         SELECT t.transaction_id, t.user_id, t.accession_number,
                                t.borrow_date, t.due_date, t.return_date,
                                t.created_at, t.updated_at, t.is_damaged, t.is_lost
@@ -130,7 +163,8 @@ namespace spmst_lms_development.Assets.Helper
                                       )
                                 )
                             )
-                        )";
+                        )"
+                        + (onlyTransactionId.HasValue ? " AND t.transaction_id = " + onlyTransactionId.Value.ToString() : "");
 
                     using (var cmd = new MySqlCommand(selectSql, conn, tx))
                     using (var dr = cmd.ExecuteReader())
@@ -347,7 +381,7 @@ namespace spmst_lms_development.Assets.Helper
         // =============================================================
         public static List<PenaltyRecord> GetPenalties()
         {
-            SyncPenalties();
+            SyncPenaltiesThrottled();
 
             var list = new List<PenaltyRecord>();
 
@@ -430,7 +464,7 @@ namespace spmst_lms_development.Assets.Helper
 
         public static PenaltyRecord GetPenaltyRecord(int transactionId)
         {
-            SyncPenalties();
+            SyncPenalties(transactionId);
 
             const string sql = @"
                 SELECT

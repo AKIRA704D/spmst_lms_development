@@ -165,7 +165,10 @@ namespace spmst_lms_development.Users.Patron
             litCardName.Text = string.IsNullOrEmpty(fullName) ? "UNKNOWN" : fullName;
             litCardID.Text = userId;
 
-            imgQRCode.ImageUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=250x250&data={HttpUtility.UrlEncode(userId)}";
+            // QR is now rendered locally in the browser (Assets/Vendor/qrcode-generator) so it works offline.
+            // 1x1 transparent GIF placeholder avoids a broken-image icon until the script paints the code.
+            imgQRCode.ImageUrl = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+            imgQRCode.Attributes["data-qr-value"] = userId;
             ViewState["PlainUserID"] = userId;
 
             SetTextBoxData(txtFirstName, fName);

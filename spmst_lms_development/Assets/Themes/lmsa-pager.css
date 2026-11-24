@@ -1,0 +1,26 @@
+﻿/* ==========================================================================
+   LMSA shared pager - the SAME component used by the Landing Page "Home"
+   catalog (rounded prev/next buttons + "Page X of Y" info block).
+   Values below are copied from Home.aspx; the CSS variables are defined with the
+   same fallbacks so it looks identical on pages that do not load LandingPage.css.
+   Markup is produced by Assets/Script/lmsa-pager.js
+   ========================================================================== */
+.lmsa-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 30px; flex-wrap: wrap; }
+.lmsa-page-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1.5px solid var(--lmsa-border, var(--sp-line, #dfe7e0)); background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--lmsa-navy-2, var(--sp-green-800, #0f452d)); font-weight: 700; cursor: pointer;
+}
+.lmsa-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.lmsa-page-btn:not(:disabled):hover { border-color: var(--lmsa-blue, var(--sp-green-600, #1b7a3d)); color: var(--lmsa-blue-dark, var(--sp-green-700, #14532d)); }
+.lmsa-page-info { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: 0.86rem; font-weight: 600; color: var(--lmsa-text-muted, #6b7280); }
+.lmsa-page-headline { font-weight: 800; font-size: 0.92rem; color: var(--lmsa-navy, var(--sp-green-900, #0b3d2c)); }
+.lmsa-page-detail { font-size: 0.78rem; color: var(--lmsa-text-muted, #6b7280); font-weight: 600; }
+/* inside dashboard cards the pager sits closer to its table */
+.dash-card .lmsa-pagination { margin-top: 18px; }
+@media (max-width: 575.98px) {
+    .lmsa-pagination { gap: 10px; }
+    .lmsa-page-headline { font-size: 0.86rem; }
+    .lmsa-page-detail { font-size: 0.72rem; }
+}

@@ -219,6 +219,11 @@
                 <iframe id="mapFrame" class="lmsa-map-frame" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
                     src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d991.2029031222396!2d125.60769499574207!3d6.41824697173699!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sph!4v1785921070592!5m2!1sen!2sph">
                 </iframe>
+                <div id="mapOffline" class="text-center text-muted py-5" style="display:none;">
+                    <i class="fa-solid fa-map-location-dot fa-2x mb-2"></i>
+                    <div class="fw-semibold">Map unavailable while offline</div>
+                    <div class="small">SPAMAST Main Campus &mdash; Poblacion, Malita, Davao Occidental</div>
+                </div>
             </div>
         </div>
     </section>
@@ -226,6 +231,19 @@
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="scripts" runat="server">
+    <script>
+        // The embedded map needs internet. Swap in a friendly note when offline instead of a blank frame.
+        (function () {
+            function syncMap() {
+                var f = document.getElementById("mapFrame"), n = document.getElementById("mapOffline");
+                if (!f || !n) return;
+                var off = navigator.onLine === false;
+                f.style.display = off ? "none" : ""; n.style.display = off ? "block" : "none";
+            }
+            window.addEventListener("offline", syncMap); window.addEventListener("online", syncMap);
+            document.addEventListener("DOMContentLoaded", syncMap);
+        })();
+    </script>
     <script>
         (function () {
             'use strict';

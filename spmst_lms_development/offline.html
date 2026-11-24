@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Offline - SPAMAST Library</title>
+<!-- Fully self-contained: no external CSS/JS/fonts/images (this page is shown when the network is down). -->
+<style>
+  :root{--g9:#0b3d2c;--g7:#14532d;--gold:#d4a017;--paper:#f8faf7;--ink:#1f2d24;--line:#dfe7e0}
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{display:flex;align-items:center;justify-content:center;padding:20px;background:var(--paper);color:var(--ink);
+       font-family:Roboto,"Helvetica Neue",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  .card{width:100%;max-width:460px;background:#fff;border:1px solid var(--line);border-top:5px solid var(--gold);
+        border-radius:12px;padding:34px 28px;text-align:center;box-shadow:0 10px 30px rgba(11,61,44,.10)}
+  .emblem{width:72px;height:72px;margin:0 auto 14px;border-radius:50%;background:var(--g7);display:flex;align-items:center;justify-content:center}
+  h1{margin:0 0 8px;font-size:22px;color:var(--g9)}
+  p{margin:0 0 20px;line-height:1.55;color:#4b5b50;font-size:15px}
+  button{appearance:none;border:0;cursor:pointer;background:var(--g7);color:#fff;padding:11px 26px;border-radius:8px;font:600 15px inherit;font-family:inherit}
+  button:hover{background:var(--g9)}
+  small{display:block;margin-top:18px;color:#7b8a80;font-size:12.5px}
+</style>
+</head>
+<body>
+  <main class="card" role="main">
+    <div class="emblem" aria-hidden="true">
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 21.5V5.5"/><path d="M9 8h7M9 12h5"/>
+      </svg>
+    </div>
+    <h1>You're offline</h1>
+    <p>The library system can't reach the server right now. Searching, borrowing, reservations and other live data need a connection.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+    <small>SPAMAST Library Management System with Analytics</small>
+  </main>
+  <script>
+    // Reload automatically as soon as the connection returns.
+    window.addEventListener('online', function () { location.reload(); });
+  </script>
+</body>
+</html>

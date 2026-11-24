@@ -5,7 +5,7 @@
 <head runat="server">
     <title>Book Details</title>
     <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
     <style>
         /* ---------- Base ---------- */
         html, body {
@@ -309,6 +309,7 @@
             .info-value.description { max-height: 48px; }
         }
     </style>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 </head>
 <body>
     <form id="form1" runat="server">

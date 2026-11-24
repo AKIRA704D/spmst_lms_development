@@ -1,0 +1,139 @@
+﻿/* ==========================================================================
+   Admin Dashboard - ONE visual system for the Circulation, Patrons and Attendance tabs.
+   Loaded by adminDashC.aspx (the Patrons/Attendance panels are normal page content now,
+   they are no longer iframes, so there are no nested scroll areas - the master page's
+   main scroller handles all scrolling).
+   ========================================================================== */
+:root {
+    --sp-green-900: #0b3d2c; --sp-green-800: #0f452d; --sp-green-700: #14532d; --sp-green-600: #1b7a3d;
+    --sp-gold: #d4a017; --sp-gold-200: #e4b94a; --sp-paper: #f8faf7; --sp-line: #dfe7e0; --sp-ink: #1f2d24;
+    --sp-danger: #c0392b; --sp-danger-2: #a83232;
+    --dash-radius: 0.75rem;
+    --dash-shadow: 0 1px 3px rgba(11, 61, 44, 0.08);
+    --dash-pad: 1.5rem;
+}
+
+body, .container-fluid { background-color: var(--sp-paper); color: var(--sp-ink); }
+
+/* ---------- KPI stat cards ---------- */
+.stat-card { background: #fff; border-radius: var(--dash-radius); padding: 1rem 1.25rem; box-shadow: 0 2px 4px rgba(11,61,44,.08); border-left: 4px solid; transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; justify-content: center; min-height: 92px; height: 100%; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(11,61,44,.15); }
+.stat-title { font-size: .7rem; text-transform: uppercase; color: #6c757d; letter-spacing: .5px; }
+.stat-value { font-size: 1.75rem; font-weight: 800; line-height: 1; }
+.border-left-blue { border-left-color: var(--sp-green-700); } .border-left-purple { border-left-color: var(--sp-green-600); }
+.border-left-orange { border-left-color: var(--sp-gold); } .border-left-gold { border-left-color: #a67c00; }
+.border-left-green { border-left-color: #2e7d32; } .border-left-red { border-left-color: var(--sp-danger); }
+.border-left-slate { border-left-color: var(--sp-danger-2); } .border-left-brown { border-left-color: var(--sp-green-800); }
+.text-blue { color: var(--sp-green-700) !important; } .text-purple { color: var(--sp-green-600) !important; }
+.text-orange { color: var(--sp-gold) !important; } .text-gold { color: #a67c00 !important; }
+.text-green { color: #2e7d32 !important; } .text-red { color: var(--sp-danger) !important; }
+.text-slate { color: var(--sp-danger-2) !important; } .text-brown { color: var(--sp-green-800) !important; }
+
+/* ---------- Tabs ---------- */
+.dashboard-tabs .nav-link { color: #6c757d; border: none; border-bottom: 2px solid transparent; background: transparent; }
+.dashboard-tabs .nav-link:hover { color: var(--sp-green-700); }
+.dashboard-tabs .nav-link.active { color: var(--sp-green-700); border-bottom-color: var(--sp-green-700); background: transparent; font-weight: 600; }
+
+/* ---------- Cards (identical on all three tabs) ---------- */
+.trends-card, .dash-card {
+    background: #fff; border-radius: var(--dash-radius); padding: var(--dash-pad);
+    box-shadow: var(--dash-shadow); border: 1px solid var(--sp-line);
+}
+.dash-card-title { font-weight: 700; font-size: 1.15rem; color: var(--sp-green-700); margin: 0; }
+.dash-subhead { font-size: .8rem; font-weight: 700; color: var(--sp-green-600); margin-bottom: .75rem; }
+.dash-section-label { font-size: .75rem; font-weight: 700; color: #6c757d; letter-spacing: .3px; }
+.dash-stack > * + * { margin-top: 1.5rem; }
+
+/* ---------- Buttons / filter controls ---------- */
+.text-primary { color: var(--sp-green-700) !important; }
+.btn-primary { background-color: var(--sp-green-700); border-color: var(--sp-green-700); }
+.btn-primary:hover, .btn-primary:focus { background-color: var(--sp-green-800); border-color: var(--sp-green-800); }
+.btn-light { background-color: #f1f5f1; border-color: var(--sp-line); }
+.btn-light:hover { background-color: #e6efe6; }
+.nav-pills .nav-link.active { background-color: var(--sp-green-700); }
+.nav-pills .nav-link { color: var(--sp-green-700); }
+.dash-filter-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: .75rem; align-items: end; }
+.dash-filter-bar label { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: #6c757d; margin-bottom: .25rem; }
+.dash-toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.dash-search { position: relative; min-width: 220px; }
+.dash-search .form-control { padding-right: 2.2rem; }
+.dash-search i { position: absolute; right: .8rem; top: 50%; transform: translateY(-50%); color: #8a948d; pointer-events: none; }
+.dash-alert { margin-bottom: 1rem; }
+
+/* ---------- Charts ---------- */
+.chart-container { position: relative; height: 220px; width: 100%; margin-bottom: 1rem; }
+.chart-box { position: relative; height: 170px; width: 170px; max-width: 100%; }
+.chart-wide { position: relative; height: 230px; width: 100%; }
+.dash-peak-chart-box { position: relative; height: 240px; width: 100%; }
+.chart-container.is-empty, .chart-box.is-empty, .chart-wide.is-empty, .dash-peak-chart-box.is-empty { display: flex; align-items: center; justify-content: center; }
+.legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: .5rem; vertical-align: -1px; }
+
+/* ---------- Empty / error states ---------- */
+.dash-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: .4rem; padding: 1.5rem 1rem; color: #6c757d; font-size: .88rem; }
+.dash-empty i { font-size: 1.6rem; color: #aab5ad; }
+.dash-empty-error i { color: var(--sp-danger); }
+
+/* ---------- Tables ---------- */
+.dash-table { margin-bottom: 0; }
+.dash-table thead th { font-size: .72rem; text-transform: uppercase; letter-spacing: .4px; color: #6c757d; background: #f4f7f4; border-bottom: 1px solid var(--sp-line); white-space: nowrap; }
+.dash-table td { font-size: .86rem; vertical-align: middle; }
+.dash-col-reason { min-width: 220px; }
+.dash-reason-badge { display: inline-block; background: #e6f4ec; color: var(--sp-green-700); font-weight: 700; font-size: .72rem; padding: .2rem .6rem; border-radius: 1rem; }
+.name-main { display: block; font-weight: 600; } .id-sub { display: block; font-size: .72rem; color: #8a948d; }
+.badge-in { background: #e6f4ec; color: var(--sp-green-600); padding: 5px 15px; border-radius: 8px; font-weight: 700; font-size: .75rem; display: inline-block; }
+.badge-out { background: #fdecea; color: var(--sp-danger); padding: 5px 15px; border-radius: 8px; font-weight: 700; font-size: .75rem; display: inline-block; }
+.dash-status { display: inline-block; font-size: .72rem; font-weight: 700; padding: .2rem .7rem; border-radius: 1rem; }
+.dash-status-unpaid { background: #fdecea; color: var(--sp-danger); }
+.dash-status-partial { background: #fdf3d8; color: #8a6d00; }
+.dash-status-paid { background: #e6f4ec; color: var(--sp-green-600); }
+.is-loading { opacity: .55; transition: opacity .15s; pointer-events: none; }
+.is-busy .dash-card { transition: opacity .15s; }
+
+/* ---------- Top Borrowed Books ---------- */
+.top-book-row { display: flex; align-items: center; gap: .9rem; padding: .85rem 0; border-bottom: 1px solid var(--sp-line); }
+.top-book-row:last-child { border-bottom: 0; }
+.top-book-rank { width: 25px; flex: 0 0 25px; font-weight: 700; font-size: .85rem; color: #6c757d; }
+.top-book-info { flex: 1 1 auto; min-width: 0; }
+.top-book-title { overflow-wrap: anywhere; }
+.top-book-count { flex: 0 0 auto; }
+/* dedicated, fixed-size cover container: the whole image always fits, never stretched or cropped */
+.book-cover-frame { flex: 0 0 48px; width: 48px; height: 64px; border-radius: 6px; background: #fff; border: 1px solid var(--sp-line); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.book-cover-img { width: 100%; height: 100%; object-fit: contain; object-position: center; display: block; }
+.book-cover-img.is-logo { padding: 3px; }
+.book-cover-img.is-blank { visibility: hidden; }
+.waiting-badge { background-color: #fdf3d8; color: #8a6d00; font-size: .7rem; padding: .2rem .5rem; border-radius: 1rem; display: inline-block; }
+
+/* ---------- Occupancy ---------- */
+.occ-circle { width: 150px; height: 150px; border-radius: 50%; position: relative; flex: 0 0 auto; }
+.occ-circle span { position: absolute; top: 50%; transform: translateY(-50%); color: #fff; font-weight: 700; font-size: .8rem; }
+.occ-circle .occ-left { left: 20%; } .occ-circle .occ-right { right: 20%; }
+.dash-insight { background: #f4f7f4; border: 1px solid var(--sp-line); border-radius: .6rem; padding: .6rem .8rem; height: 100%; }
+.dash-insight-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .4px; color: #6c757d; }
+.dash-insight-value { font-weight: 800; font-size: 1.05rem; color: var(--sp-green-700); }
+
+/* ---------- Tab content never creates its own scroll area ---------- */
+#mainTabContent, #mainTabContent > .tab-pane { overflow: visible; height: auto; }
+.dash-table-wrap .table-responsive { overflow-x: auto; }    /* only wide TABLES may scroll sideways, never the page */
+
+/* ---------- Responsive ---------- */
+@media (max-width: 991.98px) {
+    .dash-filter-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .dash-filter-bar .dash-filter-reset { grid-column: 1 / -1; }
+}
+@media (max-width: 767.98px) {
+    .dashboard-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .dashboard-tabs::-webkit-scrollbar { display: none; }
+    .dashboard-tabs .nav-link { white-space: nowrap; font-size: .85rem; padding: .5rem .75rem; }
+    .trends-card, .dash-card { padding: 1rem; }
+    .chart-container { height: 190px; }
+    .dash-search { min-width: 0; width: 100%; }
+    .dash-table td, .dash-table th { font-size: .78rem; }
+}
+@media (max-width: 575.98px) {
+    .stat-value { font-size: 1.25rem; } .stat-title { font-size: .6rem; letter-spacing: .3px; }
+    .stat-card { padding: .75rem; min-height: 78px; }
+    .dash-filter-bar { grid-template-columns: minmax(0, 1fr); }
+    .top-book-row { flex-wrap: wrap; }
+    .top-book-count { margin-left: calc(25px + 48px + 1.8rem); text-align: left !important; }
+}
+@media (min-width: 768px) and (max-width: 991.98px) { .stat-value { font-size: 1.5rem; } }

@@ -4,10 +4,11 @@
 <html lang="en">
 <head runat="server">
     <title>Reserve Book</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
     <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/sweetalert2/11.26.25/sweetalert2.all.min.js") %>"></script>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
     <style>
         /* ============================================================
            Base
@@ -429,7 +430,7 @@
 </head>
 <body>
     <form id="form1" runat="server">
-        <asp:ScriptManager ID="sm1" runat="server" />
+        <asp:ScriptManager AsyncPostBackTimeout="60" ID="sm1" runat="server" />
 
         <asp:UpdatePanel ID="upReservation" runat="server" UpdateMode="Conditional">
             <ContentTemplate>
@@ -690,6 +691,6 @@
             </ContentTemplate>
         </asp:UpdatePanel>
     </form>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/js/bootstrap.bundle.min.js") %>"></script>
 </body>
 </html>

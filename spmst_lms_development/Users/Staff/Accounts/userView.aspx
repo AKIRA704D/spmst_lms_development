@@ -4,8 +4,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Patron Profile | LMSA</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/bootstrap/5.3.3/css/bootstrap.min.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Vendor/fontawesome/6.5.2/css/all.min.css") %>" />
     <style>
         html, body { margin: 0; padding: 0; background: transparent; }
 
@@ -252,6 +252,7 @@
 
         window.addEventListener('resize', notifyParentResize);
     </script>
+    <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 </head>
 <body>
     <div id="loader">

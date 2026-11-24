@@ -308,7 +308,7 @@ namespace spmst_lms_development.Users.Staff.Transactions
                         {
                             try
                             {
-                                PenaltyService.SyncPenalties();     // recompute (overdue days may have advanced)
+                                PenaltyService.SyncPenalties(oldTxnSnapshot);     // recompute this transaction only (overdue days may have advanced)
 
                                 var oldRec = PenaltyService.GetPenaltyRecord(oldTxnSnapshot);
                                 if (oldRec != null && oldRec.Balance > 0)
