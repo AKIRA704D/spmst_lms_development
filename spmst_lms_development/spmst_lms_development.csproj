@@ -78,6 +78,12 @@
     <Reference Include="K4os.Hash.xxHash, Version=1.0.8.0, Culture=neutral, PublicKeyToken=32cd54395057cec3, processorArchitecture=MSIL">
       <HintPath>..\packages\K4os.Hash.xxHash.1.0.8\lib\net462\K4os.Hash.xxHash.dll</HintPath>
     </Reference>
+    <Reference Include="Magick.NET-Q8-AnyCPU, Version=15.1.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
+      <HintPath>..\packages\Magick.NET-Q8-AnyCPU.15.1.0\lib\netstandard20\Magick.NET-Q8-AnyCPU.dll</HintPath>
+    </Reference>
+    <Reference Include="Magick.NET.Core, Version=15.1.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL">
+      <HintPath>..\packages\Magick.NET.Core.15.1.0\lib\netstandard20\Magick.NET.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -159,6 +165,7 @@
     <Content Include="Assets\Themes\library-services-settings.css" />
     <Content Include="Assets\Themes\library-settings.css" />
     <Content Include="Assets\Themes\library-terms-settings.css" />
+    <Content Include="Assets\Themes\lmsa-branding.css" />
     <Content Include="Assets\Themes\lmsa-pager.css" />
     <Content Include="Assets\Themes\LoginPage.css" />
     <Content Include="Assets\Themes\patron-dashboard-theme.css" />
@@ -279,6 +286,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Helper\AlertHelper.cs" />
+    <Compile Include="Assets\Helper\BrandingService.cs" />
     <Compile Include="Assets\Helper\DbHelper.cs" />
     <Compile Include="Assets\Helper\EmailHelper.cs" />
     <Compile Include="Assets\Helper\Handlers\AttendanceHelper.cs" />
@@ -291,6 +299,7 @@
     <Compile Include="Assets\Helper\Handlers\ReservationStatusHandler.ashx.cs">
       <DependentUpon>ReservationStatusHandler.ashx</DependentUpon>
     </Compile>
+    <Compile Include="Assets\Helper\ImageService.cs" />
     <Compile Include="Assets\Helper\InputHelper.cs" />
     <Compile Include="Assets\Helper\LogoHelper.cs" />
     <Compile Include="Assets\Helper\logs_Audit.cs" />
@@ -822,5 +831,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
+    <Error Condition="!Exists('..\packages\Magick.NET-Q8-AnyCPU.15.1.0\build\netstandard20\Magick.NET-Q8-AnyCPU.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Magick.NET-Q8-AnyCPU.15.1.0\build\netstandard20\Magick.NET-Q8-AnyCPU.targets'))" />
   </Target>
+  <Import Project="..\packages\Magick.NET-Q8-AnyCPU.15.1.0\build\netstandard20\Magick.NET-Q8-AnyCPU.targets" Condition="Exists('..\packages\Magick.NET-Q8-AnyCPU.15.1.0\build\netstandard20\Magick.NET-Q8-AnyCPU.targets')" />
 </Project>

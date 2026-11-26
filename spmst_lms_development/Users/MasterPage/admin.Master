@@ -17,6 +17,7 @@
 
     <!-- SPAMAST Centralized Theme -->
     <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" />
+    <link rel="stylesheet" href="<%= ResolveUrl("~/Assets/Themes/lmsa-branding.css") %>" />
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
@@ -735,8 +736,10 @@
                     <button type="button" class="btn-drawer-toggle" onclick="toggleSidebarDrawer()" aria-label="Open Navigation">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <div class="mobile-logo-frame">
-                       <img src="<%= ResolveUrl("~/" + LogoHelper.GetHeaderLogo("School").TrimStart('~', '/')) %>" alt="SPAMAST Logo" class="your-logo-class" />
+                    <div class="lmsa-logo-set lmsa-logo-set--mobile">
+                        <div class="mobile-logo-frame"><%= BrandingService.SchoolImg("") %></div>
+                        <div class="mobile-logo-frame"><%= BrandingService.LibraryImg("") %></div>
+                        <div class="mobile-logo-frame"><%= BrandingService.SystemImg("") %></div>
                     </div>
                     <div class="mobile-brand-text">SPAMAST</div>
                 </div>
@@ -820,8 +823,9 @@
             <nav id="lmsSidebar" class="lms-sidebar">
 
                 <div class="sidebar-brand-header">
-                    <div class="brand-logo-frame">
-                        <img src="<%= ResolveUrl(LogoHelper.GetHeaderLogo("School")) %>" alt="SPAMAST Logo" class="your-logo-class" />
+                    <div class="brand-logo-pair">
+                        <div class="brand-logo-frame"><%= BrandingService.SchoolImg("") %></div>
+                        <div class="brand-logo-frame"><%= BrandingService.LibraryImg("") %></div>
                     </div>
                     <div class="brand-text-wrapper">
                         <div class="brand-title">SPAMAST</div>
@@ -1044,7 +1048,12 @@
             <main class="main-workspace-canvas">
 
                 <header class="desktop-header">
-                    <div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="lmsa-logo-set desktop-logo-set">
+                            <div class="desktop-logo-frame"><%= BrandingService.SchoolImg("") %></div>
+                            <div class="desktop-logo-frame"><%= BrandingService.LibraryImg("") %></div>
+                            <div class="desktop-logo-frame"><%= BrandingService.SystemImg("") %></div>
+                        </div>
                         <div class="desktop-role-badge">
                             <i class="fa-solid fa-building-user"></i>
                             <span><%= HttpUtility.HtmlEncode(spmst_lms_development.sessionHelper.GetRoleDisplayName()) %></span>

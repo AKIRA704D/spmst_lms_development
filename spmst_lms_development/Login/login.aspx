@@ -1,4 +1,5 @@
 ﻿﻿﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="login.aspx.cs" Inherits="spmst_lms_development.Login.login" %>
+<%@ Import Namespace="spmst_lms_development.Assets.Helper" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -16,6 +17,7 @@
     <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
     <!-- Page-specific theme -->
     <link href="<%= ResolveUrl("~/Assets/Themes/LoginPage.css") %>" rel="stylesheet" />
+    <link href="<%= ResolveUrl("~/Assets/Themes/lmsa-branding.css") %>" rel="stylesheet" />
     <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
 </head>
 <body>
@@ -23,8 +25,12 @@
 
         <header class="sticky-header">
             <div class="header-brand d-flex align-items-center">
-                <!-- DYNAMIC LOGO -->
-                <img src="<%= LibraryLogoUrl %>" alt="LMSA Logo" class="header-logo me-2" />
+                <!-- DYNAMIC LOGOS: School, School Library, System (resolved on EVERY request, incl. postbacks) -->
+                <span class="lmsa-logo-set d-flex align-items-center">
+                    <%= BrandingService.SchoolImg("header-logo") %>
+                    <%= BrandingService.LibraryImg("header-logo") %>
+                    <%= BrandingService.SystemImg("header-logo") %>
+                </span>
                 <div>
                     <strong>SPAMAST LIBRARY</strong>
                     <span>LMSA v2.0 Platform</span>
@@ -39,9 +45,9 @@
             <div class="login-card">
 
                 <div class="login-sidebar">
-                    <!-- DYNAMIC LOGOS -->
-                    <img src="<%= LibraryLogoUrl %>" alt="LMSA Logo" class="sidebar-logo" />
-                    <img src="<%= SchoolLogoUrl %>" alt="SPAMAST Logo" class="sidebar-logo" />
+                    <!-- DYNAMIC LOGOS: School + School Library -->
+                    <%= BrandingService.SchoolImg("sidebar-logo") %>
+                    <%= BrandingService.LibraryImg("sidebar-logo") %>
                 </div>
 
                 <div class="login-form-area">

@@ -1,4 +1,5 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ForgotPass.aspx.cs" Inherits="spmst_lms_development.ForgotPass" %>
+<%@ Import Namespace="spmst_lms_development.Assets.Helper" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,6 +13,7 @@
 
     <link href="<%= ResolveUrl("~/Assets/Themes/spamast-theme.css") %>" rel="stylesheet" />
     <link href="<%= ResolveUrl("~/Assets/Themes/verify-account.css") %>" rel="stylesheet" />
+    <link href="<%= ResolveUrl("~/Assets/Themes/lmsa-branding.css") %>" rel="stylesheet" />
 
     <script src="<%= ResolveUrl("~/Assets/Vendor/sweetalert2/11.26.25/sweetalert2.all.min.js") %>"></script>
     <script src="<%= ResolveUrl("~/Assets/Script/offline-guard.js") %>"></script>
@@ -23,8 +25,11 @@
 
         <header class="sticky-header">
             <div class="header-brand d-flex align-items-center">
-                <img src="<%= ResolveUrl("~/Assets/Logo/lmsa_logo.png") %>"
-                     alt="LMSA Logo" class="header-logo me-2" />
+                <span class="lmsa-logo-set d-flex align-items-center">
+                    <%= BrandingService.SchoolImg("header-logo") %>
+                    <%= BrandingService.LibraryImg("header-logo") %>
+                    <%= BrandingService.SystemImg("header-logo") %>
+                </span>
                 <div>
                     <strong>SPAMAST LIBRARY</strong>
                     <span>LMSA v2.0 Platform</span>
@@ -38,7 +43,7 @@
         <div class="page-container">
             <div class="auth-card">
                 <div class="blue-panel">
-                    <i class="fa-solid fa-unlock-keyhole animated-lock"></i>
+                    <%= BrandingService.SystemImg("auth-panel-logo") %>
                     <div>
                         <h3>Password Reset</h3>
                         <p class="mt-1">Verify your operational profile identities to configure alternative recovery paths securely.</p>

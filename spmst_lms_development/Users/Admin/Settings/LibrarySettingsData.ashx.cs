@@ -89,75 +89,75 @@ namespace spmst_lms_development.Users.Admin.Settings
         {
             if (context.Request.Files.Count == 0) throw new ArgumentException("No file uploaded.");
             HttpPostedFile file = context.Request.Files[0];
-            if (file == null || file.ContentLength <= 0) throw new ArgumentException("The uploaded file is empty.");
 
-            string ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (Array.IndexOf(ImageAllowedExtensions, ext) < 0) throw new ArgumentException("Invalid format. Only PNG, JPG, JPEG, and WebP are allowed.");
+            // Centralized pipeline: validates (size, real signature, decode), resizes, encodes to WebP.
+            ImageResult img = ImageService.Process(file, ImageCategory.Logo, "school", "school");
+            if (!img.Success) throw new ArgumentException(img.Error);
 
-            if (file.ContentLength > 5 * 1024 * 1024) throw new ArgumentException("File size exceeds 5MB limit.");
-
-            // Magic byte validation
-            byte[] buffer = new byte[4];
-            using (var stream = file.InputStream)
-            {
-                stream.Read(buffer, 0, 4);
-                stream.Position = 0;
-                string hex = BitConverter.ToString(buffer).Replace("-", "");
-                bool isValid = hex.StartsWith("89504E47") || hex.StartsWith("FFD8FF") || hex.StartsWith("52494646");
-                if (!isValid) throw new ArgumentException("Invalid image file signature.");
-            }
-
-            string folder = context.Server.MapPath("~/Assets/Branding/");
-            if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
-
-            string newFileName = "logo_" + DateTime.Now.ToString("yyyyMMddHHmmss") + ext;
-            string physicalPath = Path.Combine(folder, newFileName);
-            file.SaveAs(physicalPath);
-
-            string relativePath = "Assets/Branding/" + newFileName;
-
+            string oldPath = null;
             using (var conn = OpenConnection())
+            using (var tx = conn.BeginTransaction())
             {
-                using (var cmd = new MySqlCommand(@"
-                    UPDATE organization_logos 
-                    SET logo_path = @path, updated_at = CURRENT_TIMESTAMP 
-                    WHERE entity_type = 'School' AND entity_name = 'SPAMAST' AND is_active = 1", conn))
+                try
                 {
-                    cmd.Parameters.AddWithValue("@path", relativePath);
-                    int rowsAffected = cmd.ExecuteNonQuery();
-
-                    if (rowsAffected == 0)
+                    using (var sel = new MySqlCommand("SELECT logo_path FROM branding_logos WHERE logo_category = 'School' AND is_active = 1 LIMIT 1 FOR UPDATE", conn, tx))
                     {
-                        using (var insertCmd = new MySqlCommand(@"
-                            INSERT INTO organization_logos (entity_type, entity_name, logo_path, is_active, sort_order) 
-                            VALUES ('School', 'SPAMAST', @path, 1, 1)", conn))
+                        var o = sel.ExecuteScalar();
+                        if (o != null && o != DBNull.Value) oldPath = o.ToString();
+                    }
+                    int rows;
+                    using (var cmd = new MySqlCommand(@"UPDATE branding_logos SET logo_path = @path, version = version + 1
+                                                        WHERE logo_category = 'School' AND is_active = 1", conn, tx))
+                    {
+                        cmd.Parameters.AddWithValue("@path", img.RelativePath);
+                        rows = cmd.ExecuteNonQuery();
+                    }
+                    if (rows == 0)
+                    {
+                        using (var ins = new MySqlCommand(@"INSERT INTO branding_logos (logo_category, logo_name, logo_path, is_default)
+                                                            VALUES ('School', 'SPAMAST', @path, 1)", conn, tx))
                         {
-                            insertCmd.Parameters.AddWithValue("@path", relativePath);
-                            insertCmd.ExecuteNonQuery();
+                            ins.Parameters.AddWithValue("@path", img.RelativePath);
+                            ins.ExecuteNonQuery();
                         }
                     }
+                    tx.Commit();
+                }
+                catch
+                {
+                    tx.Rollback();
+                    ImageService.TryDeleteIfUnreferenced(img.RelativePath); // never leave an orphan file
+                    throw;
                 }
             }
 
-            LogoHelper.InvalidateCache("School");
+            BrandingService.Invalidate();
+            if (!string.IsNullOrEmpty(oldPath) && oldPath != img.RelativePath)
+                ImageService.TryDeleteIfUnreferenced(oldPath);   // only after the DB points at the new file
             return GetBranding();
         }
 
         private object ResetLogo()
         {
+            string oldPath = null;
             using (var conn = OpenConnection())
+            using (var tx = conn.BeginTransaction())
             {
-                using (var cmd = new MySqlCommand(@"
-                    UPDATE organization_logos 
-                    SET logo_path = @path, updated_at = CURRENT_TIMESTAMP 
-                    WHERE entity_type = 'School' AND entity_name = 'SPAMAST' AND is_active = 1", conn))
+                using (var sel = new MySqlCommand("SELECT logo_path FROM branding_logos WHERE logo_category = 'School' AND is_active = 1 LIMIT 1 FOR UPDATE", conn, tx))
                 {
-                    cmd.Parameters.AddWithValue("@path", LogoHelper.DefaultSchoolLogo);
+                    var o = sel.ExecuteScalar();
+                    if (o != null && o != DBNull.Value) oldPath = o.ToString();
+                }
+                using (var cmd = new MySqlCommand(@"UPDATE branding_logos SET logo_path = @path, version = version + 1
+                                                    WHERE logo_category = 'School' AND is_active = 1", conn, tx))
+                {
+                    cmd.Parameters.AddWithValue("@path", BrandingService.DefaultSchool);
                     cmd.ExecuteNonQuery();
                 }
+                tx.Commit();
             }
-
-            LogoHelper.InvalidateCache("School");
+            BrandingService.Invalidate();
+            if (!string.IsNullOrEmpty(oldPath)) ImageService.TryDeleteIfUnreferenced(oldPath);
             return GetBranding();
         }
 

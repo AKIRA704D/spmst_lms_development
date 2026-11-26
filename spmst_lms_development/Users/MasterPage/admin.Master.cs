@@ -131,7 +131,7 @@ namespace spmst_lms_development.Users.MasterPage
             //  SUBMENU VISIBILITY  (hide any submenu with zero children)
             // =====================================================
             subGroupDashboards.Visible = AnyVisible(
-                lnkAdminDashboard, lnkPatronDashboard, lnkMgtDashboard, lnkCirDashboard);
+                lnkAdminDashboard);
 
             subGroupCirculation.Visible = AnyVisible(
                 lnkBookBorrow, lnkToPickUp, lnkReservations,

@@ -1,0 +1,83 @@
+/* ============================================================================
+   lmsa-branding.css  --  shared logo/branding rendering standard
+   Loaded by: login, verifyAcc, forgotpass, admin.Master, LandingPage.Master.
+   (Branding-specific; the universal spamast-theme.css is intentionally untouched.)
+   ============================================================================ */
+
+/* Standard for EVERY logo image: fit, never stretch/crop, centred */
+.lmsa-brand-img {
+    object-fit: contain;
+    object-position: center;
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+}
+
+/* Generic row of logos that wraps instead of overflowing on small screens */
+.lmsa-logo-set {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+/* ---- Login / Verify / ForgotPassword header (three logos) ---- */
+.header-brand .lmsa-logo-set { flex-wrap: nowrap; gap: .5rem; margin-right: .25rem; }
+.header-brand .lmsa-logo-set .header-logo {
+    height: 35px;
+    width: auto;
+    max-width: 56px;
+}
+
+/* ---- Login sidebar (School + School Library) ---- */
+.login-sidebar { flex-wrap: wrap; }
+.login-sidebar .sidebar-logo { max-width: 44%; height: auto; aspect-ratio: 1 / 1; }
+
+/* ---- Verify / ForgotPassword sidebar brand (System logo) ---- */
+.blue-panel .auth-panel-logo {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto .5rem;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, .25));
+}
+
+/* ---- admin.Master: desktop header (three logos) ---- */
+.desktop-logo-set { gap: .5rem; flex-wrap: nowrap; }
+.desktop-logo-frame {
+    width: 40px; height: 40px;
+    flex-shrink: 0;
+    background: #fff;
+    border: 1px solid rgba(212, 160, 23, .45);
+    border-radius: 8px;
+    padding: 3px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+}
+.desktop-logo-frame .lmsa-brand-img { width: 100%; height: 100%; }
+
+/* ---- admin.Master: mobile header (three logos) ---- */
+.lmsa-logo-set--mobile { flex-wrap: nowrap; gap: .35rem; }
+.lmsa-logo-set--mobile .mobile-logo-frame { width: 34px; height: 34px; }
+
+/* ---- admin.Master: sidebar brand (School + School Library) ---- */
+.brand-logo-pair { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.brand-logo-pair .brand-logo-frame { width: 40px; height: 40px; padding: 3px; }
+
+/* ---- Landing header group: third logo sizes like the others ---- */
+.lmsa-logo-group .lmsa-logo-system { height: 54px; width: auto; max-width: 60px; }
+
+@media (max-width: 575.98px) {
+    .header-brand .lmsa-logo-set .header-logo { height: 28px; max-width: 44px; }
+    .login-sidebar .sidebar-logo { max-width: 40%; }
+    .blue-panel .auth-panel-logo { width: 84px; height: 84px; }
+    .lmsa-logo-set--mobile .mobile-logo-frame { width: 30px; height: 30px; }
+    .brand-logo-pair .brand-logo-frame { width: 34px; height: 34px; }
+    .lmsa-logo-group .lmsa-logo-system { height: 40px; max-width: 46px; }
+}
+@media (max-width: 420px) {
+    .mobile-brand-text { display: none; }
+}
+@media (max-width: 991.98px) {
+    .desktop-logo-set { display: none !important; }
+}

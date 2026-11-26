@@ -15,9 +15,8 @@ namespace spmst_lms_development.Login
         private readonly string connString =
             ConfigurationManager.ConnectionStrings["LmsDb"].ConnectionString;
 
-        // Dynamic logo properties
-        protected string SchoolLogoUrl { get; set; }
-        protected string LibraryLogoUrl { get; set; }
+        // NOTE: logos are NOT stored on the page. The markup calls BrandingService on every render,
+        // so postbacks (empty / invalid credentials) can never lose them.
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -25,20 +24,7 @@ namespace spmst_lms_development.Login
             {
                 pnlAlert.Visible = false;
                 Session.Clear();
-
-                // Load logos from database
-                SchoolLogoUrl = ResolveLogoPath(LogoHelper.GetHeaderLogo("School"));
-                LibraryLogoUrl = ResolveLogoPath(LogoHelper.GetHeaderLogo("Library"));
             }
-        }
-
-        private string ResolveLogoPath(string relativePath)
-        {
-            if (string.IsNullOrWhiteSpace(relativePath))
-                relativePath = LogoHelper.DefaultSchoolLogo;
-
-            string clean = relativePath.Replace('\\', '/').TrimStart('~', '/');
-            return ResolveUrl("~/" + clean);
         }
 
         protected void btnSignIn_Click(object sender, EventArgs e)
